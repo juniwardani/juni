@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Meta Tags Dasar -->
+    <title>Notepad Pribadi - Juni Wardani</title>
+    <meta name="description" content="Aplikasi notepad pribadi untuk menyimpan catatan penting dengan aman">
+    <meta name="author" content="Juni Wardani">
+    <meta name="keywords" content="notepad, catatan, pribadi, notes, aplikasi web">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Meta Tags untuk Keamanan -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://fkfwjlsgrnfqyfnlewgn.supabase.co; frame-ancestors 'none'; form-action 'self'; base-uri 'self';">
+    
+    <!-- Tambahkan Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        /* --- Gaya Umum & Font --- */
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --background-color: #f8f9fa;
+            --surface-color: #ffffff;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+            --shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        /* --- Header --- */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 500;
+        }
+
+        /* --- Navigasi --- */
+        nav {
+            background-color: var(--surface-color);
+            display: flex;
+            justify-content: center;
+            border-bottom: 2px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            cursor: pointer;
+            color: var(--secondary-color);
+            transition: background-color 0.3s, color 0.3s;
+            border-bottom: 3px solid transparent;
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .nav-btn:hover {
+            background-color: #e9ecef;
+        }
+
+        .nav-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        /* --- Konten Utama --- */
+        main {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Halaman Input --- */
+        #noteForm {
+            background-color: var(--surface-color);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .form-group textarea {
+            min-height: 150px;
+            overflow: hidden;
+            resize: none;
+            transition: box-shadow 0.3s;
+        }
+
+        .btn-submit {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-submit:hover {
+            background-color: #0056b3;
+        }
+
+        /* --- Gaya untuk Section Rekap --- */
+        .rekap-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .rekap-header h2 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 50;
+            box-shadow: var(--shadow);
+            display: none;
+        }
+
+        .rekap-content {
+            background-color: var(--surface-color);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .empty-state {
+            padding: 3rem 2rem;
+            text-align: center;
+            color: var(--secondary-color);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+        }
+
+        .empty-state p {
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .theme-item {
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .theme-item:last-child {
+            border-bottom: none;
+        }
+
+        .theme-btn {
+            width: 100%;
+            background: none;
+            border: none;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .theme-btn:hover {
+            background-color: #f8f9fa;
+        }
+
+        .theme-btn::after {
+            content: '▼';
+            font-size: 0.8rem;
+            transition: transform 0.3s;
+        }
+
+        .theme-btn.expanded::after {
+            transform: rotate(180deg);
+        }
+
+        .material-list {
+            background-color: var(--background-color);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+        }
+
+        .material-list.show {
+            max-height: 500px;
+            transition: max-height 0.6s ease-in;
+        }
+
+        .material-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-right: 1rem;
+        }
+
+        .material-link {
+            display: block;
+            padding: 0.75rem 1.5rem 0.75rem 3rem;
+            color: var(--text-color);
+            text-decoration: none;
+            border-bottom: 1px solid #e9ecef;
+            transition: background-color 0.3s;
+            position: relative;
+            flex-grow: 1;
+        }
+
+        .material-link::before {
+            content: '📄';
+            position: absolute;
+            left: 1.5rem;
+            top: 0.75rem;
+        }
+
+        .material-link:last-child {
+            border-bottom: none;
+        }
+
+        .material-link:hover {
+            background-color: #e9ecef;
+        }
+
+        .material-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-action {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .btn-edit {
+            color: var(--primary-color);
+        }
+
+        .btn-edit:hover {
+            background-color: rgba(0, 123, 255, 0.1);
+        }
+
+        .btn-delete {
+            color: var(--danger-color);
+        }
+
+        .btn-delete:hover {
+            background-color: rgba(220, 53, 69, 0.1);
+        }
+
+        .search-result-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f1f1;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-result-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .search-result-item .result-theme {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-right: 0.5rem;
+        }
+
+        .search-result-item .result-material {
+            font-size: 0.9em;
+            color: var(--secondary-color);
+        }
+
+        .search-result-item::before {
+            content: '🔍';
+            margin-right: 0.5rem;
+        }
+
+        /* --- Halaman Detail Catatan --- */
+        #detailSection {
+            background-color: var(--surface-color);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        .breadcrumb {
+            background-color: #e9ecef;
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb span:not(:last-child)::after {
+            content: ' > ';
+            color: var(--secondary-color);
+            margin: 0 0.5rem;
+        }
+
+        #detailSection h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        #detailSection h3 {
+            color: var(--secondary-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        #detailSection p {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            text-align: justify;
+            text-justify: inter-word;
+            hyphens: auto;
+            word-spacing: 0.1em;
+            line-height: 1.6;
+        }
+
+        .btn-back {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 1.5rem;
+            transition: background-color 0.3s;
+        }
+
+        .btn-back:hover {
+            background-color: #5a6268;
+        }
+
+        /* --- Gaya Modal --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: var(--surface-color);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: var(--text-color);
+        }
+
+        .modal-close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--secondary-color);
+            line-height: 1;
+        }
+
+        .modal-close-btn:hover {
+            color: var(--text-color);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        /* --- Responsif --- */
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+            .nav-btn {
+                padding: 1rem;
+                font-size: 0.9rem;
+            }
+            main {
+                margin: 1rem auto;
+            }
+            #noteForm, #detailSection {
+                padding: 1.5rem;
+            }
+            .rekap-header h2 {
+                font-size: 1.3rem;
+            }
+            .search-input {
+                padding: 0.65rem 0.9rem;
+            }
+            .theme-btn {
+                padding: 0.9rem 1.2rem;
+                font-size: 1rem;
+            }
+            .material-link {
+                padding: 0.65rem 1.2rem 0.65rem 2.5rem;
+            }
+            .material-link::before {
+                left: 1.2rem;
+            }
+            .modal-content {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Nama Saya Juni Wardani</h1>
+    </header>
+
+    <nav>
+        <button class="nav-btn active" id="navInputBtn">Input</button>
+        <button class="nav-btn" id="navRekapBtn">Rekap</button>
+    </nav>
+
+    <main>
+        <!-- Halaman Input -->
+        <section id="inputSection" class="content-section active">
+            <form id="noteForm">
+                <div class="form-group">
+                    <label for="temaInput">Tema:</label>
+                    <input type="text" id="temaInput" placeholder="Contoh: JavaScript Dasar" required>
+                </div>
+                <div class="form-group">
+                    <label for="materiInput">Materi:</label>
+                    <input type="text" id="materiInput" placeholder="Contoh: Variabel dan Tipe Data" required>
+                </div>
+                <div class="form-group">
+                    <label for="catatanTextarea">Input Catatan:</label>
+                    <textarea id="catatanTextarea" placeholder="Tuliskan catatan panjang Anda di sini. Tinggi textarea akan otomatis bertambah." required></textarea>
+                </div>
+                <button type="submit" class="btn-submit">Simpan Catatan</button>
+            </form>
+        </section>
+
+        <!-- Halaman Rekap -->
+        <section id="rekapSection" class="content-section">
+            <div class="rekap-header">
+                <h2>Rekap Catatan</h2>
+                <div class="search-container">
+                    <div class="search-input-wrapper">
+                        <input type="search" id="searchInput" class="search-input" placeholder="Cari catatan (minimal 3 huruf)...">
+                    </div>
+                    <div id="searchResults" class="search-results"></div>
+                </div>
+            </div>
+            
+            <div class="rekap-content">
+                <div id="rekapContainer" class="rekap-container">
+                    <!-- Konten Rekap akan di-generate oleh JavaScript -->
+                </div>
+                
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <div class="empty-icon">📝</div>
+                    <h3>Belum ada catatan</h3>
+                    <p>Anda belum memiliki catatan apa pun. Mulai buat catatan baru di halaman Input.</p>
+                    <button class="btn-primary" id="goToInputBtn">Buat Catatan Baru</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Halaman Detail Catatan -->
+        <section id="detailSection" class="content-section">
+            <div class="breadcrumb">
+                <a href="#" id="breadcrumbRekap">Rekap</a>
+                <span id="breadcrumbTheme"></span>
+                <span id="breadcrumbMaterial"></span>
+            </div>
+            
+            <button id="backBtn" class="btn-back">← Kembali ke Rekap</button>
+            <h2 id="detailTheme"></h2>
+            <h3 id="detailMaterial"></h3>
+            <p id="detailNotes"></p>
+        </section>
+    </main>
+
+    <!-- Modal untuk Edit/Hapus -->
+    <div id="modalOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Judul Modal</h2>
+                <button id="modalCloseBtn" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Konten dinamis akan dimuat di sini -->
+            </div>
+            <div class="modal-footer" id="modalFooter">
+                <!-- Tombol dinamis akan dimuat di sini -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- ELEMEN DOM ---
+            const navInputBtn = document.getElementById('navInputBtn');
+            const navRekapBtn = document.getElementById('navRekapBtn');
+            const inputSection = document.getElementById('inputSection');
+            const rekapSection = document.getElementById('rekapSection');
+            const detailSection = document.getElementById('detailSection');
+            const noteForm = document.getElementById('noteForm');
+            const temaInput = document.getElementById('temaInput');
+            const materiInput = document.getElementById('materiInput');
+            const catatanTextarea = document.getElementById('catatanTextarea');
+            const rekapContainer = document.getElementById('rekapContainer');
+            const backBtn = document.getElementById('backBtn');
+            
+            // Elemen untuk pencarian
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+            
+            // Elemen untuk empty state
+            const emptyState = document.getElementById('emptyState');
+            const goToInputBtn = document.getElementById('goToInputBtn');
+            
+            const breadcrumbRekap = document.getElementById('breadcrumbRekap');
+            const breadcrumbTheme = document.getElementById('breadcrumbTheme');
+            const breadcrumbMaterial = document.getElementById('breadcrumbMaterial');
+
+            const detailTheme = document.getElementById('detailTheme');
+            const detailMaterial = document.getElementById('detailMaterial');
+            const detailNotes = document.getElementById('detailNotes');
+
+            // Elemen Modal
+            const modalOverlay = document.getElementById('modalOverlay');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+            const modalFooter = document.getElementById('modalFooter');
+            const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+            // --- KONFIGURASI SUPABASE ---
+            const supabaseUrl = 'https://fkfwjlsgrnfqyfnlewgn.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZndqbHNncm5mcXlmbmxld2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MjA4ODYsImV4cCI6MjA3NzA5Njg4Nn0.V7uF638Kodz10Rl87t7Hwy6V4dlrnwKzIsEYAd0J8aA';
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+            // --- FUNGSI KEAMANAN ---
+            const sanitizeInput = (input) => {
+                const div = document.createElement('div');
+                div.textContent = input;
+                return div.innerHTML;
+            };
+
+            const validateInput = (input) => {
+                if (input.length > 10000) return { valid: false, message: "Input terlalu panjang" };
+                const dangerousPatterns = [/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, /javascript:/gi, /on\w+\s*=/gi, /<iframe/gi, /<object/gi, /<embed/gi, /<form/gi, /<input/gi, /<button/gi];
+                for (const pattern of dangerousPatterns) if (pattern.test(input)) return { valid: false, message: "Input mengandung konten berbahaya" };
+                return { valid: true };
+            };
+
+            // --- FUNGSI AUTO-RESIZE TEXTAREA ---
+            const autoResizeTextarea = () => {
+                catatanTextarea.style.height = 'auto';
+                catatanTextarea.style.height = catatanTextarea.scrollHeight + 'px';
+            };
+            
+            // --- FUNGSI MODAL ---
+            let currentNoteId = null;
+
+            const showModal = (title, bodyContent, footerContent) => {
+                modalTitle.textContent = title;
+                modalBody.innerHTML = bodyContent;
+                modalFooter.innerHTML = footerContent;
+                modalOverlay.classList.add('active');
+            };
+
+            const hideModal = () => {
+                modalOverlay.classList.remove('active');
+                currentNoteId = null;
+            };
+
+            const showEditModal = async (note) => {
+                currentNoteId = note.id;
+                const bodyContent = `
+                    <form id="editForm">
+                        <div class="form-group">
+                            <label for="editTema">Tema:</label>
+                            <input type="text" id="editTema" value="${sanitizeInput(note.tema)}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editMateri">Materi:</label>
+                            <input type="text" id="editMateri" value="${sanitizeInput(note.materi)}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editCatatan">Catatan:</label>
+                            <textarea id="editCatatan" required>${sanitizeInput(note.catatan)}</textarea>
+                        </div>
+                    </form>
+                `;
+                const footerContent = `
+                    <button type="button" class="btn-secondary modal-cancel-btn">Batal</button>
+                    <button type="button" class="btn-primary" id="saveChangesBtn">Simpan Perubahan</button>
+                `;
+                showModal('Edit Catatan', bodyContent, footerContent);
+
+                // Auto-resize untuk textarea di dalam modal
+                const editTextarea = document.getElementById('editCatatan');
+                const resizeEditTextarea = () => {
+                    editTextarea.style.height = 'auto';
+                    editTextarea.style.height = editTextarea.scrollHeight + 'px';
+                };
+                editTextarea.addEventListener('input', resizeEditTextarea);
+                resizeEditTextarea(); // Panggil sekali saat modal muncul
+
+                // PERBAIKAN: Ambil tombol batal dan tambahkan event listener
+                const cancelButton = modalFooter.querySelector('.modal-cancel-btn');
+                cancelButton.addEventListener('click', hideModal);
+
+                // Event listener untuk tombol simpan
+                document.getElementById('saveChangesBtn').addEventListener('click', async () => {
+                    const newTema = sanitizeInput(document.getElementById('editTema').value.trim());
+                    const newMateri = sanitizeInput(document.getElementById('editMateri').value.trim());
+                    const newCatatan = sanitizeInput(document.getElementById('editCatatan').value.trim());
+
+                    if (!newTema || !newMateri || !newCatatan) {
+                        alert('Semua field harus diisi!');
+                        return;
+                    }
+                    
+                    try {
+                        const { error } = await supabase
+                            .from('notes')
+                            .update({ tema: newTema, materi: newMateri, catatan: newCatatan })
+                            .eq('id', currentNoteId);
+                        
+                        if (error) throw error;
+                        
+                        await loadNotesFromSupabase();
+                        renderRekap();
+                        hideModal();
+                        alert('Catatan berhasil diperbarui!');
+                    } catch (error) {
+                        console.error('Error updating note:', error);
+                        alert('Gagal memperbarui catatan. Silakan coba lagi.');
+                    }
+                });
+            };
+
+            const showDeleteModal = async (note) => {
+                currentNoteId = note.id;
+                const bodyContent = `
+                    <p>Apakah Anda yakin ingin menghapus catatan ini?</p>
+                    <p><strong>Tema:</strong> ${sanitizeInput(note.tema)}<br><strong>Materi:</strong> ${sanitizeInput(note.materi)}</p>
+                `;
+                const footerContent = `
+                    <button type="button" class="btn-secondary modal-cancel-btn">Batal</button>
+                    <button type="button" class="btn-danger" id="confirmDeleteBtn">Hapus</button>
+                `;
+                showModal('Konfirmasi Hapus', bodyContent, footerContent);
+
+                // PERBAIKAN: Ambil tombol batal dan tambahkan event listener
+                const cancelButton = modalFooter.querySelector('.modal-cancel-btn');
+                cancelButton.addEventListener('click', hideModal);
+
+                document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+                    try {
+                        const { error } = await supabase
+                            .from('notes')
+                            .delete()
+                            .eq('id', currentNoteId);
+                        
+                        if (error) throw error;
+                        
+                        await loadNotesFromSupabase();
+                        renderRekap();
+                        hideModal();
+                        alert('Catatan berhasil dihapus!');
+                    } catch (error) {
+                        console.error('Error deleting note:', error);
+                        alert('Gagal menghapus catatan. Silakan coba lagi.');
+                    }
+                });
+            };
+
+            // --- DATA & PENYIMPANAN (MENGGUNAKAN SUPABASE) ---
+            let notesData = [];
+
+            const loadNotesFromSupabase = async () => {
+                try {
+                    const { data, error } = await supabase
+                        .from('notes')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+                    
+                    if (error) throw error;
+                    
+                    notesData = data || [];
+                } catch (error) {
+                    console.error('Error loading notes from Supabase:', error);
+                    alert('Gagal memuat catatan. Silakan refresh halaman.');
+                }
+            };
+
+            // --- FUNGSI NAVIGASI & TAMPILAN ---
+            const showSection = (sectionToShow) => {
+                document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+                document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+                sectionToShow.classList.add('active');
+                if (sectionToShow === inputSection) {
+                    navInputBtn.classList.add('active');
+                    autoResizeTextarea();
+                } else if (sectionToShow === rekapSection) {
+                    navRekapBtn.classList.add('active');
+                    renderRekap();
+                }
+            };
+            
+            const showDetailPage = (note) => {
+                detailTheme.textContent = note.tema;
+                detailMaterial.textContent = note.materi;
+                detailNotes.textContent = note.catatan;
+                breadcrumbTheme.textContent = note.tema;
+                breadcrumbMaterial.textContent = note.materi;
+                showSection(detailSection);
+            };
+
+            // --- FUNGSI RENDER REKAP ---
+            const renderRekap = () => {
+                rekapContainer.innerHTML = '';
+                if (notesData.length === 0) { emptyState.style.display = 'block'; return; }
+                emptyState.style.display = 'none';
+                
+                const groupedByTheme = notesData.reduce((acc, note) => {
+                    if (!acc[note.tema]) acc[note.tema] = [];
+                    acc[note.tema].push(note);
+                    return acc;
+                }, {});
+
+                for (const tema in groupedByTheme) {
+                    const themeItem = document.createElement('div');
+                    themeItem.className = 'theme-item';
+
+                    const themeButton = document.createElement('button');
+                    themeButton.className = 'theme-btn';
+                    themeButton.textContent = tema;
+
+                    const materialList = document.createElement('div');
+                    materialList.className = 'material-list';
+
+                    groupedByTheme[tema].forEach(note => {
+                        const materialItem = document.createElement('div');
+                        materialItem.className = 'material-item';
+
+                        const materialLink = document.createElement('a');
+                        materialLink.href = '#';
+                        materialLink.className = 'material-link';
+                        materialLink.textContent = note.materi;
+                        materialLink.addEventListener('click', (e) => { e.preventDefault(); showDetailPage(note); });
+                        
+                        const actionsContainer = document.createElement('div');
+                        actionsContainer.className = 'material-actions';
+
+                        const editBtn = document.createElement('button');
+                        editBtn.className = 'btn-action btn-edit';
+                        editBtn.textContent = 'Edit';
+                        editBtn.onclick = () => showEditModal(note);
+
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.className = 'btn-action btn-delete';
+                        deleteBtn.textContent = 'Hapus';
+                        deleteBtn.onclick = () => showDeleteModal(note);
+
+                        actionsContainer.appendChild(editBtn);
+                        actionsContainer.appendChild(deleteBtn);
+                        
+                        materialItem.appendChild(materialLink);
+                        materialItem.appendChild(actionsContainer);
+                        materialList.appendChild(materialItem);
+                    });
+
+                    themeButton.addEventListener('click', () => {
+                        materialList.classList.toggle('show');
+                        themeButton.classList.toggle('expanded');
+                    });
+
+                    themeItem.appendChild(themeButton);
+                    themeItem.appendChild(materialList);
+                    rekapContainer.appendChild(themeItem);
+                }
+            };
+
+            // --- FUNGSI PENCARIAN ---
+            const performSearch = (query) => {
+                const sanitizedQuery = sanitizeInput(query);
+                if (sanitizedQuery.length < 3) { searchResults.style.display = 'none'; searchResults.innerHTML = ''; return; }
+                const filteredNotes = notesData.filter(note => note.catatan.toLowerCase().includes(sanitizedQuery.toLowerCase()) || note.tema.toLowerCase().includes(sanitizedQuery.toLowerCase()) || note.materi.toLowerCase().includes(sanitizedQuery.toLowerCase()));
+                searchResults.innerHTML = '';
+                if (filteredNotes.length > 0) {
+                    filteredNotes.forEach((note) => {
+                        const item = document.createElement('div');
+                        item.className = 'search-result-item';
+                        item.innerHTML = `<div class="result-theme">${sanitizeInput(note.tema)}</div><div class="result-material">${sanitizeInput(note.materi)}</div>`;
+                        item.addEventListener('click', () => { showDetailPage(note); searchInput.value = ''; searchResults.style.display = 'none'; });
+                        searchResults.appendChild(item);
+                    });
+                    searchResults.style.display = 'block';
+                } else {
+                    searchResults.innerHTML = `<div class="search-result-item">Tidak ada catatan yang ditemukan untuk "${sanitizeInput(sanitizedQuery)}"</div>`;
+                    searchResults.style.display = 'block';
+                }
+            };
+            
+            // --- EVENT LISTENER ---
+            navInputBtn.addEventListener('click', () => showSection(inputSection));
+            navRekapBtn.addEventListener('click', () => showSection(rekapSection));
+            backBtn.addEventListener('click', () => showSection(rekapSection));
+            breadcrumbRekap.addEventListener('click', (e) => { e.preventDefault(); showSection(rekapSection); });
+            catatanTextarea.addEventListener('input', autoResizeTextarea);
+            searchInput.addEventListener('input', (e) => performSearch(e.target.value));
+            goToInputBtn.addEventListener('click', () => showSection(inputSection));
+            modalCloseBtn.addEventListener('click', hideModal);
+            modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) hideModal(); });
+            document.addEventListener('click', (e) => { if (!e.target.closest('.search-container')) searchResults.style.display = 'none'; });
+
+            noteForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const temaValue = sanitizeInput(temaInput.value.trim());
+                const materiValue = sanitizeInput(materiInput.value.trim());
+                const catatanValue = sanitizeInput(catatanTextarea.value.trim());
+                const temaValidation = validateInput(temaValue);
+                const materiValidation = validateInput(materiValue);
+                const catatanValidation = validateInput(catatanValue);
+                if (!temaValidation.valid) { alert(`Error pada tema: ${temaValidation.message}`); return; }
+                if (!materiValidation.valid) { alert(`Error pada materi: ${materiValidation.message}`); return; }
+                if (!catatanValidation.valid) { alert(`Error pada catatan: ${catatanValidation.message}`); return; }
+                if (temaValue && materiValue && catatanValue) {
+                    try {
+                        const { error } = await supabase
+                            .from('notes')
+                            .insert({ tema: temaValue, materi: materiValue, catatan: catatanValue });
+                        
+                        if (error) throw error;
+                        
+                        await loadNotesFromSupabase();
+                        alert('Catatan berhasil disimpan!');
+                        noteForm.reset();
+                        autoResizeTextarea();
+                    } catch (error) {
+                        console.error('Error saving note:', error);
+                        alert('Gagal menyimpan catatan. Silakan coba lagi.');
+                    }
+                } else { alert('Semua field harus diisi!'); }
+            });
+
+            // --- INISIALISASI ---
+            const initializeApp = async () => {
+                await loadNotesFromSupabase();
+                showSection(inputSection);
+                autoResizeTextarea();
+            };
+            
+            initializeApp();
+        });
+    </script>
+
+</body>
+</html>
