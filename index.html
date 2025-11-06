@@ -33,6 +33,9 @@
             --text-color: #212529;
             --border-color: #dee2e6;
             --shadow: 0 4px 8px rgba(0,0,0,0.1);
+            --code-bg: #f8f9fa;
+            --code-border: #e9ecef;
+            --code-color: #212529; /* PERUBAHAN: Warna teks kode menjadi hitam */
         }
 
         body {
@@ -49,21 +52,19 @@
             color: white;
             padding: 1rem 2rem;
             box-shadow: var(--shadow);
-            /* PERUBAHAN: Menggunakan Flexbox untuk tata letak */
             display: flex;
-            justify-content: flex-start; /* Menyelaraskan konten ke kiri */
+            justify-content: flex-start;
             align-items: center;
-            gap: 1rem; /* Jarak antara foto dan teks */
+            gap: 1rem;
         }
 
-        /* PERUBAHAN: Gaya untuk foto profil */
         .profile-photo {
-            width: 60px; /* Lebar foto */
-            height: 60px; /* Tinggi foto (sama dengan lebar untuk bentuk persegi) */
-            border-radius: 8px; /* Sudut sedikit melengkung untuk persegi. Untuk persegi sempurna, gunakan 0. */
-            object-fit: cover; /* Memastikan foto terpotong rapi tanpa distorsi */
-            border: 2px solid white; /* Border putih untuk kontras */
-            flex-shrink: 0; /* Mencegah foto mengecil */
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 2px solid white;
+            flex-shrink: 0;
         }
 
         header h1 {
@@ -167,9 +168,9 @@
             overflow: hidden;
             resize: none;
             transition: box-shadow 0.3s;
+            font-family: 'Courier New', Courier, monospace;
         }
 
-        /* PERUBAHAN: Gaya untuk Autocomplete */
         #temaInputGroup {
             position: relative;
         }
@@ -187,7 +188,7 @@
             overflow-y: auto;
             z-index: 50;
             box-shadow: var(--shadow);
-            display: none; /* Sembunyikan secara default */
+            display: none;
         }
 
         .autocomplete-item {
@@ -502,14 +503,24 @@
             margin-bottom: 1rem;
         }
 
-        #detailSection p {
+        /* PERUBAHAN: Gaya untuk blok kode dengan justify dan warna hitam */
+        .code-block {
+            background-color: var(--code-bg);
+            border: 1px solid var(--code-border);
+            border-radius: 4px;
+            padding: 1rem;
+            margin: 0;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            color: var(--code-color); /* Menggunakan warna hitam */
             white-space: pre-wrap;
             word-wrap: break-word;
-            text-align: justify;
-            text-justify: inter-word;
-            hyphens: auto;
-            word-spacing: 0.1em;
-            line-height: 1.6;
+            text-align: justify; /* PERUBAHAN: Menambahkan justify */
+            text-justify: inter-word; /* PERUBAHAN: Menambahkan inter-word justification */
+            hyphens: auto; /* PERUBAHAN: Menambahkan hyphens untuk kata yang terlalu panjang */
+            word-spacing: 0.1em; /* PERUBAHAN: Menambahkan sedikit spasi antar kata */
+            line-height: 1.6; /* PERUBAHAN: Menambahkan line-height untuk keterbacaan */
         }
 
         .btn-back {
@@ -633,15 +644,14 @@
 
         /* --- Responsif --- */
         @media (max-width: 600px) {
-            /* PERUBAHAN: Menyesuaikan header untuk layar kecil */
             header {
                 padding: 1rem;
-                flex-direction: column; /* Menyusun foto dan nama secara vertikal */
+                flex-direction: column;
                 gap: 0.5rem;
                 text-align: center;
             }
             .profile-photo {
-                width: 50px; /* Foto lebih kecil di mobile */
+                width: 50px;
                 height: 50px;
             }
             header h1 {
@@ -676,12 +686,16 @@
             .modal-content {
                 width: 95%;
             }
+            /* PERUBAHAN: Menyesuaikan tampilan kode di mobile */
+            .code-block {
+                font-size: 0.8rem;
+                padding: 0.8rem;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- PERUBAHAN: Struktur Header diperbarui -->
     <header>
         <img src="img/photo.jpg" alt="Foto Profil Juni Wardani" class="profile-photo">
         <h1>Juni Wardani</h1>
@@ -696,7 +710,6 @@
         <!-- Halaman Input -->
         <section id="inputSection" class="content-section active">
             <form id="noteForm">
-                <!-- PERUBAHAN: Menambahkan wrapper untuk input tema dan autocomplete -->
                 <div class="form-group" id="temaInputGroup">
                     <label for="temaInput">Tema:</label>
                     <input type="text" id="temaInput" placeholder="Contoh: JavaScript Dasar" autocomplete="off" required>
@@ -708,7 +721,7 @@
                 </div>
                 <div class="form-group">
                     <label for="catatanTextarea">Input Catatan:</label>
-                    <textarea id="catatanTextarea" placeholder="Tuliskan catatan panjang Anda di sini. Tinggi textarea akan otomatis bertambah." required></textarea>
+                    <textarea id="catatanTextarea" placeholder="Tuliskan catatan atau kode Anda di sini." required></textarea>
                 </div>
                 <button type="submit" class="btn-submit">Simpan Catatan</button>
             </form>
@@ -751,7 +764,7 @@
             <button id="backBtn" class="btn-back">← Kembali ke Rekap</button>
             <h2 id="detailTheme"></h2>
             <h3 id="detailMaterial"></h3>
-            <p id="detailNotes"></p>
+            <div id="detailNotes"></div>
         </section>
     </main>
 
@@ -786,11 +799,9 @@
             const rekapContainer = document.getElementById('rekapContainer');
             const backBtn = document.getElementById('backBtn');
             
-            // Elemen untuk pencarian
             const searchInput = document.getElementById('searchInput');
             const searchResults = document.getElementById('searchResults');
             
-            // Elemen untuk empty state
             const emptyState = document.getElementById('emptyState');
             const goToInputBtn = document.getElementById('goToInputBtn');
             
@@ -802,7 +813,6 @@
             const detailMaterial = document.getElementById('detailMaterial');
             const detailNotes = document.getElementById('detailNotes');
 
-            // Elemen Modal
             const modalOverlay = document.getElementById('modalOverlay');
             const modalTitle = document.getElementById('modalTitle');
             const modalBody = document.getElementById('modalBody');
@@ -817,9 +827,20 @@
             // --- FUNGSI KEAMANAN ---
             const validateInput = (input) => {
                 if (input.length > 10000) return { valid: false, message: "Input terlalu panjang" };
-                const dangerousPatterns = [/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, /javascript:/gi, /on\w+\s*=/gi, /<iframe/gi, /<object/gi, /<embed/gi, /<form/gi, /<input/gi, /<button/gi];
-                for (const pattern of dangerousPatterns) if (pattern.test(input)) return { valid: false, message: "Input mengandung konten berbahaya" };
                 return { valid: true };
+            };
+            
+            // --- FUNGSI UNTUK MENANGANI KODE (PERBAIKAN) ---
+            // Fungsi untuk escape HTML
+            const escapeHtml = (text) => {
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return text.replace(/[&<>"']/g, m => map[m]);
             };
 
             // --- FUNGSI AUTO-RESIZE TEXTAREA ---
@@ -867,20 +888,17 @@
                 `;
                 showModal('Edit Catatan', bodyContent, footerContent);
 
-                // Auto-resize untuk textarea di dalam modal
                 const editTextarea = document.getElementById('editCatatan');
                 const resizeEditTextarea = () => {
                     editTextarea.style.height = 'auto';
                     editTextarea.style.height = editTextarea.scrollHeight + 'px';
                 };
                 editTextarea.addEventListener('input', resizeEditTextarea);
-                resizeEditTextarea(); // Panggil sekali saat modal muncul
+                resizeEditTextarea();
 
-                // PERBAIKAN: Ambil tombol batal dan tambahkan event listener
                 const cancelButton = modalFooter.querySelector('.modal-cancel-btn');
                 cancelButton.addEventListener('click', hideModal);
 
-                // Event listener untuk tombol simpan
                 document.getElementById('saveChangesBtn').addEventListener('click', async () => {
                     const newTema = document.getElementById('editTema').value.trim();
                     const newMateri = document.getElementById('editMateri').value.trim();
@@ -922,7 +940,6 @@
                 `;
                 showModal('Konfirmasi Hapus', bodyContent, footerContent);
 
-                // PERBAIKAN: Ambil tombol batal dan tambahkan event listener
                 const cancelButton = modalFooter.querySelector('.modal-cancel-btn');
                 cancelButton.addEventListener('click', hideModal);
 
@@ -946,9 +963,9 @@
                 });
             };
 
-            // --- DATA & PENYIMPANAN (MENGGUNAKAN SUPABASE) ---
+            // --- DATA & PENYIMPANAN ---
             let notesData = [];
-            let allThemes = []; // PERUBAHAN: Variabel untuk menyimpan semua tema unik
+            let allThemes = [];
 
             const loadNotesFromSupabase = async () => {
                 try {
@@ -966,7 +983,6 @@
                 }
             };
 
-            // PERUBAHAN: Fungsi untuk mengambil tema unik dari Supabase
             const fetchThemesFromSupabase = async () => {
                 try {
                     const { data, error } = await supabase
@@ -975,7 +991,6 @@
                     
                     if (error) throw error;
 
-                    // Menggunakan Set untuk mendapatkan nilai unik
                     const uniqueThemes = [...new Set(data.map(item => item.tema))];
                     allThemes = uniqueThemes;
 
@@ -998,10 +1013,17 @@
                 }
             };
             
+            // PERBAIKAN UTAMA: Fungsi untuk menampilkan detail catatan
             const showDetailPage = (note) => {
                 detailTheme.textContent = note.tema;
                 detailMaterial.textContent = note.materi;
-                detailNotes.textContent = note.catatan;
+                
+                // Langkah 1: Escape seluruh konten catatan untuk mencegah rendering HTML
+                const escapedContent = escapeHtml(note.catatan);
+                
+                // Langkah 2: Tampilkan konten di dalam div dengan kelas 'code-block'
+                detailNotes.innerHTML = `<div class="code-block">${escapedContent}</div>`;
+                
                 breadcrumbTheme.textContent = note.tema;
                 breadcrumbMaterial.textContent = note.materi;
                 showSection(detailSection);
@@ -1118,7 +1140,6 @@
             modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) hideModal(); });
             document.addEventListener('click', (e) => { if (!e.target.closest('.search-container')) searchResults.style.display = 'none'; });
 
-            // PERUBAHAN: Event Listener untuk Autocomplete Tema
             temaInput.addEventListener('input', (e) => {
                 const value = e.target.value.toLowerCase();
                 const autocompleteList = document.getElementById('temaAutocompleteList');
@@ -1148,7 +1169,6 @@
                 }
             });
 
-            // Sembunyikan autocomplete jika klik di luar
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('#temaInputGroup')) {
                     document.getElementById('temaAutocompleteList').style.display = 'none';
@@ -1175,7 +1195,7 @@
                         if (error) throw error;
                         
                         await loadNotesFromSupabase();
-                        await fetchThemesFromSupabase(); // PERUBAHAN: Perbarui daftar tema setelah menambah
+                        await fetchThemesFromSupabase();
                         alert('Catatan berhasil disimpan!');
                         noteForm.reset();
                         autoResizeTextarea();
@@ -1189,7 +1209,7 @@
             // --- INISIALISASI ---
             const initializeApp = async () => {
                 await loadNotesFromSupabase();
-                await fetchThemesFromSupabase(); // PERUBAHAN: Ambil tema saat aplikasi dimulai
+                await fetchThemesFromSupabase();
                 showSection(inputSection);
                 autoResizeTextarea();
             };
