@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Merger</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+    }
+    
+    .app-container {
+      min-height: 100%;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 24px;
+      overflow-y: auto;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+      max-width: 600px;
+    }
+    
+    .icon-wrapper {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      margin-bottom: 24px;
+    }
+    
+    .title {
+      font-size: 42px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+    
+    .subtitle {
+      font-size: 18px;
+      opacity: 0.8;
+      line-height: 1.5;
+    }
+    
+    .main-content {
+      width: 100%;
+      max-width: 800px;
+    }
+    
+    .upload-zone {
+      border: 3px dashed;
+      border-radius: 24px;
+      padding: 48px 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 32px;
+    }
+    
+    .upload-zone:hover {
+      transform: translateY(-2px);
+    }
+    
+    .upload-icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+    }
+    
+    .upload-text {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .upload-hint {
+      font-size: 14px;
+      opacity: 0.7;
+    }
+    
+    .file-list {
+      margin-bottom: 32px;
+    }
+    
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px;
+      border-radius: 16px;
+      margin-bottom: 12px;
+      transition: all 0.2s ease;
+    }
+    
+    .file-item:hover {
+      transform: translateX(4px);
+    }
+    
+    .file-icon {
+      font-size: 32px;
+      flex-shrink: 0;
+    }
+    
+    .file-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .file-name {
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .file-size {
+      font-size: 13px;
+      opacity: 0.7;
+    }
+    
+    .drag-handle {
+      cursor: move;
+      padding: 8px;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+    }
+    
+    .drag-handle:hover {
+      opacity: 1;
+    }
+    
+    .remove-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 8px;
+      opacity: 0.6;
+      transition: all 0.2s;
+      border-radius: 8px;
+    }
+    
+    .remove-btn:hover {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 16px 32px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .btn-icon {
+      font-size: 20px;
+    }
+    
+    .hidden {
+      display: none !important;
+    }
+    
+    .status-message {
+      text-align: center;
+      padding: 16px;
+      border-radius: 12px;
+      margin-top: 24px;
+      font-weight: 500;
+      animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .dragging {
+      opacity: 0.5;
+    }
+    
+    .drag-over {
+      border-style: solid;
+      transform: scale(1.02);
+    }
+    
+    @media (max-width: 640px) {
+      .title {
+        font-size: 32px;
+      }
+      
+      .subtitle {
+        font-size: 16px;
+      }
+      
+      .upload-zone {
+        padding: 32px 24px;
+      }
+      
+      .button-group {
+        flex-direction: column;
+        width: 100%;
+      }
+      
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div class="app-container">
+   <div class="header">
+    <div class="icon-wrapper" id="iconWrapper"><span style="font-size: 48px;">📄</span>
+    </div>
+    <h1 class="title" id="appTitle">GABUNG PDF BY JUNI WARDANI</h1>
+    <p class="subtitle" id="subtitle">Gabungkan beberapa file PDF menjadi satu dengan mudah</p>
+   </div>
+   <div class="main-content"><input type="file" id="fileInput" accept=".pdf" multiple class="hidden">
+    <div class="upload-zone" id="uploadZone">
+     <div class="upload-icon">
+      📁
+     </div>
+     <div class="upload-text" id="selectButtonText">
+      Pilih File PDF
+     </div>
+     <div class="upload-hint">
+      atau seret &amp; lepas file di sini
+     </div>
+    </div>
+    <div class="file-list" id="fileList"></div>
+    <div class="button-group"><button class="btn hidden" id="mergeBtn"> <span class="btn-icon">⚡</span> <span id="mergeButtonText">Gabungkan PDF</span> </button> <button class="btn hidden" id="downloadBtn"> <span class="btn-icon">💾</span> <span id="downloadButtonText">Unduh Hasil</span> </button>
+    </div>
+    <div id="statusMessage"></div>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      background_color: '#f0f4ff',
+      surface_color: '#ffffff',
+      text_color: '#1e293b',
+      primary_action_color: '#3b82f6',
+      secondary_action_color: '#8b5cf6',
+      app_title: 'JUNI WARDANI',
+      subtitle: 'Gabungkan beberapa file PDF menjadi satu dengan mudah',
+      select_button_text: 'Pilih File PDF',
+      merge_button_text: 'Gabungkan PDF',
+      download_button_text: 'Unduh Hasil',
+      font_family: 'Plus Jakarta Sans',
+      font_size: 16
+    };
+
+    let pdfFiles = [];
+    let mergedPdfBytes = null;
+    let draggedElement = null;
+
+    const fileInput = document.getElementById('fileInput');
+    const uploadZone = document.getElementById('uploadZone');
+    const fileList = document.getElementById('fileList');
+    const mergeBtn = document.getElementById('mergeBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const statusMessage = document.getElementById('statusMessage');
+
+    uploadZone.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', (e) => {
+      handleFiles(e.target.files);
+    });
+
+    uploadZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadZone.classList.add('drag-over');
+    });
+
+    uploadZone.addEventListener('dragleave', () => {
+      uploadZone.classList.remove('drag-over');
+    });
+
+    uploadZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove('drag-over');
+      const files = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
+      handleFiles(files);
+    });
+
+    function handleFiles(files) {
+      const pdfFilesArray = Array.from(files).filter(f => f.type === 'application/pdf');
+      
+      if (pdfFilesArray.length === 0) {
+        showStatus('Harap pilih file PDF yang valid', 'error');
+        return;
+      }
+
+      pdfFiles = [...pdfFiles, ...pdfFilesArray];
+      renderFileList();
+      updateButtonVisibility();
+      mergedPdfBytes = null;
+      downloadBtn.classList.add('hidden');
+      showStatus(`${pdfFilesArray.length} file ditambahkan`, 'success');
+    }
+
+    function renderFileList() {
+      fileList.innerHTML = '';
+      
+      pdfFiles.forEach((file, index) => {
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item';
+        fileItem.draggable = true;
+        fileItem.dataset.index = index;
+        
+        fileItem.innerHTML = `
+          <span class="drag-handle">⋮⋮</span>
+          <span class="file-icon">📄</span>
+          <div class="file-info">
+            <div class="file-name">${file.name}</div>
+            <div class="file-size">${formatFileSize(file.size)}</div>
+          </div>
+          <button class="remove-btn" onclick="removeFile(${index})">×</button>
+        `;
+        
+        fileItem.addEventListener('dragstart', handleDragStart);
+        fileItem.addEventListener('dragover', handleDragOver);
+        fileItem.addEventListener('drop', handleDrop);
+        fileItem.addEventListener('dragend', handleDragEnd);
+        
+        fileList.appendChild(fileItem);
+      });
+    }
+
+    function handleDragStart(e) {
+      draggedElement = this;
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      
+      if (this !== draggedElement) {
+        const rect = this.getBoundingClientRect();
+        const midpoint = rect.top + rect.height / 2;
+        
+        if (e.clientY < midpoint) {
+          this.parentNode.insertBefore(draggedElement, this);
+        } else {
+          this.parentNode.insertBefore(draggedElement, this.nextSibling);
+        }
+      }
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+    }
+
+    function handleDragEnd() {
+      this.classList.remove('dragging');
+      
+      const newOrder = Array.from(fileList.children).map(item => 
+        parseInt(item.dataset.index)
+      );
+      
+      pdfFiles = newOrder.map(index => pdfFiles[index]);
+      renderFileList();
+    }
+
+    function removeFile(index) {
+      pdfFiles.splice(index, 1);
+      renderFileList();
+      updateButtonVisibility();
+      
+      if (pdfFiles.length === 0) {
+        mergedPdfBytes = null;
+        downloadBtn.classList.add('hidden');
+        statusMessage.innerHTML = '';
+      }
+    }
+
+    function updateButtonVisibility() {
+      if (pdfFiles.length >= 2) {
+        mergeBtn.classList.remove('hidden');
+      } else {
+        mergeBtn.classList.add('hidden');
+      }
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function showStatus(message, type) {
+      const colors = {
+        success: { bg: '#d1fae5', text: '#065f46' },
+        error: { bg: '#fee2e2', text: '#991b1b' },
+        info: { bg: '#dbeafe', text: '#1e40af' }
+      };
+      
+      const color = colors[type] || colors.info;
+      statusMessage.style.backgroundColor = color.bg;
+      statusMessage.style.color = color.text;
+      statusMessage.textContent = message;
+      statusMessage.className = 'status-message';
+      
+      setTimeout(() => {
+        statusMessage.className = 'status-message hidden';
+      }, 4000);
+    }
+
+    mergeBtn.addEventListener('click', async () => {
+      if (pdfFiles.length < 2) {
+        showStatus('Minimal 2 file PDF diperlukan', 'error');
+        return;
+      }
+
+      mergeBtn.disabled = true;
+      showStatus('Menggabungkan PDF...', 'info');
+
+      try {
+        const mergedPdf = await PDFLib.PDFDocument.create();
+
+        for (const file of pdfFiles) {
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await PDFLib.PDFDocument.load(arrayBuffer);
+          const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+          copiedPages.forEach((page) => mergedPdf.addPage(page));
+        }
+
+        mergedPdfBytes = await mergedPdf.save();
+        downloadBtn.classList.remove('hidden');
+        showStatus('PDF berhasil digabungkan!', 'success');
+      } catch (error) {
+        showStatus('Terjadi kesalahan saat menggabungkan PDF', 'error');
+        console.error(error);
+      } finally {
+        mergeBtn.disabled = false;
+      }
+    });
+
+    downloadBtn.addEventListener('click', () => {
+      if (!mergedPdfBytes) {
+        showStatus('Tidak ada file untuk diunduh', 'error');
+        return;
+      }
+
+      const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'merged-document.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      showStatus('File berhasil diunduh!', 'success');
+    });
+
+    async function onConfigChange(config) {
+      const customFont = config.font_family || defaultConfig.font_family;
+      const baseFontStack = 'system-ui, -apple-system, sans-serif';
+      const baseSize = config.font_size || defaultConfig.font_size;
+      
+      const backgroundColor = config.background_color || defaultConfig.background_color;
+      const surfaceColor = config.surface_color || defaultConfig.surface_color;
+      const textColor = config.text_color || defaultConfig.text_color;
+      const primaryColor = config.primary_action_color || defaultConfig.primary_action_color;
+      const secondaryColor = config.secondary_action_color || defaultConfig.secondary_action_color;
+      
+      document.querySelector('.app-container').style.backgroundColor = backgroundColor;
+      document.querySelector('.app-container').style.color = textColor;
+      document.querySelector('.app-container').style.fontFamily = `${customFont}, ${baseFontStack}`;
+      
+      document.getElementById('iconWrapper').style.backgroundColor = primaryColor;
+      
+      document.getElementById('appTitle').textContent = config.app_title || defaultConfig.app_title;
+      document.getElementById('appTitle').style.fontSize = `${baseSize * 2.625}px`;
+      document.getElementById('appTitle').style.color = textColor;
+      document.getElementById('appTitle').style.fontFamily = `${customFont}, ${baseFontStack}`;
+      
+      document.getElementById('subtitle').textContent = config.subtitle || defaultConfig.subtitle;
+      document.getElementById('subtitle').style.fontSize = `${baseSize * 1.125}px`;
+      document.getElementById('subtitle').style.color = textColor;
+      document.getElementById('subtitle').style.fontFamily = `${customFont}, ${baseFontStack}`;
+      
+      document.getElementById('selectButtonText').textContent = config.select_button_text || defaultConfig.select_button_text;
+      document.getElementById('selectButtonText').style.fontFamily = `${customFont}, ${baseFontStack}`;
+      
+      document.getElementById('mergeButtonText').textContent = config.merge_button_text || defaultConfig.merge_button_text;
+      document.getElementById('downloadButtonText').textContent = config.download_button_text || defaultConfig.download_button_text;
+      
+      uploadZone.style.borderColor = primaryColor;
+      uploadZone.style.backgroundColor = surfaceColor;
+      uploadZone.style.color = textColor;
+      
+      const fileItems = document.querySelectorAll('.file-item');
+      fileItems.forEach(item => {
+        item.style.backgroundColor = surfaceColor;
+        item.style.color = textColor;
+      });
+      
+      mergeBtn.style.backgroundColor = primaryColor;
+      mergeBtn.style.color = '#ffffff';
+      mergeBtn.style.fontFamily = `${customFont}, ${baseFontStack}`;
+      mergeBtn.style.fontSize = `${baseSize}px`;
+      
+      downloadBtn.style.backgroundColor = secondaryColor;
+      downloadBtn.style.color = '#ffffff';
+      downloadBtn.style.fontFamily = `${customFont}, ${baseFontStack}`;
+      downloadBtn.style.fontSize = `${baseSize}px`;
+      
+      const removeButtons = document.querySelectorAll('.remove-btn');
+      removeButtons.forEach(btn => {
+        btn.style.color = textColor;
+      });
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities: (config) => ({
+          recolorables: [
+            {
+              get: () => config.background_color || defaultConfig.background_color,
+              set: (value) => {
+                config.background_color = value;
+                window.elementSdk.setConfig({ background_color: value });
+              }
+            },
+            {
+              get: () => config.surface_color || defaultConfig.surface_color,
+              set: (value) => {
+                config.surface_color = value;
+                window.elementSdk.setConfig({ surface_color: value });
+              }
+            },
+            {
+              get: () => config.text_color || defaultConfig.text_color,
+              set: (value) => {
+                config.text_color = value;
+                window.elementSdk.setConfig({ text_color: value });
+              }
+            },
+            {
+              get: () => config.primary_action_color || defaultConfig.primary_action_color,
+              set: (value) => {
+                config.primary_action_color = value;
+                window.elementSdk.setConfig({ primary_action_color: value });
+              }
+            },
+            {
+              get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
+              set: (value) => {
+                config.secondary_action_color = value;
+                window.elementSdk.setConfig({ secondary_action_color: value });
+              }
+            }
+          ],
+          borderables: [],
+          fontEditable: {
+            get: () => config.font_family || defaultConfig.font_family,
+            set: (value) => {
+              config.font_family = value;
+              window.elementSdk.setConfig({ font_family: value });
+            }
+          },
+          fontSizeable: {
+            get: () => config.font_size || defaultConfig.font_size,
+            set: (value) => {
+              config.font_size = value;
+              window.elementSdk.setConfig({ font_size: value });
+            }
+          }
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ['app_title', config.app_title || defaultConfig.app_title],
+          ['subtitle', config.subtitle || defaultConfig.subtitle],
+          ['select_button_text', config.select_button_text || defaultConfig.select_button_text],
+          ['merge_button_text', config.merge_button_text || defaultConfig.merge_button_text],
+          ['download_button_text', config.download_button_text || defaultConfig.download_button_text]
+        ])
+      });
+    }
+
+    onConfigChange(defaultConfig);
+  </script>
+ </html>
