@@ -1,0 +1,709 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Page Extractor</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+    }
+    
+    .app-wrapper {
+      height: 100%;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 20px;
+      overflow-y: auto;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      max-width: 700px;
+      width: 100%;
+    }
+    
+    .icon-wrapper {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 72px;
+      height: 72px;
+      border-radius: 18px;
+      margin-bottom: 20px;
+    }
+    
+    .title {
+      font-size: 40px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      line-height: 1.1;
+    }
+    
+    .subtitle {
+      font-size: 17px;
+      opacity: 0.75;
+      line-height: 1.4;
+    }
+    
+    .main-content {
+      width: 100%;
+      max-width: 900px;
+    }
+    
+    .upload-zone {
+      border: 2.5px dashed;
+      border-radius: 20px;
+      padding: 40px 28px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 28px;
+    }
+    
+    .upload-zone:hover {
+      transform: translateY(-1px);
+    }
+    
+    .upload-icon {
+      font-size: 50px;
+      margin-bottom: 14px;
+    }
+    
+    .upload-text {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 7px;
+    }
+    
+    .upload-hint {
+      font-size: 13px;
+      opacity: 0.7;
+    }
+    
+    .file-list {
+      margin-bottom: 28px;
+    }
+    
+    .file-info-card {
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 18px;
+      border-radius: 14px;
+      margin-bottom: 10px;
+      transition: all 0.2s ease;
+    }
+    
+    .file-item:hover {
+      transform: translateX(3px);
+    }
+    
+    .file-icon {
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+    
+    .file-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .file-name {
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .file-size {
+      font-size: 12px;
+      opacity: 0.7;
+    }
+    
+    .remove-btn {
+      background: none;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      padding: 6px;
+      opacity: 0.6;
+      transition: all 0.2s;
+      border-radius: 6px;
+    }
+    
+    .remove-btn:hover {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 14px 28px;
+      border: none;
+      border-radius: 11px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+    
+    .btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    }
+    
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .btn-icon {
+      font-size: 18px;
+    }
+    
+    .hidden {
+      display: none !important;
+    }
+    
+    .status-message {
+      text-align: center;
+      padding: 16px;
+      border-radius: 12px;
+      margin-top: 24px;
+      font-weight: 500;
+      animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .drag-over {
+      border-style: solid;
+      transform: scale(1.02);
+    }
+    
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 16px;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      transition: width 0.3s ease;
+      border-radius: 4px;
+    }
+    
+    .result-card {
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin-bottom: 14px;
+    }
+    
+    .result-title {
+      font-weight: 700;
+      font-size: 16px;
+      flex: 1;
+    }
+    
+    .result-stats {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 14px;
+      font-size: 13px;
+      opacity: 0.75;
+    }
+    
+    .result-preview {
+      border-radius: 7px;
+      padding: 14px;
+      max-height: 180px;
+      overflow-y: auto;
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+    
+    @media (max-width: 640px) {
+      .title {
+        font-size: 32px;
+      }
+      
+      .subtitle {
+        font-size: 16px;
+      }
+      
+      .upload-zone {
+        padding: 32px 24px;
+      }
+      
+      .button-group {
+        flex-direction: column;
+        width: 100%;
+      }
+      
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div class="app-wrapper">
+   <div class="header">
+    <div class="icon-wrapper" id="iconWrapper"><span style="font-size: 48px;">✂️</span>
+    </div>
+    <h1 class="title" id="appTitle">PDF Page Extractor</h1>
+    <p class="subtitle" id="subtitle">Ekstrak halaman tertentu dari file PDF • Pilih range halaman yang Anda butuhkan</p>
+   </div>
+   <div class="main-content"><input type="file" id="fileInput" accept=".pdf" class="hidden">
+    <div class="upload-zone" id="uploadZone">
+     <div class="upload-icon">
+      📁
+     </div>
+     <div class="upload-text" id="selectButtonText">
+      Pilih File PDF
+     </div>
+     <div class="upload-hint">
+      Pilih satu file PDF untuk diekstrak halaman tertentu
+     </div>
+    </div>
+    <div class="file-info-card" id="fileInfoCard" style="display: none;">
+     <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px;"><span style="font-size: 32px;">📄</span>
+      <div style="flex: 1;">
+       <div id="fileName" style="font-weight: 600; font-size: 16px; margin-bottom: 4px;"></div>
+       <div id="filePages" style="font-size: 13px; opacity: 0.7;"></div>
+      </div><button class="remove-btn" id="removeFileBtn">×</button>
+     </div>
+     <div style="margin-top: 20px;"><label for="pageRange" style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px;" id="pageRangeLabel">Range Halaman (contoh: 2-5 atau 1,3,7-10)</label> <input type="text" id="pageRange" placeholder="Contoh: 2-2 atau 100-108 atau 1,3,5-7" style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 15px; font-family: inherit; transition: all 0.2s;">
+      <div id="rangeHint" style="font-size: 12px; margin-top: 6px; opacity: 0.7;"></div>
+     </div>
+    </div>
+    <div class="button-group" style="margin-top: 24px;"><button class="btn hidden" id="extractBtn"> <span class="btn-icon">✂️</span> <span id="extractButtonText">Ekstrak Halaman</span> </button>
+    </div>
+    <div id="statusMessage"></div>
+   </div>
+  </div>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    const defaultConfig = {
+      background_color: '#f8fafc',
+      surface_color: '#ffffff',
+      text_color: '#1e293b',
+      primary_action_color: '#2563eb',
+      secondary_action_color: '#7c3aed',
+      app_title: 'Juni Wardani',
+      subtitle: 'Ekstrak halaman tertentu dari file PDF • Pilih range halaman yang Anda butuhkan',
+      select_button_text: 'Pilih File PDF',
+      extract_button_text: 'Ekstrak Halaman',
+      page_range_label: 'Range Halaman (contoh: 2-5 atau 1,3,7-10)',
+      font_family: 'Inter',
+      font_size: 16
+    };
+
+    let currentPdfFile = null;
+    let totalPages = 0;
+
+    const fileInput = document.getElementById('fileInput');
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInfoCard = document.getElementById('fileInfoCard');
+    const fileName = document.getElementById('fileName');
+    const filePages = document.getElementById('filePages');
+    const removeFileBtn = document.getElementById('removeFileBtn');
+    const pageRange = document.getElementById('pageRange');
+    const rangeHint = document.getElementById('rangeHint');
+    const extractBtn = document.getElementById('extractBtn');
+    const statusMessage = document.getElementById('statusMessage');
+
+    uploadZone.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', async (e) => {
+      if (e.target.files.length > 0) {
+        await handleFile(e.target.files[0]);
+      }
+    });
+
+    uploadZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadZone.classList.add('drag-over');
+    });
+
+    uploadZone.addEventListener('dragleave', () => {
+      uploadZone.classList.remove('drag-over');
+    });
+
+    uploadZone.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove('drag-over');
+      const files = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
+      if (files.length > 0) {
+        await handleFile(files[0]);
+      }
+    });
+
+    async function handleFile(file) {
+      if (file.type !== 'application/pdf') {
+        showStatus('Harap pilih file PDF yang valid', 'error');
+        return;
+      }
+
+      currentPdfFile = file;
+      
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        totalPages = pdf.numPages;
+
+        fileName.textContent = file.name;
+        filePages.textContent = `Total ${totalPages} halaman`;
+        rangeHint.textContent = `Masukkan range 1 sampai ${totalPages}`;
+        
+        fileInfoCard.style.display = 'block';
+        uploadZone.style.display = 'none';
+        extractBtn.classList.remove('hidden');
+        
+        showStatus(`File berhasil dimuat: ${totalPages} halaman`, 'success');
+      } catch (error) {
+        showStatus('Gagal membaca file PDF', 'error');
+        console.error(error);
+      }
+    }
+
+    removeFileBtn.addEventListener('click', () => {
+      currentPdfFile = null;
+      totalPages = 0;
+      pageRange.value = '';
+      
+      fileInfoCard.style.display = 'none';
+      uploadZone.style.display = 'block';
+      extractBtn.classList.add('hidden');
+      statusMessage.innerHTML = '';
+    });
+
+    pageRange.addEventListener('input', (e) => {
+      const value = e.target.value.trim();
+      if (value) {
+        try {
+          const pages = parsePageRange(value);
+          if (pages.length > 0) {
+            rangeHint.textContent = `✓ ${pages.length} halaman akan diekstrak: ${pages.join(', ')}`;
+            rangeHint.style.color = '#10b981';
+          }
+        } catch (error) {
+          rangeHint.textContent = `✗ ${error.message}`;
+          rangeHint.style.color = '#ef4444';
+        }
+      } else {
+        rangeHint.textContent = `Masukkan range 1 sampai ${totalPages}`;
+        rangeHint.style.color = '';
+      }
+    });
+
+    function parsePageRange(rangeStr) {
+      const pages = new Set();
+      const parts = rangeStr.split(',');
+      
+      for (const part of parts) {
+        const trimmed = part.trim();
+        
+        if (trimmed.includes('-')) {
+          const [start, end] = trimmed.split('-').map(s => parseInt(s.trim()));
+          
+          if (isNaN(start) || isNaN(end)) {
+            throw new Error('Format tidak valid. Gunakan angka yang benar.');
+          }
+          
+          if (start < 1 || end > totalPages || start > end) {
+            throw new Error(`Range harus antara 1-${totalPages} dan start ≤ end`);
+          }
+          
+          for (let i = start; i <= end; i++) {
+            pages.add(i);
+          }
+        } else {
+          const pageNum = parseInt(trimmed);
+          
+          if (isNaN(pageNum)) {
+            throw new Error('Format tidak valid. Gunakan angka yang benar.');
+          }
+          
+          if (pageNum < 1 || pageNum > totalPages) {
+            throw new Error(`Halaman harus antara 1 dan ${totalPages}`);
+          }
+          
+          pages.add(pageNum);
+        }
+      }
+      
+      return Array.from(pages).sort((a, b) => a - b);
+    }
+
+    extractBtn.addEventListener('click', async () => {
+      const rangeValue = pageRange.value.trim();
+      
+      if (!rangeValue) {
+        showStatus('Harap masukkan range halaman', 'error');
+        return;
+      }
+
+      if (!currentPdfFile) {
+        showStatus('Tidak ada file PDF yang dimuat', 'error');
+        return;
+      }
+
+      extractBtn.disabled = true;
+      showStatus('Mengekstrak halaman...', 'info');
+
+      try {
+        const pagesToExtract = parsePageRange(rangeValue);
+        
+        if (pagesToExtract.length === 0) {
+          throw new Error('Tidak ada halaman yang valid untuk diekstrak');
+        }
+
+        // Read file fresh to avoid detached buffer
+        const arrayBuffer = await currentPdfFile.arrayBuffer();
+        
+        // Load PDF with pdf-lib
+        const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+        const newPdfDoc = await PDFLib.PDFDocument.create();
+
+        // Copy specified pages
+        for (const pageNum of pagesToExtract) {
+          const [copiedPage] = await newPdfDoc.copyPages(pdfDoc, [pageNum - 1]);
+          newPdfDoc.addPage(copiedPage);
+        }
+
+        // Save the new PDF
+        const pdfBytes = await newPdfDoc.save();
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        
+        // Generate filename
+        const originalName = currentPdfFile.name.replace('.pdf', '');
+        const rangeStr = pagesToExtract.length === 1 
+          ? `page_${pagesToExtract[0]}`
+          : `pages_${pagesToExtract[0]}-${pagesToExtract[pagesToExtract.length - 1]}`;
+        const newFileName = `${originalName}_${rangeStr}.pdf`;
+
+        // Download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = newFileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showStatus(`Berhasil! ${pagesToExtract.length} halaman telah diekstrak`, 'success');
+      } catch (error) {
+        showStatus(error.message || 'Gagal mengekstrak halaman', 'error');
+        console.error(error);
+      } finally {
+        extractBtn.disabled = false;
+      }
+    });
+
+    function showStatus(message, type) {
+      const colors = {
+        success: { bg: '#d1fae5', text: '#065f46' },
+        error: { bg: '#fee2e2', text: '#991b1b' },
+        info: { bg: '#dbeafe', text: '#1e40af' }
+      };
+      
+      const color = colors[type] || colors.info;
+      statusMessage.style.backgroundColor = color.bg;
+      statusMessage.style.color = color.text;
+      statusMessage.textContent = message;
+      statusMessage.className = 'status-message';
+      
+      setTimeout(() => {
+        statusMessage.className = 'status-message hidden';
+      }, 5000);
+    }
+
+    async function onConfigChange(config) {
+      const customFont = config.font_family || defaultConfig.font_family;
+      const baseFontStack = 'system-ui, -apple-system, sans-serif';
+      const baseSize = config.font_size || defaultConfig.font_size;
+      
+      const backgroundColor = config.background_color || defaultConfig.background_color;
+      const surfaceColor = config.surface_color || defaultConfig.surface_color;
+      const textColor = config.text_color || defaultConfig.text_color;
+      const primaryColor = config.primary_action_color || defaultConfig.primary_action_color;
+      
+      document.querySelector('.app-wrapper').style.backgroundColor = backgroundColor;
+      document.querySelector('.app-wrapper').style.color = textColor;
+      document.querySelector('.app-wrapper').style.fontFamily = `${customFont}, ${baseFontStack}`;
+      
+      document.getElementById('iconWrapper').style.backgroundColor = primaryColor;
+      
+      document.getElementById('appTitle').textContent = config.app_title || defaultConfig.app_title;
+      document.getElementById('appTitle').style.fontSize = `${baseSize * 2.625}px`;
+      document.getElementById('appTitle').style.color = textColor;
+      document.getElementById('appTitle').style.fontFamily = `${customFont}, ${baseFontStack}`;
+      
+      document.getElementById('subtitle').textContent = config.subtitle || defaultConfig.subtitle;
+      document.getElementById('subtitle').style.fontSize = `${baseSize * 1.125}px`;
+      document.getElementById('subtitle').style.color = textColor;
+      document.getElementById('subtitle').style.fontFamily = `${customFont}, ${baseFontStack}`;
+      
+      document.getElementById('selectButtonText').textContent = config.select_button_text || defaultConfig.select_button_text;
+      document.getElementById('selectButtonText').style.fontFamily = `${customFont}, ${baseFontStack}`;
+      
+      document.getElementById('extractButtonText').textContent = config.extract_button_text || defaultConfig.extract_button_text;
+      
+      document.getElementById('pageRangeLabel').textContent = config.page_range_label || defaultConfig.page_range_label;
+      
+      uploadZone.style.borderColor = primaryColor;
+      uploadZone.style.backgroundColor = surfaceColor;
+      uploadZone.style.color = textColor;
+      
+      fileInfoCard.style.backgroundColor = surfaceColor;
+      fileInfoCard.style.color = textColor;
+      
+      pageRange.style.borderColor = '#e2e8f0';
+      pageRange.style.color = textColor;
+      pageRange.style.backgroundColor = surfaceColor;
+      
+      extractBtn.style.backgroundColor = primaryColor;
+      extractBtn.style.color = '#ffffff';
+      extractBtn.style.fontFamily = `${customFont}, ${baseFontStack}`;
+      extractBtn.style.fontSize = `${baseSize}px`;
+      
+      removeFileBtn.style.color = textColor;
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities: (config) => ({
+          recolorables: [
+            {
+              get: () => config.background_color || defaultConfig.background_color,
+              set: (value) => {
+                config.background_color = value;
+                window.elementSdk.setConfig({ background_color: value });
+              }
+            },
+            {
+              get: () => config.surface_color || defaultConfig.surface_color,
+              set: (value) => {
+                config.surface_color = value;
+                window.elementSdk.setConfig({ surface_color: value });
+              }
+            },
+            {
+              get: () => config.text_color || defaultConfig.text_color,
+              set: (value) => {
+                config.text_color = value;
+                window.elementSdk.setConfig({ text_color: value });
+              }
+            },
+            {
+              get: () => config.primary_action_color || defaultConfig.primary_action_color,
+              set: (value) => {
+                config.primary_action_color = value;
+                window.elementSdk.setConfig({ primary_action_color: value });
+              }
+            },
+            {
+              get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
+              set: (value) => {
+                config.secondary_action_color = value;
+                window.elementSdk.setConfig({ secondary_action_color: value });
+              }
+            }
+          ],
+          borderables: [],
+          fontEditable: {
+            get: () => config.font_family || defaultConfig.font_family,
+            set: (value) => {
+              config.font_family = value;
+              window.elementSdk.setConfig({ font_family: value });
+            }
+          },
+          fontSizeable: {
+            get: () => config.font_size || defaultConfig.font_size,
+            set: (value) => {
+              config.font_size = value;
+              window.elementSdk.setConfig({ font_size: value });
+            }
+          }
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ['app_title', config.app_title || defaultConfig.app_title],
+          ['subtitle', config.subtitle || defaultConfig.subtitle],
+          ['select_button_text', config.select_button_text || defaultConfig.select_button_text],
+          ['extract_button_text', config.extract_button_text || defaultConfig.extract_button_text],
+          ['page_range_label', config.page_range_label || defaultConfig.page_range_label]
+        ])
+      });
+    }
+
+    onConfigChange(defaultConfig);
+  </script>
+</html>
