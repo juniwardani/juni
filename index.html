@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aplikasi Pribadi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    .menu-card {
+      transition: all 0.2s ease;
+    }
+    
+    .menu-card:hover {
+      transform: translateY(-2px);
+    }
+    
+    .menu-card:active {
+      transform: scale(0.98);
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 text-slate-800">
+  <div class="h-full w-full flex flex-col overflow-auto"><!-- Header -->
+   <header class="bg-gradient-to-r from-indigo-700 via-blue-700 to-cyan-600 px-6 py-6 shadow-xl">
+    <h1 id="header-name" class="text-xl font-bold text-white text-center tracking-wide">Juni Wardani, S.Pd</h1>
+    <p id="page-title" class="text-blue-100 text-sm text-center mt-2 font-medium">Aplikasi Pribadi</p>
+   </header><!-- Main Content -->
+   <main class="flex-1 p-5"><!-- Navigation Grid -->
+    <div class="grid grid-cols-2 gap-4 max-w-md mx-auto"><!-- Catatan --> <a href="catatan.html" class="menu-card bg-white rounded-2xl p-5 flex flex-col items-center justify-center shadow-xl border border-violet-100 text-decoration-none hover:shadow-2xl">
+      <div class="w-14 h-14 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center mb-3 shadow-lg">
+       <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-white" fill="none" viewbox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+       </svg>
+      </div><span id="menu-catatan" class="text-slate-700 font-semibold text-sm text-center">Catatan</span> </a> <!-- PDF to JPG --> <a href="pdfjpg.html" class="menu-card bg-white rounded-2xl p-5 flex flex-col items-center justify-center shadow-xl border border-rose-100 text-decoration-none hover:shadow-2xl">
+      <div class="w-14 h-14 bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl flex items-center justify-center mb-3 shadow-lg">
+       <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-white" fill="none" viewbox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+       </svg>
+      </div><span id="menu-pdfjpg" class="text-slate-700 font-semibold text-sm text-center">PDF to JPG</span> </a> <!-- Merge PDF --> <a href="merge.html" class="menu-card bg-white rounded-2xl p-5 flex flex-col items-center justify-center shadow-xl border border-amber-100 text-decoration-none hover:shadow-2xl">
+      <div class="w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center mb-3 shadow-lg">
+       <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-white" fill="none" viewbox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+       </svg>
+      </div><span id="menu-merge" class="text-slate-700 font-semibold text-sm text-center">Merge PDF</span> </a> <!-- Extract PDF --> <a href="extrak.html" class="menu-card bg-white rounded-2xl p-5 flex flex-col items-center justify-center shadow-xl border border-cyan-100 text-decoration-none hover:shadow-2xl">
+      <div class="w-14 h-14 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center mb-3 shadow-lg">
+       <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-white" fill="none" viewbox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+       </svg>
+      </div><span id="menu-extract" class="text-slate-700 font-semibold text-sm text-center">Extract PDF</span> </a> <!-- jsPDF --> <a href="https://jspdf-delta.vercel.app/" target="_blank" rel="noopener noreferrer" class="menu-card bg-white rounded-2xl p-5 flex flex-col items-center justify-center shadow-xl border border-emerald-100 text-decoration-none hover:shadow-2xl">
+      <div class="w-14 h-14 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mb-3 shadow-lg">
+       <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-white" fill="none" viewbox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+       </svg>
+      </div><span class="text-slate-700 font-semibold text-sm text-center">jsPDF</span> </a>
+    </div>
+   </main><!-- Footer -->
+   <footer class="px-4 py-4 text-center bg-white/50 backdrop-blur-sm border-t border-slate-200">
+    <p class="text-slate-600 text-xs font-medium">© 2024 Juni Wardani, S.Pd</p>
+   </footer>
+  </div>
+  <script>
+    const defaultConfig = {
+      header_name: 'Juni Wardani, S.Pd',
+      page_title: 'Aplikasi Pribadi',
+      menu_catatan: 'Catatan',
+      menu_pdfjpg: 'PDF to JPG',
+      menu_merge: 'Merge PDF',
+      menu_extract: 'Extract PDF',
+      primary_color: '#4f46e5',
+      secondary_color: '#f8fafc',
+      text_color: '#1e293b',
+      accent_color: '#3b82f6',
+      card_color: '#ffffff'
+    };
+
+    async function onConfigChange(config) {
+      document.getElementById('header-name').textContent = config.header_name || defaultConfig.header_name;
+      document.getElementById('page-title').textContent = config.page_title || defaultConfig.page_title;
+      document.getElementById('menu-catatan').textContent = config.menu_catatan || defaultConfig.menu_catatan;
+      document.getElementById('menu-pdfjpg').textContent = config.menu_pdfjpg || defaultConfig.menu_pdfjpg;
+      document.getElementById('menu-merge').textContent = config.menu_merge || defaultConfig.menu_merge;
+      document.getElementById('menu-extract').textContent = config.menu_extract || defaultConfig.menu_extract;
+
+      const header = document.querySelector('header');
+      const primaryColor = config.primary_color || defaultConfig.primary_color;
+      header.style.background = `linear-gradient(to right, ${primaryColor}, ${adjustColor(primaryColor, 20)})`;
+
+      document.body.style.backgroundColor = config.secondary_color || defaultConfig.secondary_color;
+      document.body.style.color = config.text_color || defaultConfig.text_color;
+    }
+
+    function adjustColor(hex, percent) {
+      const num = parseInt(hex.replace('#', ''), 16);
+      const amt = Math.round(2.55 * percent);
+      const R = (num >> 16) + amt;
+      const G = (num >> 8 & 0x00FF) + amt;
+      const B = (num & 0x0000FF) + amt;
+      return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 + (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 + (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+    }
+
+    function mapToCapabilities(config) {
+      return {
+        recolorables: [
+          {
+            get: () => config.secondary_color || defaultConfig.secondary_color,
+            set: (value) => {
+              config.secondary_color = value;
+              window.elementSdk.setConfig({ secondary_color: value });
+            }
+          },
+          {
+            get: () => config.primary_color || defaultConfig.primary_color,
+            set: (value) => {
+              config.primary_color = value;
+              window.elementSdk.setConfig({ primary_color: value });
+            }
+          },
+          {
+            get: () => config.text_color || defaultConfig.text_color,
+            set: (value) => {
+              config.text_color = value;
+              window.elementSdk.setConfig({ text_color: value });
+            }
+          }
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => config.font_family || 'Poppins',
+          set: (value) => {
+            config.font_family = value;
+            window.elementSdk.setConfig({ font_family: value });
+          }
+        },
+        fontSizeable: {
+          get: () => config.font_size || 14,
+          set: (value) => {
+            config.font_size = value;
+            window.elementSdk.setConfig({ font_size: value });
+          }
+        }
+      };
+    }
+
+    function mapToEditPanelValues(config) {
+      return new Map([
+        ['header_name', config.header_name || defaultConfig.header_name],
+        ['page_title', config.page_title || defaultConfig.page_title],
+        ['menu_catatan', config.menu_catatan || defaultConfig.menu_catatan],
+        ['menu_pdfjpg', config.menu_pdfjpg || defaultConfig.menu_pdfjpg],
+        ['menu_merge', config.menu_merge || defaultConfig.menu_merge],
+        ['menu_extract', config.menu_extract || defaultConfig.menu_extract]
+      ]);
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities,
+        mapToEditPanelValues
+      });
+    } else {
+      onConfigChange(defaultConfig);
+    }
+  </script>
+ 
+</html>
