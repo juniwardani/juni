@@ -4,63 +4,214 @@
   <meta charset="UTF-8">
   <title>Supabase Wake Up Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  
   <!-- Supabase JS v2 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+    :root {
+      --bg: #f9fafb;
+      --card: #ffffff;
+      --text-main: #111827;
+      --text-sub: #6b7280;
+      --border: #e5e7eb;
+      
+      /* Warna Status */
+      --online-bg: #dcfce7;
+      --online-text: #166534;
+      --slow-bg: #fef9c3;
+      --slow-text: #854d0e;
+      --err-bg: #fee2e2;
+      --err-text: #991b1b;
+    }
+
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #f9fafb;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      margin: 0;
       padding: 20px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Header & Summary */
+    header {
+      margin-bottom: 20px;
     }
     h2 {
-      margin-bottom: 10px;
+      margin: 0 0 10px 0;
+      font-size: 1.25rem;
     }
+    
+    .summary-box {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+      background: var(--card);
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+    .stat-label {
+      display: block;
+      font-size: 11px;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .stat-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    /* List Style */
     ul {
       list-style: none;
       padding: 0;
-      max-width: 480px;
+      margin: 0;
     }
+
     li {
-      background: #fff;
+      background: var(--card);
       margin-bottom: 8px;
-      padding: 10px 14px;
+      padding: 12px 16px;
       border-radius: 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+      border: 1px solid var(--border);
       font-size: 14px;
+      transition: transform 0.1s ease;
     }
-    .ok {
-      color: #15803d;
+
+    .project-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .project-name {
       font-weight: 600;
+      color: var(--text-main);
     }
-    .err {
-      color: #b91c1c;
-      font-weight: 600;
+    
+    .project-url {
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-top: 2px;
+      font-family: monospace;
     }
-    .loading {
-      color: #6b7280;
+
+    /* Badges & Metrics */
+    .metrics {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-align: right;
     }
-    footer {
-      margin-top: 20px;
+
+    .badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .latency {
       font-size: 12px;
-      color: #6b7280;
+      color: var(--text-sub);
+      width: 60px;
+      text-align: right;
     }
+
+    /* Status Colors */
+    .status-online .badge { background: var(--online-bg); color: var(--online-text); }
+    .status-slow .badge { background: var(--slow-bg); color: var(--slow-text); }
+    .status-error .badge { background: var(--err-bg); color: var(--err-text); }
+
+    /* Utility */
+    .error-msg {
+      display: block;
+      font-size: 10px;
+      color: var(--err-text);
+      margin-top: 4px;
+      max-width: 200px;
+      text-align: right;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    footer {
+      margin-top: 30px;
+      font-size: 12px;
+      color: var(--text-sub);
+      text-align: center;
+      border-top: 1px solid var(--border);
+      padding-top: 15px;
+    }
+
+    button.refresh-btn {
+      background: #fff;
+      border: 1px solid var(--border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-bottom: 10px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    button.refresh-btn:hover { background: #f3f4f6; }
   </style>
 </head>
 <body>
 
-<h2>Supabase Project Status</h2>
-<ul id="status"></ul>
+<header>
+  <h2>Supabase Wake Up Dashboard</h2>
+  
+  <!-- Ringkasan Status -->
+  <div class="summary-box" id="summary" style="opacity: 0.5;">
+    <div class="stat-item">
+      <span class="stat-label">Total</span>
+      <span class="stat-value" id="count-total">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Online</span>
+      <span class="stat-value" style="color: var(--online-text)" id="count-online">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Problem</span>
+      <span class="stat-value" style="color: var(--err-text)" id="count-error">0</span>
+    </div>
+  </div>
+  
+  <button class="refresh-btn" onclick="runChecks()" id="refreshBtn">Check Ulang</button>
+</header>
+
+<ul id="status-list">
+  <!-- List item akan di-render di sini via JS -->
+</ul>
 
 <footer>
-  Buka halaman ini minimal 1x seminggu untuk menjaga Supabase Free Project tetap aktif.
+  Terakhir dibuka: <span id="last-ping">-</span><br>
+  <span style="opacity: 0.7;">Buka minimal 1x/minggu untuk menjaga Free Project aktif.</span>
 </footer>
 
 <script>
+  // --- 1. KONFIGURASI ---
   const projects = [
     {
       name: "Project 1",
@@ -89,26 +240,142 @@
     }
   ];
 
-  const list = document.getElementById("status");
+  const listElement = document.getElementById("status-list");
+  const summaryElement = document.getElementById("summary");
+  const refreshBtn = document.getElementById("refreshBtn");
 
-  projects.forEach(async (p) => {
-    const li = document.createElement("li");
-    li.innerHTML = `<span>${p.name}</span><span class="loading">checking...</span>`;
-    list.appendChild(li);
-
+  // --- 2. LOGIKA UTAMA ---
+  
+  // Fungsi Check Satu Project
+  async function checkProject(project) {
+    const start = performance.now();
+    let status = "ONLINE";
+    let statusText = "ONLINE";
+    let latency = 0;
+    let errorMsg = "";
+    
     try {
-      const supabase = window.supabase.createClient(p.url, p.key);
-
-      // PING PALING AMAN (tanpa tabel, tanpa RLS)
+      const supabase = window.supabase.createClient(project.url, project.key);
       const { error } = await supabase.auth.getSession();
+      
+      const end = performance.now();
+      latency = Math.round(end - start);
+
       if (error) throw error;
 
-      li.innerHTML = `<span>${p.name}</span><span class="ok">OK</span>`;
+      // Logika Slow (> 2000ms)
+      if (latency > 2000) {
+        status = "SLOW";
+        statusText = "SLOW";
+      }
+
     } catch (e) {
-      console.error(p.name, e);
-      li.innerHTML = `<span>${p.name}</span><span class="err">ERROR</span>`;
+      status = "ERROR";
+      statusText = "FAILED";
+      latency = Math.round(performance.now() - start); // hitung total waktu sampai error
+      
+      // Klasifikasi Error Jujur
+      const msg = e.message.toLowerCase();
+      if (msg.includes("jwt") || msg.includes("invalid") || msg.includes("api key")) {
+        errorMsg = "INVALID API KEY";
+      } else if (msg.includes("failed to fetch") || msg.includes("network")) {
+        errorMsg = "NETWORK ERROR";
+      } else {
+        errorMsg = "UNKNOWN ERROR";
+      }
     }
-  });
+
+    // Return object untuk diproses nanti
+    return {
+      ...project,
+      status,
+      statusText,
+      latency,
+      errorMsg
+    };
+  }
+
+  // Fungsi Render & Sortir
+  async function runChecks() {
+    // Reset UI
+    refreshBtn.disabled = true;
+    refreshBtn.textContent = "Checking...";
+    listElement.innerHTML = `<li style="justify-content:center; color:#6b7280;">Memeriksa ${projects.length} project...</li>`;
+    summaryElement.style.opacity = "0.5";
+
+    // Jalankan semua check sekaligus (Promise.all), 
+    // lalu simpan hasilnya di array 'results'
+    const results = await Promise.all(projects.map(p => checkProject(p)));
+
+    // --- SORTING LOGIC (RASIONAL) ---
+    // Urutan prioritas: Error (3) -> Slow (2) -> Online (1)
+    // Jika status sama, urutkan berdasarkan latency (paling lambat di atas)
+    results.sort((a, b) => {
+      const weight = { "ERROR": 3, "SLOW": 2, "ONLINE": 1 };
+      const wA = weight[a.status];
+      const wB = weight[b.status];
+      
+      if (wA !== wB) return wB - wA; // Sort by weight (Error atas)
+      return b.latency - a.latency;   // Sort by latency (Lambat atas)
+    });
+
+    // --- UPDATE SUMMARY ---
+    let total = results.length;
+    let online = results.filter(r => r.status === "ONLINE").length;
+    let error = results.filter(r => r.status !== "ONLINE").length; // Slow + Error
+
+    document.getElementById("count-total").textContent = total;
+    document.getElementById("count-online").textContent = online;
+    document.getElementById("count-error").textContent = error;
+    summaryElement.style.opacity = "1";
+
+    // --- RENDER LIST ---
+    listElement.innerHTML = ""; // Clear loading state
+
+    results.forEach(r => {
+      const li = document.createElement("li");
+      li.className = `status-${r.status.toLowerCase()}`;
+      
+      const errorHtml = r.errorMsg ? `<span class="error-msg">${r.errorMsg}</span>` : "";
+      const latencyText = r.status === "ERROR" ? "-" : `${r.latency} ms`;
+
+      li.innerHTML = `
+        <div class="project-info">
+          <span class="project-name">${r.name}</span>
+          <span class="project-url">${new URL(r.url).hostname}</span>
+        </div>
+        <div class="metrics">
+          <span class="latency">${latencyText}</span>
+          <span class="badge">${r.statusText}</span>
+          ${errorHtml}
+        </div>
+      `;
+      listElement.appendChild(li);
+    });
+
+    // Update Footer (Last Ping)
+    const now = new Date();
+    const timeString = now.toLocaleString("id-ID", { 
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', 
+      hour: '2-digit', minute: '2-digit' 
+    });
+    document.getElementById("last-ping").textContent = timeString;
+    localStorage.setItem("last_ping_supabase_dashboard", timeString);
+
+    refreshBtn.disabled = false;
+    refreshBtn.textContent = "Check Ulang";
+  }
+
+  // --- 3. INIT ---
+  // Cek apakah ada last ping di local storage saat load pertama
+  const savedPing = localStorage.getItem("last_ping_supabase_dashboard");
+  if (savedPing) {
+    document.getElementById("last-ping").textContent = savedPing;
+  }
+
+  // Jalankan otomatis saat halaman dibuka
+  runChecks();
+
 </script>
 
 </body>
