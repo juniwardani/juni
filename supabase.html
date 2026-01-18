@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Supabase Wake Up Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Supabase JS v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f9fafb;
+      padding: 20px;
+    }
+    h2 {
+      margin-bottom: 10px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      max-width: 480px;
+    }
+    li {
+      background: #fff;
+      margin-bottom: 8px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+      font-size: 14px;
+    }
+    .ok {
+      color: #15803d;
+      font-weight: 600;
+    }
+    .err {
+      color: #b91c1c;
+      font-weight: 600;
+    }
+    .loading {
+      color: #6b7280;
+    }
+    footer {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Supabase Project Status</h2>
+<ul id="status"></ul>
+
+<footer>
+  Buka halaman ini minimal 1x seminggu untuk menjaga Supabase Free Project tetap aktif.
+</footer>
+
+<script>
+  const projects = [
+    {
+      name: "Project 1",
+      url: "https://fkfwjlsgrnfqyfnlewgn.supabase.co",
+      key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZndqbHNncm5mcXlmbmxld2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MjA4ODYsImV4cCI6MjA3NzA5Njg4Nn0.V7uF638Kodz10Rl87t7Hwy6V4dlrnwKzIsEYAd0J8aA"
+    },
+    {
+      name: "Project 2",
+      url: "https://hjvppgbcltgiibdxqtka.supabase.co",
+      key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw"
+    },
+    {
+      name: "Project 3",
+      url: "https://trkzfxfrhgbwwmxjwnli.supabase.co",
+      key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRya3pmeGZyaGdid3dteGp3bmxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU4NzE5OTMsImV4cCI6MjA1MTQ0Nzk5M30.IRwu5quqWPd10LUiAHVmUkI8eURU1nnj-2KL17HCkCA"
+    },
+    {
+      name: "Project 4",
+      url: "https://iwnwqcxigtywetgcmlou.supabase.co",
+      key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bndxY3hpZ3R5d2V0Z2NtbG91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU4MjQ4MTUsImV4cCI6MjA1MTQwMDgxNX0.fjdJlTVav4Gm8ku9rBmRuLoae5ViFxas7Uu069ItfnY"
+    },
+    {
+      name: "Project 5",
+      url: "https://lrkechznknwqnxckyfcg.supabase.co",
+      key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxya2VjaHpua253cW54Y2t5ZmNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjkxMjgzODEsImV4cCI6MjA0NDcwNDM4MX0.Tj8p1u3_DGQnqhPkS6AJGs5BwOSeebdvsknX2qHzwdQ"
+    }
+  ];
+
+  const list = document.getElementById("status");
+
+  projects.forEach(async (p) => {
+    const li = document.createElement("li");
+    li.innerHTML = `<span>${p.name}</span><span class="loading">checking...</span>`;
+    list.appendChild(li);
+
+    try {
+      const supabase = window.supabase.createClient(p.url, p.key);
+
+      // PING PALING AMAN (tanpa tabel, tanpa RLS)
+      const { error } = await supabase.auth.getSession();
+      if (error) throw error;
+
+      li.innerHTML = `<span>${p.name}</span><span class="ok">OK</span>`;
+    } catch (e) {
+      console.error(p.name, e);
+      li.innerHTML = `<span>${p.name}</span><span class="err">ERROR</span>`;
+    }
+  });
+</script>
+
+</body>
+</html>
