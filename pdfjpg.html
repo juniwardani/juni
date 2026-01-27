@@ -6,25 +6,27 @@
   <title>PDF to JPG Converter</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <!-- Placeholder SDK files agar tidak error di browser lokal jika tidak ada -->
+  <script>window.elementSdk = null; window.dataSdk = null;</script> 
   <script src="/_sdk/element_sdk.js"></script>
   <style>
     body {
       box-sizing: border-box;
     }
-    
+
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap');
-    
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-    
+
     body {
       font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
       overflow-x: hidden;
     }
-    
+
     .app-container {
       min-height: 100%;
       width: 100%;
@@ -34,13 +36,13 @@
       padding: 48px 24px;
       overflow-y: auto;
     }
-    
+
     .header {
       text-align: center;
       margin-bottom: 48px;
       max-width: 600px;
     }
-    
+
     .icon-wrapper {
       display: inline-flex;
       align-items: center;
@@ -50,25 +52,25 @@
       border-radius: 20px;
       margin-bottom: 24px;
     }
-    
+
     .title {
       font-size: 42px;
       font-weight: 700;
       margin-bottom: 12px;
       line-height: 1.2;
     }
-    
+
     .subtitle {
       font-size: 18px;
       opacity: 0.8;
       line-height: 1.5;
     }
-    
+
     .main-content {
       width: 100%;
       max-width: 800px;
     }
-    
+
     .upload-zone {
       border: 3px dashed;
       border-radius: 24px;
@@ -78,31 +80,31 @@
       transition: all 0.3s ease;
       margin-bottom: 32px;
     }
-    
+
     .upload-zone:hover {
       transform: translateY(-2px);
     }
-    
+
     .upload-icon {
       font-size: 56px;
       margin-bottom: 16px;
     }
-    
+
     .upload-text {
       font-size: 20px;
       font-weight: 600;
       margin-bottom: 8px;
     }
-    
+
     .upload-hint {
       font-size: 14px;
       opacity: 0.7;
     }
-    
+
     .file-list {
       margin-bottom: 32px;
     }
-    
+
     .file-item {
       display: flex;
       align-items: center;
@@ -112,21 +114,21 @@
       margin-bottom: 12px;
       transition: all 0.2s ease;
     }
-    
+
     .file-item:hover {
       transform: translateX(4px);
     }
-    
+
     .file-icon {
       font-size: 32px;
       flex-shrink: 0;
     }
-    
+
     .file-info {
       flex: 1;
       min-width: 0;
     }
-    
+
     .file-name {
       font-weight: 600;
       font-size: 16px;
@@ -135,23 +137,23 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    
+
     .file-size {
       font-size: 13px;
       opacity: 0.7;
     }
-    
+
     .drag-handle {
       cursor: move;
       padding: 8px;
       opacity: 0.5;
       transition: opacity 0.2s;
     }
-    
+
     .drag-handle:hover {
       opacity: 1;
     }
-    
+
     .remove-btn {
       background: none;
       border: none;
@@ -162,19 +164,19 @@
       transition: all 0.2s;
       border-radius: 8px;
     }
-    
+
     .remove-btn:hover {
       opacity: 1;
       transform: scale(1.1);
     }
-    
+
     .button-group {
       display: flex;
       gap: 16px;
       justify-content: center;
       flex-wrap: wrap;
     }
-    
+
     .btn {
       padding: 16px 32px;
       border: none;
@@ -188,25 +190,25 @@
       align-items: center;
       gap: 8px;
     }
-    
+
     .btn:hover:not(:disabled) {
       transform: translateY(-2px);
       box-shadow: 0 8px 24px rgba(0,0,0,0.15);
     }
-    
+
     .btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
-    
+
     .btn-icon {
       font-size: 20px;
     }
-    
+
     .hidden {
       display: none !important;
     }
-    
+
     .status-message {
       text-align: center;
       padding: 16px;
@@ -215,7 +217,7 @@
       font-weight: 500;
       animation: slideIn 0.3s ease;
     }
-    
+
     @keyframes slideIn {
       from {
         opacity: 0;
@@ -226,34 +228,34 @@
         transform: translateY(0);
       }
     }
-    
+
     .dragging {
       opacity: 0.5;
     }
-    
+
     .drag-over {
       border-style: solid;
       transform: scale(1.02);
     }
-    
+
     @media (max-width: 640px) {
       .title {
         font-size: 32px;
       }
-      
+
       .subtitle {
         font-size: 16px;
       }
-      
+
       .upload-zone {
         padding: 32px 24px;
       }
-      
+
       .button-group {
         flex-direction: column;
         width: 100%;
       }
-      
+
       .btn {
         width: 100%;
         justify-content: center;
@@ -348,7 +350,7 @@
 
     function handleFiles(files) {
       const pdfFilesArray = Array.from(files).filter(f => f.type === 'application/pdf');
-      
+
       if (pdfFilesArray.length === 0) {
         showStatus('Harap pilih file PDF yang valid', 'error');
         return;
@@ -366,13 +368,13 @@
 
     function renderFileList() {
       fileList.innerHTML = '';
-      
+
       if (pdfFiles.length === 0) return;
-      
+
       pdfFiles.forEach((file, index) => {
         const fileItem = document.createElement('div');
         fileItem.className = 'file-item';
-        
+
         fileItem.innerHTML = `
           <span class="file-icon">📄</span>
           <div class="file-info">
@@ -381,7 +383,7 @@
           </div>
           <button class="remove-btn" onclick="removeFile(${index})">×</button>
         `;
-        
+
         fileList.appendChild(fileItem);
       });
     }
@@ -390,7 +392,7 @@
       pdfFiles.splice(index, 1);
       renderFileList();
       updateButtonVisibility();
-      
+
       if (pdfFiles.length === 0) {
         convertedImages = [];
         downloadAllBtn.classList.add('hidden');
@@ -420,13 +422,13 @@
         error: { bg: '#fee2e2', text: '#991b1b' },
         info: { bg: '#dbeafe', text: '#1e40af' }
       };
-      
+
       const color = colors[type] || colors.info;
       statusMessage.style.backgroundColor = color.bg;
       statusMessage.style.color = color.text;
       statusMessage.textContent = message;
       statusMessage.className = 'status-message';
-      
+
       setTimeout(() => {
         statusMessage.className = 'status-message hidden';
       }, 4000);
@@ -466,21 +468,26 @@
             }).promise;
 
             const imageDataUrl = canvas.toDataURL('image/jpeg', 0.95);
-            
-            canvas.toBlob((blob) => {
-              convertedImages.push({
+
+            // PERBAIKAN: Wrap toBlob dalam Promise dan gunakan await.
+            // Ini memastikan data masuk ke convertedImages SEBELUM UI dibuat.
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+
+            const imageData = {
                 blob: blob,
                 dataUrl: imageDataUrl,
                 fileName: `${currentFile.name.replace('.pdf', '')}_page-${pageNum}.jpg`,
                 pageNum: pageNum,
                 fileIndex: fileIndex,
                 originalFileName: currentFile.name
-              });
-            }, 'image/jpeg', 0.95);
+            };
+            
+            convertedImages.push(imageData);
 
             const imageCard = document.createElement('div');
             imageCard.style.cssText = 'background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);';
-            
+
+            // Karena kita sudah await, index convertedImages.length - 1 sekarang valid
             imageCard.innerHTML = `
               <img src="${imageDataUrl}" style="width: 100%; height: auto; border-radius: 8px; margin-bottom: 12px;">
               <div style="text-align: center; margin-bottom: 4px; font-weight: 600; font-size: 14px;">${currentFile.name}</div>
@@ -490,7 +497,7 @@
                 <span>Unduh</span>
               </button>
             `;
-            
+
             imageGallery.appendChild(imageCard);
           }
         }
@@ -508,6 +515,12 @@
 
     function downloadSingleImage(index) {
       const image = convertedImages[index];
+      // Cek tambahan untuk keamanan
+      if (!image) {
+        console.error("Gambar tidak ditemukan di index:", index);
+        return;
+      }
+      
       const a = document.createElement('a');
       a.href = image.dataUrl;
       a.download = image.fileName;
@@ -528,10 +541,7 @@
 
       try {
         const zip = new JSZip();
-        
-        // Wait for all blobs to be ready
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
+
         convertedImages.forEach((image) => {
           if (image.blob) {
             zip.file(image.fileName, image.blob);
@@ -561,58 +571,59 @@
       const customFont = config.font_family || defaultConfig.font_family;
       const baseFontStack = 'system-ui, -apple-system, sans-serif';
       const baseSize = config.font_size || defaultConfig.font_size;
-      
+
       const backgroundColor = config.background_color || defaultConfig.background_color;
       const surfaceColor = config.surface_color || defaultConfig.surface_color;
       const textColor = config.text_color || defaultConfig.text_color;
       const primaryColor = config.primary_action_color || defaultConfig.primary_action_color;
       const secondaryColor = config.secondary_action_color || defaultConfig.secondary_action_color;
-      
+
       document.querySelector('.app-container').style.backgroundColor = backgroundColor;
       document.querySelector('.app-container').style.color = textColor;
       document.querySelector('.app-container').style.fontFamily = `${customFont}, ${baseFontStack}`;
-      
+
       document.getElementById('iconWrapper').style.backgroundColor = primaryColor;
-      
+
       document.getElementById('appTitle').textContent = config.app_title || defaultConfig.app_title;
       document.getElementById('appTitle').style.fontSize = `${baseSize * 2.625}px`;
       document.getElementById('appTitle').style.color = textColor;
       document.getElementById('appTitle').style.fontFamily = `${customFont}, ${baseFontStack}`;
-      
+
       document.getElementById('subtitle').textContent = config.subtitle || defaultConfig.subtitle;
       document.getElementById('subtitle').style.fontSize = `${baseSize * 1.125}px`;
       document.getElementById('subtitle').style.color = textColor;
       document.getElementById('subtitle').style.fontFamily = `${customFont}, ${baseFontStack}`;
-      
+
       document.getElementById('selectButtonText').textContent = config.select_button_text || defaultConfig.select_button_text;
       document.getElementById('selectButtonText').style.fontFamily = `${customFont}, ${baseFontStack}`;
-      
+
       document.getElementById('convertButtonText').textContent = config.convert_button_text || defaultConfig.convert_button_text;
       document.getElementById('downloadAllButtonText').textContent = config.download_all_button_text || defaultConfig.download_all_button_text;
-      
+
       uploadZone.style.borderColor = primaryColor;
       uploadZone.style.backgroundColor = surfaceColor;
       uploadZone.style.color = textColor;
-      
+
       const fileItems = document.querySelectorAll('.file-item');
       fileItems.forEach(item => {
         item.style.backgroundColor = surfaceColor;
         item.style.color = textColor;
       });
-      
+
       convertBtn.style.backgroundColor = primaryColor;
       convertBtn.style.color = '#ffffff';
       convertBtn.style.fontFamily = `${customFont}, ${baseFontStack}`;
       convertBtn.style.fontSize = `${baseSize}px`;
-      
+
       downloadAllBtn.style.backgroundColor = secondaryColor;
       downloadAllBtn.style.color = '#ffffff';
       downloadAllBtn.style.fontFamily = `${customFont}, ${baseFontStack}`;
       downloadAllBtn.style.fontSize = `${baseSize}px`;
-      
+
       previewContainer.style.color = textColor;
-      previewContainer.querySelector('h2').style.fontFamily = `${customFont}, ${baseFontStack}`;
-      
+      const previewTitle = previewContainer.querySelector('h2');
+      if (previewTitle) previewTitle.style.fontFamily = `${customFont}, ${baseFontStack}`;
+
       const removeButtons = document.querySelectorAll('.remove-btn');
       removeButtons.forEach(btn => {
         btn.style.color = textColor;
