@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Inserter</title>
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    
+    .upload-zone {
+      border: 2px dashed;
+      transition: all 0.3s ease;
+    }
+    
+    .upload-zone:hover {
+      transform: translateY(-2px);
+    }
+    
+    .upload-zone.drag-over {
+      transform: scale(1.02);
+    }
+    
+    .btn-primary {
+      transition: all 0.2s ease;
+    }
+    
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .spinner {
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      opacity: 1;
+      height: 28px;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-slate-900 text-white overflow-auto">
+  <div id="app-container" class="w-full min-h-full p-6 md:p-8">
+   <div class="max-w-4xl mx-auto"><!-- Header -->
+    <div class="text-center mb-8 fade-in">
+     <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 mb-4 shadow-lg shadow-emerald-500/25">
+      <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+     </div>
+     <h1 id="app-title" class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">PDF Inserter</h1>
+     <p class="text-slate-400 mt-2">Sisipkan PDF ke dalam PDF lain pada halaman tertentu</p>
+    </div><!-- Upload Section -->
+    <div class="grid md:grid-cols-2 gap-6 mb-8"><!-- Main PDF -->
+     <div class="fade-in" style="animation-delay: 0.1s"><label id="main-pdf-title" class="block text-sm font-medium text-emerald-400 mb-2">📄 PDF Utama</label>
+      <div id="main-pdf-zone" class="upload-zone rounded-xl p-6 text-center cursor-pointer bg-slate-800/50 border-slate-600 hover:border-emerald-500 hover:bg-slate-800"><input type="file" id="main-pdf-input" accept=".pdf" class="hidden">
+       <div id="main-pdf-content">
+        <svg class="w-12 h-12 mx-auto text-slate-500 mb-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+        </svg>
+        <p class="text-slate-400 text-sm">Klik atau seret PDF utama ke sini</p>
+       </div>
+      </div>
+      <div id="main-pdf-info" class="hidden mt-3 p-3 bg-slate-800 rounded-lg">
+       <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2"><span class="text-emerald-500">✓</span> <span id="main-pdf-name" class="text-sm text-slate-300 truncate max-w-[150px]"></span>
+        </div><span id="main-pdf-pages" class="text-xs text-slate-500 bg-slate-700 px-2 py-1 rounded"></span>
+       </div>
+      </div>
+     </div><!-- Insert PDF -->
+     <div class="fade-in" style="animation-delay: 0.2s"><label id="insert-pdf-title" class="block text-sm font-medium text-teal-400 mb-2">📑 PDF Sisipan</label>
+      <div id="insert-pdf-zone" class="upload-zone rounded-xl p-6 text-center cursor-pointer bg-slate-800/50 border-slate-600 hover:border-teal-500 hover:bg-slate-800"><input type="file" id="insert-pdf-input" accept=".pdf" class="hidden">
+       <div id="insert-pdf-content">
+        <svg class="w-12 h-12 mx-auto text-slate-500 mb-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+        <p class="text-slate-400 text-sm">Klik atau seret PDF sisipan ke sini</p>
+       </div>
+      </div>
+      <div id="insert-pdf-info" class="hidden mt-3 p-3 bg-slate-800 rounded-lg">
+       <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2"><span class="text-teal-500">✓</span> <span id="insert-pdf-name" class="text-sm text-slate-300 truncate max-w-[150px]"></span>
+        </div><span id="insert-pdf-pages" class="text-xs text-slate-500 bg-slate-700 px-2 py-1 rounded"></span>
+       </div>
+      </div>
+     </div>
+    </div><!-- Insert Position -->
+    <div class="fade-in bg-slate-800/50 rounded-xl p-6 mb-8" style="animation-delay: 0.3s"><label class="block text-sm font-medium text-slate-300 mb-4">📍 Posisi Penyisipan</label>
+     <div class="flex flex-wrap items-center gap-4">
+      <div class="flex items-center gap-3"><span class="text-slate-400 text-sm">Sisipkan setelah halaman:</span> <input type="number" id="insert-position" min="0" value="0" class="w-24 px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-center focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+      </div>
+      <div class="text-xs text-slate-500"><span id="position-hint">(0 = di awal dokumen)</span>
+      </div>
+     </div>
+    </div><!-- Action Buttons -->
+    <div class="flex flex-col sm:flex-row gap-4 justify-center fade-in" style="animation-delay: 0.4s"><button id="merge-btn" disabled class="btn-primary px-8 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl flex items-center justify-center gap-2">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+      </svg><span id="merge-btn-text">Gabungkan PDF</span> </button> <button id="reset-btn" class="px-8 py-3 bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium rounded-xl transition-colors flex items-center justify-center gap-2">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+      </svg> Reset </button>
+    </div><!-- Status Message -->
+    <div id="status-container" class="hidden mt-6 fade-in">
+     <div id="status-message" class="p-4 rounded-xl text-center"></div>
+    </div><!-- Preview Section -->
+    <div id="preview-section" class="hidden mt-8 fade-in">
+     <div class="bg-slate-800/50 rounded-xl p-6">
+      <h3 class="text-lg font-semibold text-slate-300 mb-4 flex items-center gap-2">
+       <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+       </svg> Hasil Penggabungan</h3>
+      <div class="flex flex-wrap items-center justify-between gap-4">
+       <div class="text-slate-400"><span id="result-pages" class="text-emerald-400 font-semibold"></span> halaman
+       </div><button id="download-btn" class="btn-primary px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg flex items-center gap-2 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg> Download PDF </button>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+    // State
+    let mainPdfBytes = null;
+    let insertPdfBytes = null;
+    let mainPdfPageCount = 0;
+    let insertPdfPageCount = 0;
+    let mergedPdfBytes = null;
+
+    // Default config
+    const defaultConfig = {
+      app_title: 'PDF Inserter',
+      main_pdf_label: 'PDF Utama',
+      insert_pdf_label: 'PDF Sisipan',
+      background_color: '#0f172a',
+      surface_color: '#1e293b',
+      text_color: '#e2e8f0',
+      primary_color: '#10b981',
+      secondary_color: '#14b8a6'
+    };
+
+    // DOM Elements
+    const mainPdfZone = document.getElementById('main-pdf-zone');
+    const mainPdfInput = document.getElementById('main-pdf-input');
+    const insertPdfZone = document.getElementById('insert-pdf-zone');
+    const insertPdfInput = document.getElementById('insert-pdf-input');
+    const insertPosition = document.getElementById('insert-position');
+    const mergeBtn = document.getElementById('merge-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const statusContainer = document.getElementById('status-container');
+    const statusMessage = document.getElementById('status-message');
+    const previewSection = document.getElementById('preview-section');
+    const downloadBtn = document.getElementById('download-btn');
+
+    // File handling functions
+    async function handleMainPdf(file) {
+      if (!file || file.type !== 'application/pdf') {
+        showStatus('Silakan pilih file PDF yang valid', 'error');
+        return;
+      }
+
+      try {
+        mainPdfBytes = await file.arrayBuffer();
+        const pdfDoc = await PDFLib.PDFDocument.load(mainPdfBytes);
+        mainPdfPageCount = pdfDoc.getPageCount();
+
+        document.getElementById('main-pdf-name').textContent = file.name;
+        document.getElementById('main-pdf-pages').textContent = `${mainPdfPageCount} halaman`;
+        document.getElementById('main-pdf-info').classList.remove('hidden');
+        document.getElementById('main-pdf-content').innerHTML = `
+          <svg class="w-12 h-12 mx-auto text-emerald-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <p class="text-emerald-400 text-sm font-medium">PDF Utama Terpilih</p>
+        `;
+        mainPdfZone.classList.add('border-emerald-500');
+
+        insertPosition.max = mainPdfPageCount;
+        document.getElementById('position-hint').textContent = `(0 = di awal, ${mainPdfPageCount} = di akhir)`;
+
+        updateMergeButton();
+        hideStatus();
+      } catch (error) {
+        console.error('Error loading main PDF:', error);
+        showStatus('Gagal membaca PDF utama. Pastikan file tidak rusak.', 'error');
+      }
+    }
+
+    async function handleInsertPdf(file) {
+      if (!file || file.type !== 'application/pdf') {
+        showStatus('Silakan pilih file PDF yang valid', 'error');
+        return;
+      }
+
+      try {
+        insertPdfBytes = await file.arrayBuffer();
+        const pdfDoc = await PDFLib.PDFDocument.load(insertPdfBytes);
+        insertPdfPageCount = pdfDoc.getPageCount();
+
+        document.getElementById('insert-pdf-name').textContent = file.name;
+        document.getElementById('insert-pdf-pages').textContent = `${insertPdfPageCount} halaman`;
+        document.getElementById('insert-pdf-info').classList.remove('hidden');
+        document.getElementById('insert-pdf-content').innerHTML = `
+          <svg class="w-12 h-12 mx-auto text-teal-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <p class="text-teal-400 text-sm font-medium">PDF Sisipan Terpilih</p>
+        `;
+        insertPdfZone.classList.add('border-teal-500');
+
+        updateMergeButton();
+        hideStatus();
+      } catch (error) {
+        console.error('Error loading insert PDF:', error);
+        showStatus('Gagal membaca PDF sisipan. Pastikan file tidak rusak.', 'error');
+      }
+    }
+
+    function updateMergeButton() {
+      mergeBtn.disabled = !(mainPdfBytes && insertPdfBytes);
+    }
+
+    function showStatus(message, type) {
+      statusContainer.classList.remove('hidden');
+      statusMessage.className = 'p-4 rounded-xl text-center';
+      
+      if (type === 'error') {
+        statusMessage.classList.add('bg-red-500/20', 'text-red-400', 'border', 'border-red-500/30');
+      } else if (type === 'success') {
+        statusMessage.classList.add('bg-emerald-500/20', 'text-emerald-400', 'border', 'border-emerald-500/30');
+      } else if (type === 'loading') {
+        statusMessage.classList.add('bg-blue-500/20', 'text-blue-400', 'border', 'border-blue-500/30');
+      }
+      
+      statusMessage.innerHTML = message;
+    }
+
+    function hideStatus() {
+      statusContainer.classList.add('hidden');
+    }
+
+    async function mergePdfs() {
+      if (!mainPdfBytes || !insertPdfBytes) return;
+
+      const position = parseInt(insertPosition.value) || 0;
+      const validPosition = Math.max(0, Math.min(position, mainPdfPageCount));
+
+      showStatus(`
+        <div class="flex items-center justify-center gap-3">
+          <svg class="w-5 h-5 spinner" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          <span>Menggabungkan PDF...</span>
+        </div>
+      `, 'loading');
+
+      mergeBtn.disabled = true;
+      document.getElementById('merge-btn-text').textContent = 'Memproses...';
+
+      try {
+        const mainDoc = await PDFLib.PDFDocument.load(mainPdfBytes);
+        const insertDoc = await PDFLib.PDFDocument.load(insertPdfBytes);
+        
+        const newDoc = await PDFLib.PDFDocument.create();
+
+        // Copy pages before insert position
+        if (validPosition > 0) {
+          const pagesBefore = await newDoc.copyPages(mainDoc, Array.from({ length: validPosition }, (_, i) => i));
+          pagesBefore.forEach(page => newDoc.addPage(page));
+        }
+
+        // Copy all insert pages
+        const insertPages = await newDoc.copyPages(insertDoc, insertDoc.getPageIndices());
+        insertPages.forEach(page => newDoc.addPage(page));
+
+        // Copy pages after insert position
+        if (validPosition < mainPdfPageCount) {
+          const pagesAfter = await newDoc.copyPages(mainDoc, Array.from({ length: mainPdfPageCount - validPosition }, (_, i) => validPosition + i));
+          pagesAfter.forEach(page => newDoc.addPage(page));
+        }
+
+        mergedPdfBytes = await newDoc.save();
+        const totalPages = newDoc.getPageCount();
+
+        showStatus(`
+          <div class="flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>PDF berhasil digabungkan! (${totalPages} halaman)</span>
+          </div>
+        `, 'success');
+
+        document.getElementById('result-pages').textContent = totalPages;
+        previewSection.classList.remove('hidden');
+
+      } catch (error) {
+        console.error('Error merging PDFs:', error);
+        showStatus('Gagal menggabungkan PDF. Silakan coba lagi.', 'error');
+      } finally {
+        mergeBtn.disabled = false;
+        document.getElementById('merge-btn-text').textContent = 'Gabungkan PDF';
+        updateMergeButton();
+      }
+    }
+
+    function downloadPdf() {
+      if (!mergedPdfBytes) return;
+
+      const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'merged-pdf.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function resetAll() {
+      mainPdfBytes = null;
+      insertPdfBytes = null;
+      mainPdfPageCount = 0;
+      insertPdfPageCount = 0;
+      mergedPdfBytes = null;
+
+      mainPdfInput.value = '';
+      insertPdfInput.value = '';
+      insertPosition.value = 0;
+
+      document.getElementById('main-pdf-info').classList.add('hidden');
+      document.getElementById('insert-pdf-info').classList.add('hidden');
+      previewSection.classList.add('hidden');
+      hideStatus();
+
+      document.getElementById('main-pdf-content').innerHTML = `
+        <svg class="w-12 h-12 mx-auto text-slate-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+        </svg>
+        <p class="text-slate-400 text-sm">Klik atau seret PDF utama ke sini</p>
+      `;
+      mainPdfZone.classList.remove('border-emerald-500');
+
+      document.getElementById('insert-pdf-content').innerHTML = `
+        <svg class="w-12 h-12 mx-auto text-slate-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+        <p class="text-slate-400 text-sm">Klik atau seret PDF sisipan ke sini</p>
+      `;
+      insertPdfZone.classList.remove('border-teal-500');
+
+      document.getElementById('position-hint').textContent = '(0 = di awal dokumen)';
+      updateMergeButton();
+    }
+
+    // Event Listeners
+    mainPdfZone.addEventListener('click', () => mainPdfInput.click());
+    insertPdfZone.addEventListener('click', () => insertPdfInput.click());
+
+    mainPdfInput.addEventListener('change', (e) => {
+      if (e.target.files[0]) handleMainPdf(e.target.files[0]);
+    });
+
+    insertPdfInput.addEventListener('change', (e) => {
+      if (e.target.files[0]) handleInsertPdf(e.target.files[0]);
+    });
+
+    // Drag and drop for main PDF
+    mainPdfZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      mainPdfZone.classList.add('drag-over', 'border-emerald-500');
+    });
+
+    mainPdfZone.addEventListener('dragleave', () => {
+      mainPdfZone.classList.remove('drag-over');
+      if (!mainPdfBytes) mainPdfZone.classList.remove('border-emerald-500');
+    });
+
+    mainPdfZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      mainPdfZone.classList.remove('drag-over');
+      if (e.dataTransfer.files[0]) handleMainPdf(e.dataTransfer.files[0]);
+    });
+
+    // Drag and drop for insert PDF
+    insertPdfZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      insertPdfZone.classList.add('drag-over', 'border-teal-500');
+    });
+
+    insertPdfZone.addEventListener('dragleave', () => {
+      insertPdfZone.classList.remove('drag-over');
+      if (!insertPdfBytes) insertPdfZone.classList.remove('border-teal-500');
+    });
+
+    insertPdfZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      insertPdfZone.classList.remove('drag-over');
+      if (e.dataTransfer.files[0]) handleInsertPdf(e.dataTransfer.files[0]);
+    });
+
+    mergeBtn.addEventListener('click', mergePdfs);
+    resetBtn.addEventListener('click', resetAll);
+    downloadBtn.addEventListener('click', downloadPdf);
+
+    // Element SDK
+    async function onConfigChange(config) {
+      document.getElementById('app-title').textContent = config.app_title || defaultConfig.app_title;
+      document.getElementById('main-pdf-title').innerHTML = `📄 ${config.main_pdf_label || defaultConfig.main_pdf_label}`;
+      document.getElementById('insert-pdf-title').innerHTML = `📑 ${config.insert_pdf_label || defaultConfig.insert_pdf_label}`;
+    }
+
+    function mapToCapabilities(config) {
+      return {
+        recolorables: [],
+        borderables: [],
+        fontEditable: undefined,
+        fontSizeable: undefined
+      };
+    }
+
+    function mapToEditPanelValues(config) {
+      return new Map([
+        ['app_title', config.app_title || defaultConfig.app_title],
+        ['main_pdf_label', config.main_pdf_label || defaultConfig.main_pdf_label],
+        ['insert_pdf_label', config.insert_pdf_label || defaultConfig.insert_pdf_label]
+      ]);
+    }
+
+    // Initialize SDK
+    
+  </script>
+</html>
