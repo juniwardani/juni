@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Supabase Wake Up Dashboard</title>
+  <title>Supabase Compact Monitor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <!-- Supabase JS v2 -->
@@ -10,208 +10,218 @@
 
   <style>
     :root {
-      --bg: #f9fafb;
-      --card: #ffffff;
-      --text-main: #111827;
+      --bg-body: #f3f4f6;
+      --bg-card: #ffffff;
+      --text-main: #1f2937;
       --text-sub: #6b7280;
       --border: #e5e7eb;
       
-      /* Warna Status */
-      --online-bg: #dcfce7;
-      --online-text: #166534;
-      --slow-bg: #fef9c3;
-      --slow-text: #854d0e;
-      --err-bg: #fee2e2;
-      --err-text: #991b1b;
+      /* Compact Colors */
+      --online: #10b981; /* Green */
+      --waking: #3b82f6; /* Blue */
+      --error: #ef4444;  /* Red */
     }
 
     body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg-body);
       color: var(--text-main);
       margin: 0;
-      padding: 20px;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    /* Header & Summary */
-    header {
-      margin-bottom: 20px;
-    }
-    h2 {
-      margin: 0 0 10px 0;
-      font-size: 1.25rem;
-    }
-    
-    .summary-box {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 20px;
-      background: var(--card);
       padding: 15px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      font-size: 13px; /* Lebih kecil untuk kompak */
     }
 
-    .stat-item {
-      text-align: center;
-    }
-    .stat-label {
-      display: block;
-      font-size: 11px;
-      color: var(--text-sub);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
-    }
-    .stat-value {
-      font-size: 1.1rem;
-      font-weight: 700;
-    }
-
-    /* List Style */
-    ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    li {
-      background: var(--card);
-      margin-bottom: 8px;
-      padding: 12px 16px;
-      border-radius: 8px;
+    /* --- HEADER COMPACT --- */
+    .header-wrapper {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border: 1px solid var(--border);
-      font-size: 14px;
-      transition: transform 0.1s ease;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
-    .project-info {
-      display: flex;
-      flex-direction: column;
+    .header-title h2 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: #111827;
     }
-    
-    .project-name {
-      font-weight: 600;
-      color: var(--text-main);
-    }
-    
-    .project-url {
+    .header-title p {
+      margin: 2px 0 0 0;
       font-size: 11px;
       color: var(--text-sub);
-      margin-top: 2px;
-      font-family: monospace;
     }
 
-    /* Badges & Metrics */
-    .metrics {
+    /* Action Button */
+    .action-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    
+    button.btn-main {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    button.btn-main:disabled { background: #93c5fd; cursor: wait; }
+    button.btn-main:hover:not(:disabled) { background: #1d4ed8; }
+
+    /* --- SUMMARY COMPACT (Inline) --- */
+    .summary-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+    
+    .summary-item {
+      background: var(--bg-card);
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .summary-val { font-weight: 700; font-size: 15px; }
+    .summary-lbl { font-size: 10px; text-transform: uppercase; color: var(--text-sub); }
+
+    /* --- LIST ITEM (The Core Compact Design) --- */
+    ul { list-style: none; padding: 0; margin: 0; }
+
+    li {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      margin-bottom: 6px; /* Jarak item lebih rapat */
+      border-radius: 6px;
+      padding: 10px 12px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      justify-content: space-between;
+      transition: transform 0.1s;
+    }
+    li:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+    /* Left Side: Info */
+    .item-info { flex: 1; min-width: 0; padding-right: 10px; }
+    .item-name { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+    .item-url { 
+      font-family: monospace; 
+      font-size: 10px; 
+      color: var(--text-sub); 
+      white-space: nowrap; 
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+    }
+
+    /* Right Side: Stats */
+    .item-stats { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    
+    .latency-tag {
+      font-size: 11px;
+      color: var(--text-sub);
+      min-width: 50px;
       text-align: right;
     }
 
     .badge {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
-      padding: 4px 8px;
-      border-radius: 4px;
+      padding: 3px 8px;
+      border-radius: 99px; /* Pill shape */
       text-transform: uppercase;
-      min-width: 80px;
+      min-width: 60px;
       text-align: center;
-    }
-
-    .latency {
-      font-size: 12px;
-      color: var(--text-sub);
-      width: 60px;
-      text-align: right;
+      letter-spacing: 0.5px;
     }
 
     /* Status Colors */
-    .status-online .badge { background: var(--online-bg); color: var(--online-text); }
-    .status-slow .badge { background: var(--slow-bg); color: var(--slow-text); }
-    .status-error .badge { background: var(--err-bg); color: var(--err-text); }
+    .status-online .badge { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+    .status-waking .badge { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+    .status-error .badge { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    
+    .status-error li { border-left: 3px solid var(--error); }
+
+    /* Footer */
+    footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-sub);
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
 
     /* Utility */
-    .error-msg {
-      display: block;
-      font-size: 10px;
-      color: var(--err-text);
-      margin-top: 4px;
-      max-width: 200px;
-      text-align: right;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    footer {
-      margin-top: 30px;
-      font-size: 12px;
-      color: var(--text-sub);
+    .error-text {
+      display: none; /* Hidden by default */
+      position: fixed; 
+      bottom: 0; left: 0; right: 0;
+      background: #fff; 
+      padding: 10px; 
+      border-top: 1px solid var(--error);
+      font-size: 10px; 
+      color: var(--error); 
       text-align: center;
-      border-top: 1px solid var(--border);
-      padding-top: 15px;
     }
 
-    button.refresh-btn {
-      background: #fff;
-      border: 1px solid var(--border);
-      padding: 4px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-      margin-bottom: 10px;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
+    /* Responsive Tweaks */
+    @media (max-width: 480px) {
+      .header-wrapper { flex-direction: column; align-items: flex-start; }
+      .action-group { width: 100%; }
+      button.btn-main { width: 100%; }
+      .item-url { max-width: 150px; }
     }
-    button.refresh-btn:hover { background: #f3f4f6; }
   </style>
 </head>
 <body>
 
-<header>
-  <h2>Supabase Wake Up Dashboard</h2>
-  
-  <!-- Ringkasan Status -->
-  <div class="summary-box" id="summary" style="opacity: 0.5;">
-    <div class="stat-item">
-      <span class="stat-label">Total</span>
-      <span class="stat-value" id="count-total">0</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">Online</span>
-      <span class="stat-value" style="color: var(--online-text)" id="count-online">0</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">Problem</span>
-      <span class="stat-value" style="color: var(--err-text)" id="count-error">0</span>
-    </div>
+<div class="header-wrapper">
+  <div class="header-title">
+    <h2>Supabase Keeper</h2>
+    <p>Auto-query ke database (Cold Start Retry ON)</p>
   </div>
-  
-  <button class="refresh-btn" onclick="runChecks()" id="refreshBtn">Check Ulang</button>
-</header>
+  <div class="action-group">
+    <button class="btn-main" onclick="runChecks()" id="refreshBtn">Check All</button>
+  </div>
+</div>
 
-<ul id="status-list">
-  <!-- List item akan di-render di sini via JS -->
-</ul>
+<!-- Summary Compact -->
+<div class="summary-bar">
+  <div class="summary-item">
+    <span class="summary-val" id="count-total">0</span>
+    <span class="summary-lbl">Total</span>
+  </div>
+  <div class="summary-item">
+    <span class="summary-val" id="count-online" style="color: var(--online)">0</span>
+    <span class="summary-lbl">Active</span>
+  </div>
+  <div class="summary-item">
+    <span class="summary-val" id="count-error" style="color: var(--error)">0</span>
+    <span class="summary-lbl">Issue</span>
+  </div>
+</div>
+
+<ul id="status-list"></ul>
 
 <footer>
-  Terakhir dibuka: <span id="last-ping">-</span><br>
-  <span style="opacity: 0.7;">Buka minimal 1x/minggu untuk menjaga Free Project aktif.</span>
+  Terakhir checked: <span id="last-ping">-</span>
 </footer>
 
+<!-- Error Tooltip Bar -->
+<div id="error-bar" class="error-text"></div>
+
 <script>
-  // --- 1. KONFIGURASI ---
+  // --- 1. KONFIGURASI (KEY DARI USER) ---
+  // Peringatan: Key ini sudah dipublikasikan, segera ganti setelah pengujian.
   const projects = [
     {
       name: "Project 1",
@@ -241,141 +251,136 @@
   ];
 
   const listElement = document.getElementById("status-list");
-  const summaryElement = document.getElementById("summary");
   const refreshBtn = document.getElementById("refreshBtn");
+  const errorBar = document.getElementById("error-bar");
 
-  // --- 2. LOGIKA UTAMA ---
-  
-  // Fungsi Check Satu Project
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+  // --- 2. LOGIKA CHECK (DB QUERY + RETRY) ---
   async function checkProject(project) {
     const start = performance.now();
     let status = "ONLINE";
-    let statusText = "ONLINE";
+    let statusText = "OK";
     let latency = 0;
     let errorMsg = "";
-    
-    try {
-      const supabase = window.supabase.createClient(project.url, project.key);
-      const { error } = await supabase.auth.getSession();
-      
-      const end = performance.now();
-      latency = Math.round(end - start);
+    let attempts = 0;
+    const maxAttempts = 2;
 
-      if (error) throw error;
+    for (let i = 0; i < maxAttempts; i++) {
+      attempts = i + 1;
+      try {
+        const supabase = window.supabase.createClient(project.url, project.key);
+        
+        // QUERY DB (WAKEUP)
+        const { error } = await supabase
+          .from('wakeup_log')
+          .select('id')
+          .limit(1);
 
-      // Logika Slow (> 2000ms)
-      if (latency > 2000) {
-        status = "SLOW";
-        statusText = "SLOW";
-      }
+        latency = Math.round(performance.now() - start);
 
-    } catch (e) {
-      status = "ERROR";
-      statusText = "FAILED";
-      latency = Math.round(performance.now() - start); // hitung total waktu sampai error
-      
-      // Klasifikasi Error Jujur
-      const msg = e.message.toLowerCase();
-      if (msg.includes("jwt") || msg.includes("invalid") || msg.includes("api key")) {
-        errorMsg = "INVALID API KEY";
-      } else if (msg.includes("failed to fetch") || msg.includes("network")) {
-        errorMsg = "NETWORK ERROR";
-      } else {
-        errorMsg = "UNKNOWN ERROR";
+        if (error) throw error;
+        break; // Sukses
+
+      } catch (e) {
+        latency = Math.round(performance.now() - start);
+        
+        if (i === 0) {
+           const msg = (e.message || "").toLowerCase();
+           // Indikasi DB Lagi Bangun
+           if (msg.includes("database") || msg.includes("connection") || msg.includes("timeout") || msg.includes("503")) {
+             status = "WAKING"; // Sementara visual waking
+             await sleep(5000); // Tunggu cold start
+             continue;
+           }
+        }
+        
+        // Fatal Error
+        status = "ERROR";
+        statusText = "FAIL";
+        
+        const msg = e.message.toLowerCase();
+        if (msg.includes("jwt") || msg.includes("invalid") || msg.includes("api key")) {
+          errorMsg = "Invalid Key / Format Salah";
+        } else if (msg.includes("relation") || msg.includes("does not exist")) {
+          errorMsg = "Tabel 'wakeup_log' belum dibuat";
+        } else {
+          errorMsg = e.message;
+        }
+        break;
       }
     }
+    
+    if (attempts > 1 && status !== "ERROR") {
+      latency = Math.round(performance.now() - start);
+      statusText = "OK (Wake)"; // Tanda sudah berhasil setelah cold start
+    }
 
-    // Return object untuk diproses nanti
-    return {
-      ...project,
-      status,
-      statusText,
-      latency,
-      errorMsg
-    };
+    return { ...project, status, statusText, latency, errorMsg };
   }
 
-  // Fungsi Render & Sortir
+  // --- 3. RENDER ---
   async function runChecks() {
-    // Reset UI
     refreshBtn.disabled = true;
-    refreshBtn.textContent = "Checking...";
-    listElement.innerHTML = `<li style="justify-content:center; color:#6b7280;">Memeriksa ${projects.length} project...</li>`;
-    summaryElement.style.opacity = "0.5";
+    refreshBtn.textContent = "Scanning...";
+    listElement.style.opacity = "0.5";
 
-    // Jalankan semua check sekaligus (Promise.all), 
-    // lalu simpan hasilnya di array 'results'
+    // Jalankan paralel tapi render sekaligus biar cepat
     const results = await Promise.all(projects.map(p => checkProject(p)));
 
-    // --- SORTING LOGIC (RASIONAL) ---
-    // Urutan prioritas: Error (3) -> Slow (2) -> Online (1)
-    // Jika status sama, urutkan berdasarkan latency (paling lambat di atas)
-    results.sort((a, b) => {
-      const weight = { "ERROR": 3, "SLOW": 2, "ONLINE": 1 };
-      const wA = weight[a.status];
-      const wB = weight[b.status];
-      
-      if (wA !== wB) return wB - wA; // Sort by weight (Error atas)
-      return b.latency - a.latency;   // Sort by latency (Lambat atas)
-    });
-
-    // --- UPDATE SUMMARY ---
-    let total = results.length;
-    let online = results.filter(r => r.status === "ONLINE").length;
-    let error = results.filter(r => r.status !== "ONLINE").length; // Slow + Error
+    // Update Summary
+    const total = results.length;
+    const online = results.filter(r => r.status === "ONLINE" || r.status === "WAKING").length;
+    const error = results.filter(r => r.status === "ERROR").length;
 
     document.getElementById("count-total").textContent = total;
     document.getElementById("count-online").textContent = online;
     document.getElementById("count-error").textContent = error;
-    summaryElement.style.opacity = "1";
 
-    // --- RENDER LIST ---
-    listElement.innerHTML = ""; // Clear loading state
-
+    // Render List
+    listElement.innerHTML = "";
     results.forEach(r => {
       const li = document.createElement("li");
-      li.className = `status-${r.status.toLowerCase()}`;
+      // Class logic
+      let statusClass = "status-online";
+      if (r.status === "ERROR") statusClass = "status-error";
+      if (r.status === "WAKING") statusClass = "status-waking";
       
-      const errorHtml = r.errorMsg ? `<span class="error-msg">${r.errorMsg}</span>` : "";
-      const latencyText = r.status === "ERROR" ? "-" : `${r.latency} ms`;
+      li.className = statusClass;
+
+      // Jika ada error, tampilkan di bar bawah jika di-hover/active
+      li.onclick = () => {
+        if(r.errorMsg) {
+          errorBar.style.display = "block";
+          errorBar.textContent = `${r.name}: ${r.errorMsg}`;
+          setTimeout(() => errorBar.style.display = "none", 5000);
+        }
+      };
 
       li.innerHTML = `
-        <div class="project-info">
-          <span class="project-name">${r.name}</span>
-          <span class="project-url">${new URL(r.url).hostname}</span>
+        <div class="item-info">
+          <div class="item-name">${r.name}</div>
+          <div class="item-url">${new URL(r.url).hostname}</div>
         </div>
-        <div class="metrics">
-          <span class="latency">${latencyText}</span>
+        <div class="item-stats">
+          <span class="latency-tag">${r.latency} ms</span>
           <span class="badge">${r.statusText}</span>
-          ${errorHtml}
         </div>
       `;
       listElement.appendChild(li);
     });
 
-    // Update Footer (Last Ping)
-    const now = new Date();
-    const timeString = now.toLocaleString("id-ID", { 
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', 
-      hour: '2-digit', minute: '2-digit' 
-    });
-    document.getElementById("last-ping").textContent = timeString;
-    localStorage.setItem("last_ping_supabase_dashboard", timeString);
-
+    listElement.style.opacity = "1";
     refreshBtn.disabled = false;
-    refreshBtn.textContent = "Check Ulang";
+    refreshBtn.textContent = "Check All";
+
+    // Update Time
+    const now = new Date();
+    document.getElementById("last-ping").textContent = now.toLocaleTimeString("id-ID");
   }
 
-  // --- 3. INIT ---
-  // Cek apakah ada last ping di local storage saat load pertama
-  const savedPing = localStorage.getItem("last_ping_supabase_dashboard");
-  if (savedPing) {
-    document.getElementById("last-ping").textContent = savedPing;
-  }
-
-  // Jalankan otomatis saat halaman dibuka
+  // Run start
   runChecks();
-
 </script>
 
 </body>
