@@ -3,17 +3,10 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PDF to JPG Converter</title>
+  <title>PDF to JPG Converter High Quality</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <!-- Placeholder SDK files agar tidak error di browser lokal jika tidak ada -->
-  <script>window.elementSdk = null; window.dataSdk = null;</script> 
-  <script src="/_sdk/element_sdk.js"></script>
   <style>
-    body {
-      box-sizing: border-box;
-    }
-
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap');
 
     * {
@@ -25,6 +18,8 @@
     body {
       font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
       overflow-x: hidden;
+      background-color: #f0f9ff; /* Default Background */
+      color: #0c4a6e; /* Default Text Color */
     }
 
     .app-container {
@@ -51,6 +46,7 @@
       height: 80px;
       border-radius: 20px;
       margin-bottom: 24px;
+      background-color: #0ea5e9; /* Primary Color */
     }
 
     .title {
@@ -72,17 +68,19 @@
     }
 
     .upload-zone {
-      border: 3px dashed;
+      border: 3px dashed #0ea5e9; /* Primary Color */
       border-radius: 24px;
       padding: 48px 32px;
       text-align: center;
       cursor: pointer;
       transition: all 0.3s ease;
       margin-bottom: 32px;
+      background-color: #ffffff; /* Surface Color */
     }
 
     .upload-zone:hover {
       transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
     }
 
     .upload-icon {
@@ -113,10 +111,13 @@
       border-radius: 16px;
       margin-bottom: 12px;
       transition: all 0.2s ease;
+      background-color: #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
     .file-item:hover {
       transform: translateX(4px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
 
     .file-icon {
@@ -143,17 +144,6 @@
       opacity: 0.7;
     }
 
-    .drag-handle {
-      cursor: move;
-      padding: 8px;
-      opacity: 0.5;
-      transition: opacity 0.2s;
-    }
-
-    .drag-handle:hover {
-      opacity: 1;
-    }
-
     .remove-btn {
       background: none;
       border: none;
@@ -163,6 +153,7 @@
       opacity: 0.6;
       transition: all 0.2s;
       border-radius: 8px;
+      color: #ef4444;
     }
 
     .remove-btn:hover {
@@ -189,6 +180,15 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
+      color: white;
+    }
+
+    .btn-primary {
+      background-color: #0ea5e9;
+    }
+
+    .btn-secondary {
+      background-color: #06b6d4;
     }
 
     .btn:hover:not(:disabled) {
@@ -219,75 +219,49 @@
     }
 
     @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .dragging {
-      opacity: 0.5;
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .drag-over {
       border-style: solid;
       transform: scale(1.02);
+      background-color: #f0f9ff;
     }
 
     @media (max-width: 640px) {
-      .title {
-        font-size: 32px;
-      }
-
-      .subtitle {
-        font-size: 16px;
-      }
-
-      .upload-zone {
-        padding: 32px 24px;
-      }
-
-      .button-group {
-        flex-direction: column;
-        width: 100%;
-      }
-
-      .btn {
-        width: 100%;
-        justify-content: center;
-      }
+      .title { font-size: 32px; }
+      .subtitle { font-size: 16px; }
+      .upload-zone { padding: 32px 24px; }
+      .button-group { flex-direction: column; width: 100%; }
+      .btn { width: 100%; justify-content: center; }
     }
   </style>
-  <style>@view-transition { navigation: auto; }</style>
-  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
-  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
  </head>
  <body class="h-full">
   <div class="app-container">
    <div class="header">
-    <div class="icon-wrapper" id="iconWrapper"><span style="font-size: 48px;">📄</span>
-    </div>
-    <h1 class="title" id="appTitle">PDF to JPG</h1>
-    <p class="subtitle" id="subtitle">Konversi halaman PDF menjadi gambar JPG berkualitas tinggi</p>
+    <div class="icon-wrapper"><span style="font-size: 48px;">ðŸ“„</span></div>
+    <h1 class="title">PDF to JPG</h1>
+    <p class="subtitle">Konversi halaman PDF menjadi gambar JPG berkualitas tinggi</p>
    </div>
-   <div class="main-content"><input type="file" id="fileInput" accept=".pdf" multiple class="hidden">
+   <div class="main-content">
+    <input type="file" id="fileInput" accept=".pdf" multiple class="hidden">
     <div class="upload-zone" id="uploadZone">
-     <div class="upload-icon">
-      📁
-     </div>
-     <div class="upload-text" id="selectButtonText">
-      Pilih File PDF
-     </div>
-     <div class="upload-hint">
-      atau seret &amp; lepas file di sini
-     </div>
+     <div class="upload-icon">ðŸ“</div>
+     <div class="upload-text">Pilih File PDF</div>
+     <div class="upload-hint">atau seret & lepas file di sini</div>
     </div>
     <div class="file-list" id="fileList"></div>
-    <div class="button-group"><button class="btn hidden" id="convertBtn"> <span class="btn-icon">🖼️</span> <span id="convertButtonText">Konversi ke JPG</span> </button> <button class="btn hidden" id="downloadAllBtn"> <span class="btn-icon">📦</span> <span id="downloadAllButtonText">Unduh Semua</span> </button>
+    <div class="button-group">
+      <button class="btn btn-primary hidden" id="convertBtn"> 
+        <span class="btn-icon">ðŸ–¼ï¸</span> 
+        <span>Konversi ke JPG (High Quality)</span> 
+      </button> 
+      <button class="btn btn-secondary hidden" id="downloadAllBtn"> 
+        <span class="btn-icon">ðŸ“¦</span> 
+        <span>Unduh Semua (ZIP)</span> 
+      </button>
     </div>
     <div id="previewContainer" class="hidden" style="margin-top: 32px;">
      <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 24px; text-align: center;">Hasil Konversi</h2>
@@ -297,22 +271,8 @@
    </div>
   </div>
   <script>
+    // Set Worker PDF.js
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-    const defaultConfig = {
-      background_color: '#f0f9ff',
-      surface_color: '#ffffff',
-      text_color: '#0c4a6e',
-      primary_action_color: '#0ea5e9',
-      secondary_action_color: '#06b6d4',
-      app_title: 'JUNI WARDANI',
-      subtitle: 'Konversi halaman PDF menjadi gambar JPG berkualitas tinggi',
-      select_button_text: 'Pilih File PDF',
-      convert_button_text: 'Konversi ke JPG',
-      download_all_button_text: 'Unduh Semua (ZIP)',
-      font_family: 'Plus Jakarta Sans',
-      font_size: 16
-    };
 
     let pdfFiles = [];
     let convertedImages = [];
@@ -326,11 +286,9 @@
     const previewContainer = document.getElementById('previewContainer');
     const imageGallery = document.getElementById('imageGallery');
 
+    // Event Listeners
     uploadZone.addEventListener('click', () => fileInput.click());
-
-    fileInput.addEventListener('change', (e) => {
-      handleFiles(e.target.files);
-    });
+    fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
 
     uploadZone.addEventListener('dragover', (e) => {
       e.preventDefault();
@@ -368,31 +326,27 @@
 
     function renderFileList() {
       fileList.innerHTML = '';
-
       if (pdfFiles.length === 0) return;
 
       pdfFiles.forEach((file, index) => {
         const fileItem = document.createElement('div');
         fileItem.className = 'file-item';
-
         fileItem.innerHTML = `
-          <span class="file-icon">📄</span>
+          <span class="file-icon">ðŸ“„</span>
           <div class="file-info">
             <div class="file-name">${file.name}</div>
             <div class="file-size">${formatFileSize(file.size)}</div>
           </div>
-          <button class="remove-btn" onclick="removeFile(${index})">×</button>
+          <button class="remove-btn" onclick="removeFile(${index})">Ã—</button>
         `;
-
         fileList.appendChild(fileItem);
       });
     }
 
-    function removeFile(index) {
+    window.removeFile = function(index) {
       pdfFiles.splice(index, 1);
       renderFileList();
       updateButtonVisibility();
-
       if (pdfFiles.length === 0) {
         convertedImages = [];
         downloadAllBtn.classList.add('hidden');
@@ -431,7 +385,7 @@
 
       setTimeout(() => {
         statusMessage.className = 'status-message hidden';
-      }, 4000);
+      }, 5000);
     }
 
     convertBtn.addEventListener('click', async () => {
@@ -441,7 +395,7 @@
       }
 
       convertBtn.disabled = true;
-      showStatus('Mengkonversi PDF ke JPG...', 'info');
+      showStatus('Memulai konversi resolusi tinggi...', 'info');
       imageGallery.innerHTML = '';
       convertedImages = [];
 
@@ -454,7 +408,10 @@
 
           for (let pageNum = 1; pageNum <= numPages; pageNum++) {
             const page = await pdf.getPage(pageNum);
-            const scale = 2.0;
+            
+            // --- PENGATURAN RESOLUSI TINGGI ---
+            // Scale 3.0 meningkatkan resolusi secara signifikan (sekitar 300 DPI)
+            const scale = 3.0; 
             const viewport = page.getViewport({ scale });
 
             const canvas = document.createElement('canvas');
@@ -462,49 +419,53 @@
             canvas.height = viewport.height;
             canvas.width = viewport.width;
 
+            // Render halaman ke canvas
             await page.render({
               canvasContext: context,
               viewport: viewport
             }).promise;
 
-            const imageDataUrl = canvas.toDataURL('image/jpeg', 0.95);
+            // --- PENGATURAN KUALITAS JPG ---
+            // Quality 1.0 berarti kualitas maksimal (100%), tanpa kompresi lossy yang berarti
+            const quality = 1.0; 
+            const imageDataUrl = canvas.toDataURL('image/jpeg', quality);
 
-            // PERBAIKAN: Wrap toBlob dalam Promise dan gunakan await.
-            // Ini memastikan data masuk ke convertedImages SEBELUM UI dibuat.
-            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+            // Buat blob untuk keperluan ZIP
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
 
             const imageData = {
                 blob: blob,
                 dataUrl: imageDataUrl,
-                fileName: `${currentFile.name.replace('.pdf', '')}_page-${pageNum}.jpg`,
+                fileName: `${currentFile.name.replace('.pdf', '')}_halaman-${pageNum}.jpg`,
                 pageNum: pageNum,
                 fileIndex: fileIndex,
                 originalFileName: currentFile.name
             };
-            
+
             convertedImages.push(imageData);
 
+            // Tambahkan ke galeri
             const imageCard = document.createElement('div');
             imageCard.style.cssText = 'background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);';
-
-            // Karena kita sudah await, index convertedImages.length - 1 sekarang valid
+            
             imageCard.innerHTML = `
               <img src="${imageDataUrl}" style="width: 100%; height: auto; border-radius: 8px; margin-bottom: 12px;">
               <div style="text-align: center; margin-bottom: 4px; font-weight: 600; font-size: 14px;">${currentFile.name}</div>
               <div style="text-align: center; margin-bottom: 8px; font-size: 12px; opacity: 0.7;">Halaman ${pageNum}</div>
-              <button class="btn" style="width: 100%; padding: 10px; font-size: 14px;" onclick="downloadSingleImage(${convertedImages.length - 1})">
-                <span>💾</span>
+              <button class="btn btn-primary" style="width: 100%; padding: 10px; font-size: 14px;" onclick="downloadSingleImage(${convertedImages.length - 1})">
+                <span>ðŸ’¾</span>
                 <span>Unduh</span>
               </button>
             `;
 
             imageGallery.appendChild(imageCard);
+            showStatus(`Memproses ${currentFile.name} halaman ${pageNum}/${numPages}...`, 'info');
           }
         }
 
         previewContainer.classList.remove('hidden');
         downloadAllBtn.classList.remove('hidden');
-        showStatus(`Semua file berhasil dikonversi!`, 'success');
+        showStatus(`Semua file berhasil dikonversi dengan resolusi tinggi!`, 'success');
       } catch (error) {
         showStatus('Terjadi kesalahan saat mengkonversi PDF', 'error');
         console.error(error);
@@ -513,14 +474,10 @@
       }
     });
 
-    function downloadSingleImage(index) {
+    window.downloadSingleImage = function(index) {
       const image = convertedImages[index];
-      // Cek tambahan untuk keamanan
-      if (!image) {
-        console.error("Gambar tidak ditemukan di index:", index);
-        return;
-      }
-      
+      if (!image) return;
+
       const a = document.createElement('a');
       a.href = image.dataUrl;
       a.download = image.fileName;
@@ -552,13 +509,13 @@
         const url = URL.createObjectURL(zipBlob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'converted-images.zip';
+        a.download = 'converted-images-hq.zip';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
-        showStatus(`File ZIP dengan ${convertedImages.length} gambar berhasil diunduh!`, 'success');
+        showStatus(`File ZIP berhasil diunduh!`, 'success');
       } catch (error) {
         showStatus('Terjadi kesalahan saat membuat file ZIP', 'error');
         console.error(error);
@@ -566,138 +523,6 @@
         downloadAllBtn.disabled = false;
       }
     });
-
-    async function onConfigChange(config) {
-      const customFont = config.font_family || defaultConfig.font_family;
-      const baseFontStack = 'system-ui, -apple-system, sans-serif';
-      const baseSize = config.font_size || defaultConfig.font_size;
-
-      const backgroundColor = config.background_color || defaultConfig.background_color;
-      const surfaceColor = config.surface_color || defaultConfig.surface_color;
-      const textColor = config.text_color || defaultConfig.text_color;
-      const primaryColor = config.primary_action_color || defaultConfig.primary_action_color;
-      const secondaryColor = config.secondary_action_color || defaultConfig.secondary_action_color;
-
-      document.querySelector('.app-container').style.backgroundColor = backgroundColor;
-      document.querySelector('.app-container').style.color = textColor;
-      document.querySelector('.app-container').style.fontFamily = `${customFont}, ${baseFontStack}`;
-
-      document.getElementById('iconWrapper').style.backgroundColor = primaryColor;
-
-      document.getElementById('appTitle').textContent = config.app_title || defaultConfig.app_title;
-      document.getElementById('appTitle').style.fontSize = `${baseSize * 2.625}px`;
-      document.getElementById('appTitle').style.color = textColor;
-      document.getElementById('appTitle').style.fontFamily = `${customFont}, ${baseFontStack}`;
-
-      document.getElementById('subtitle').textContent = config.subtitle || defaultConfig.subtitle;
-      document.getElementById('subtitle').style.fontSize = `${baseSize * 1.125}px`;
-      document.getElementById('subtitle').style.color = textColor;
-      document.getElementById('subtitle').style.fontFamily = `${customFont}, ${baseFontStack}`;
-
-      document.getElementById('selectButtonText').textContent = config.select_button_text || defaultConfig.select_button_text;
-      document.getElementById('selectButtonText').style.fontFamily = `${customFont}, ${baseFontStack}`;
-
-      document.getElementById('convertButtonText').textContent = config.convert_button_text || defaultConfig.convert_button_text;
-      document.getElementById('downloadAllButtonText').textContent = config.download_all_button_text || defaultConfig.download_all_button_text;
-
-      uploadZone.style.borderColor = primaryColor;
-      uploadZone.style.backgroundColor = surfaceColor;
-      uploadZone.style.color = textColor;
-
-      const fileItems = document.querySelectorAll('.file-item');
-      fileItems.forEach(item => {
-        item.style.backgroundColor = surfaceColor;
-        item.style.color = textColor;
-      });
-
-      convertBtn.style.backgroundColor = primaryColor;
-      convertBtn.style.color = '#ffffff';
-      convertBtn.style.fontFamily = `${customFont}, ${baseFontStack}`;
-      convertBtn.style.fontSize = `${baseSize}px`;
-
-      downloadAllBtn.style.backgroundColor = secondaryColor;
-      downloadAllBtn.style.color = '#ffffff';
-      downloadAllBtn.style.fontFamily = `${customFont}, ${baseFontStack}`;
-      downloadAllBtn.style.fontSize = `${baseSize}px`;
-
-      previewContainer.style.color = textColor;
-      const previewTitle = previewContainer.querySelector('h2');
-      if (previewTitle) previewTitle.style.fontFamily = `${customFont}, ${baseFontStack}`;
-
-      const removeButtons = document.querySelectorAll('.remove-btn');
-      removeButtons.forEach(btn => {
-        btn.style.color = textColor;
-      });
-    }
-
-    if (window.elementSdk) {
-      window.elementSdk.init({
-        defaultConfig,
-        onConfigChange,
-        mapToCapabilities: (config) => ({
-          recolorables: [
-            {
-              get: () => config.background_color || defaultConfig.background_color,
-              set: (value) => {
-                config.background_color = value;
-                window.elementSdk.setConfig({ background_color: value });
-              }
-            },
-            {
-              get: () => config.surface_color || defaultConfig.surface_color,
-              set: (value) => {
-                config.surface_color = value;
-                window.elementSdk.setConfig({ surface_color: value });
-              }
-            },
-            {
-              get: () => config.text_color || defaultConfig.text_color,
-              set: (value) => {
-                config.text_color = value;
-                window.elementSdk.setConfig({ text_color: value });
-              }
-            },
-            {
-              get: () => config.primary_action_color || defaultConfig.primary_action_color,
-              set: (value) => {
-                config.primary_action_color = value;
-                window.elementSdk.setConfig({ primary_action_color: value });
-              }
-            },
-            {
-              get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
-              set: (value) => {
-                config.secondary_action_color = value;
-                window.elementSdk.setConfig({ secondary_action_color: value });
-              }
-            }
-          ],
-          borderables: [],
-          fontEditable: {
-            get: () => config.font_family || defaultConfig.font_family,
-            set: (value) => {
-              config.font_family = value;
-              window.elementSdk.setConfig({ font_family: value });
-            }
-          },
-          fontSizeable: {
-            get: () => config.font_size || defaultConfig.font_size,
-            set: (value) => {
-              config.font_size = value;
-              window.elementSdk.setConfig({ font_size: value });
-            }
-          }
-        }),
-        mapToEditPanelValues: (config) => new Map([
-          ['app_title', config.app_title || defaultConfig.app_title],
-          ['subtitle', config.subtitle || defaultConfig.subtitle],
-          ['select_button_text', config.select_button_text || defaultConfig.select_button_text],
-          ['convert_button_text', config.convert_button_text || defaultConfig.convert_button_text],
-          ['download_all_button_text', config.download_all_button_text || defaultConfig.download_all_button_text]
-        ])
-      });
-    }
-
-    onConfigChange(defaultConfig);
   </script>
+</body>
 </html>
