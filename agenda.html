@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agenda Pribadi Cloud</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    body { box-sizing: border-box; }
+    * { font-family: 'Nunito', sans-serif; }
+    
+    /* Tab Styles */
+    .tab-active { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.2); }
+    .tab-inactive { background: #f3f4f6; color: #6b7280; }
+    
+    /* Date Picker Grid */
+    .date-picker-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+    .date-cell { 
+      aspect-ratio: 1; display: flex; align-items: center; justify-content: center; 
+      cursor: pointer; border-radius: 6px; font-size: 13px; transition: all 0.2s; font-weight: 500;
+    }
+    .date-cell:hover:not(.disabled) { background: #e9d5ff; transform: scale(1.1); }
+    .date-cell.selected { background: #8b5cf6; color: white; font-weight: 600; transform: scale(1.1); }
+    .date-cell.disabled { color: #d1d5db; cursor: not-allowed; }
+    /* Style khusus Minggu dihapus */
+    
+    /* Calendar View */
+    .month-calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
+    .month-day { 
+      aspect-ratio: 1; display: flex; align-items: center; justify-content: center; 
+      font-size: 11px; border-radius: 4px; position: relative; background: #f3e8ff; 
+      color: #7c3aed; font-weight: 600; transition: background 0.2s;
+    }
+    .month-day.has-event { color: white; }
+    /* Style khusus Minggu dihapus */
+    
+    /* Animations */
+    .toast {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      padding: 12px 24px; border-radius: 8px; color: white; font-weight: 600; 
+      z-index: 2000; animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); white-space: nowrap;
+    }
+    @keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+    @keyframes pulse-red { 0%, 100% { box-shadow: 0 0 0 0 rgba(128, 0, 0, 0.7), inset 0 0 0 2px #800000; } 50% { box-shadow: 0 0 0 10px rgba(128, 0, 0, 0), inset 0 0 0 2px #800000; } }
+    .month-day.today { animation: pulse-red 2s infinite; font-weight: 700; }
+  </style>
+</head>
+<body class="h-full bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50">
+
+  <!-- MAIN APP (Langsung Muncul) -->
+  <div id="app" class="h-full w-full overflow-auto">
+    
+    <!-- Header -->
+    <header id="header" class="text-white py-4 px-4 shadow-lg" style="background: linear-gradient(to right, #8b5cf6, #7c3aed);">
+      <div class="max-w-lg mx-auto flex items-center gap-3">
+        <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur">
+          <svg class="w-full h-full p-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </div>
+        <div>
+          <h1 id="header-name" class="text-xl font-extrabold tracking-tight">Juni Wardani</h1>
+          <p class="text-purple-100 text-sm font-medium">📋 Agenda Pribadi</p>
+        </div>
+      </div>
+    </header>
+
+    <div class="max-w-lg mx-auto px-4 py-4 space-y-4">
+      
+      <!-- Tabs -->
+      <div class="flex bg-white/50 p-1 rounded-xl backdrop-blur-sm border border-white/50 shadow-sm">
+        <button id="tab-input" onclick="switchTab('input')" class="flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all duration-300 tab-active">
+          ✍️ Input
+        </button>
+        <button id="tab-view" onclick="switchTab('view')" class="flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all duration-300 tab-inactive">
+          👁️ Lihat
+        </button>
+      </div>
+
+      <!-- INPUT TAB -->
+      <div id="content-input" class="bg-white rounded-2xl shadow-xl p-5 space-y-5 border border-gray-100">
+        <h2 class="text-lg font-bold text-gray-800 text-center border-b pb-3">📝 Input Agenda Baru</h2>
+        
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-semibold text-gray-600 mb-2">Mulai</label>
+            <button id="btn-start-date" onclick="openDatePicker('start')" class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl text-left font-medium text-gray-700 hover:border-purple-400 transition-all bg-gray-50">
+              <span id="start-date-text">Pilih Tanggal</span>
+            </button>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-600 mb-2">Akhir</label>
+            <button id="btn-end-date" onclick="openDatePicker('end')" class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl text-left font-medium text-gray-700 hover:border-purple-400 transition-all bg-gray-50">
+              <span id="end-date-text">Pilih Tanggal</span>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-600 mb-2">Keterangan Kegiatan</label>
+          <textarea id="description-text" placeholder="Masukkan deskripsi agenda..." class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 focus:border-purple-400 focus:outline-none resize-none h-20"></textarea>
+        </div>
+
+        <button id="btn-save" onclick="saveAgenda()" class="w-full py-4 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none" style="background: linear-gradient(to right, #8b5cf6, #7c3aed);">
+          💾 Simpan Agenda
+        </button>
+      </div>
+
+      <!-- VIEW TAB -->
+      <div id="content-view" class="hidden bg-white rounded-2xl shadow-xl p-5 space-y-4">
+        <div id="month-nav" class="flex items-center justify-between rounded-xl py-2 px-4 text-white" style="background: linear-gradient(to right, #8b5cf6, #7c3aed);">
+          <button onclick="prevMonth()" class="p-2 hover:bg-white/20 rounded-lg transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <span id="current-month-label" class="font-bold text-lg"></span>
+          <button onclick="nextMonth()" class="p-2 hover:bg-white/20 rounded-lg transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+
+        <div class="border-2 border-gray-100 rounded-xl overflow-hidden">
+          <div class="grid grid-cols-7 bg-gray-100">
+            <div class="py-2 text-center text-xs font-bold text-red-500">Min</div>
+            <div class="py-2 text-center text-xs font-bold text-gray-600">Sen</div>
+            <div class="py-2 text-center text-xs font-bold text-gray-600">Sel</div>
+            <div class="py-2 text-center text-xs font-bold text-gray-600">Rab</div>
+            <div class="py-2 text-center text-xs font-bold text-gray-600">Kam</div>
+            <div class="py-2 text-center text-xs font-bold text-gray-600">Jum</div>
+            <div class="py-2 text-center text-xs font-bold text-gray-600">Sab</div>
+          </div>
+          <div id="calendar-grid" class="month-calendar p-2 bg-white"></div>
+        </div>
+
+        <div id="agenda-cards" class="space-y-2"></div>
+      </div>
+      
+      <div class="text-center text-gray-300 text-xs pb-4">Agenda Juni Wardani</div>
+    </div>
+  </div>
+
+  <!-- MODAL DATE PICKER -->
+  <div id="date-picker-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+      <div id="picker-header" class="text-white p-4 flex justify-between items-center" style="background: linear-gradient(to right, #8b5cf6, #7c3aed);">
+        <button onclick="changePickerMonth(-1)" class="p-1 hover:bg-white/20 rounded-lg">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <span id="picker-month-label" class="font-bold text-lg"></span>
+        <button onclick="changePickerMonth(1)" class="p-1 hover:bg-white/20 rounded-lg">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+      <div class="p-4">
+        <div class="grid grid-cols-7 mb-2">
+          <div class="text-center text-xs font-bold text-red-500 py-1">Min</div>
+          <div class="text-center text-xs font-bold text-gray-500 py-1">Sen</div>
+          <div class="text-center text-xs font-bold text-gray-500 py-1">Sel</div>
+          <div class="text-center text-xs font-bold text-gray-500 py-1">Rab</div>
+          <div class="text-center text-xs font-bold text-gray-500 py-1">Kam</div>
+          <div class="text-center text-xs font-bold text-gray-500 py-1">Jum</div>
+          <div class="text-center text-xs font-bold text-gray-500 py-1">Sab</div>
+        </div>
+        <div id="picker-grid" class="date-picker-grid"></div>
+      </div>
+      <div class="p-4 border-t flex gap-2">
+        <button onclick="closeDatePicker()" class="flex-1 py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl">Batal</button>
+        <button id="btn-confirm-date" onclick="confirmDate()" class="flex-1 py-2.5 text-white font-bold rounded-xl" style="background: linear-gradient(to right, #8b5cf6, #7c3aed);">Pilih</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script>
+    // --- KONFIGURASI SUPABASE ---
+    const supabaseUrl = 'https://iwnwqcxigtywetgcmlou.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bndxY3hpZ3R5d2V0Z2NtbG91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU4MjQ4MTUsImV4cCI6MjA1MTQwMDgxNX0.fjdJlTVav4Gm8ku9rBmRuLoae5ViFxas7Uu069ItfnY';
+    
+    let db = null;
+    
+    // --- WARNA ASLI (KEMBALI KE VERSI AWAL) ---
+    const COLORS = [
+  '#6c5ce7',
+  '#00cec9',
+  '#0984e3',
+  '#fdcb6e',
+  '#e17055',
+  '#00b894',
+  '#d63031',
+  '#a29bfe',
+  '#fab1a0',
+  '#2d3436'
+];
+
+    const MONTH_NAMES = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    
+    let agendas = [];
+    let startDate = null, endDate = null, nextColorIndex = 0;
+    let pickerMode = 'start', pickerDate = new Date(), tempSelectedDate = null;
+    let currentViewMonth = new Date().getMonth(), currentViewYear = new Date().getFullYear();
+    let isLoading = false;
+
+    // --- INISIALISASI (ANTI-FREEZE) ---
+    function initApp() {
+      try {
+        if (window.supabase) {
+          db = window.supabase.createClient(supabaseUrl, supabaseKey);
+          loadDataInBackground();
+        }
+      } catch (err) {
+        console.error("Error Init:", err);
+      }
+    }
+
+    async function loadDataInBackground() {
+      try {
+        const { data, error } = await Promise.race([
+          db.from('agendas').select('*').order('created_at', { ascending: false }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+        ]);
+
+        if (error) throw error;
+        if (data) {
+          agendas = data;
+          nextColorIndex = agendas.length % COLORS.length;
+          if (!document.getElementById('content-view').classList.contains('hidden')) {
+            renderView();
+          }
+        }
+      } catch (error) {
+        console.error("Gagal load data:", error);
+      }
+    }
+
+    // --- FUNGSI UI ---
+    function switchTab(tab) {
+      const tabInput = document.getElementById('tab-input');
+      const tabView = document.getElementById('tab-view');
+      const contentInput = document.getElementById('content-input');
+      const contentView = document.getElementById('content-view');
+
+      if (tab === 'input') {
+        tabInput.className = "flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all duration-300 tab-active";
+        tabView.className = "flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all duration-300 tab-inactive";
+        contentInput.classList.remove('hidden');
+        contentView.classList.add('hidden');
+      } else {
+        tabInput.className = "flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all duration-300 tab-inactive";
+        tabView.className = "flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all duration-300 tab-active";
+        contentInput.classList.add('hidden');
+        contentView.classList.remove('hidden');
+        renderView();
+      }
+    }
+
+    function saveAgenda() {
+      if (isLoading) return;
+      if (!startDate || !endDate) return showToast('Pilih tanggal mulai dan akhir', 'error');
+      const description = document.getElementById('description-text').value.trim();
+      if (!description) return showToast('Masukkan keterangan kegiatan', 'error');
+      if (!db) return showToast('Database tidak terkoneksi', 'error');
+
+      isLoading = true;
+      document.getElementById('btn-save').disabled = true;
+      document.getElementById('btn-save').innerHTML = '⏳ Menyimpan...';
+
+      const newAgenda = {
+        id: Date.now().toString(),
+        start_date: startDate,
+        end_date: endDate,
+        description: description,
+        color: COLORS[nextColorIndex],
+        created_at: new Date().toISOString()
+      };
+
+      db.from('agendas').insert([newAgenda])
+        .then(({ error }) => {
+          if (error) throw error;
+          agendas.push(newAgenda);
+          showToast('Agenda berhasil disimpan!', 'success');
+          nextColorIndex = (nextColorIndex + 1) % COLORS.length;
+          resetForm();
+          switchTab('view');
+        })
+        .catch(err => {
+          console.error(err);
+          showToast('Gagal menyimpan agenda', 'error');
+        })
+        .finally(() => {
+          isLoading = false;
+          document.getElementById('btn-save').disabled = false;
+          document.getElementById('btn-save').innerHTML = '💾 Simpan Agenda';
+        });
+    }
+
+    function confirmDelete(agendaId) {
+      if (!db) return showToast('Offline', 'error');
+      db.from('agendas').delete().eq('id', agendaId)
+        .then(({ error }) => {
+          if (error) throw error;
+          agendas = agendas.filter(a => a.id !== agendaId);
+          showToast('Agenda berhasil dihapus', 'success');
+          renderAgendaCards();
+          renderCalendarGrid();
+        })
+        .catch(err => {
+          showToast('Gagal menghapus agenda', 'error');
+          renderAgendaCards();
+        });
+    }
+
+    // --- LOGIKA KALENDER (MINGGU TIDAK DI-DISABLE) ---
+
+    function renderView() {
+      document.getElementById('current-month-label').textContent = `${MONTH_NAMES[currentViewMonth]} ${currentViewYear}`;
+      renderCalendarGrid();
+      renderAgendaCards();
+    }
+
+    function prevMonth() {
+      if (currentViewMonth === 0) { currentViewMonth = 11; currentViewYear--; }
+      else { currentViewMonth--; }
+      renderView();
+    }
+
+    function nextMonth() {
+      if (currentViewMonth === 11) { currentViewMonth = 0; currentViewYear++; }
+      else { currentViewMonth++; }
+      renderView();
+    }
+
+    function renderCalendarGrid() {
+      const grid = document.getElementById('calendar-grid');
+      grid.innerHTML = '';
+      const firstDay = new Date(currentViewYear, currentViewMonth, 1).getDay();
+      const daysInMonth = new Date(currentViewYear, currentViewMonth + 1, 0).getDate();
+
+      for (let i = 0; i < firstDay; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'month-day text-gray-300'; // Semua padding abu-abu biasa
+        grid.appendChild(cell);
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const cell = document.createElement('div');
+        const dateStr = `${currentViewYear}-${String(currentViewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const dayOfWeek = new Date(currentViewYear, currentViewMonth, day).getDay();
+        
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const isToday = dateStr === todayStr;
+        
+        const matchingAgendas = agendas.filter(a => dateStr >= a.start_date && dateStr <= a.end_date);
+        let bgClass = 'month-day';
+        
+        // Logic warna diterapkan ke SEMUA hari termasuk Minggu
+        if (matchingAgendas.length > 0) {
+          bgClass += ' has-event';
+          if (matchingAgendas.length === 1) {
+            cell.style.backgroundColor = matchingAgendas[0].color;
+          } else {
+            const gradientColors = matchingAgendas.map(a => a.color).join(', ');
+            cell.style.background = `linear-gradient(135deg, ${gradientColors})`;
+          }
+        }
+        
+        if (isToday) {
+          bgClass += ' today';
+        }
+
+        cell.className = bgClass;
+        cell.textContent = day;
+        grid.appendChild(cell);
+      }
+    }
+
+    function renderAgendaCards() {
+      const container = document.getElementById('agenda-cards');
+      container.innerHTML = '';
+      const monthStart = `${currentViewYear}-${String(currentViewMonth + 1).padStart(2, '0')}-01`;
+      const monthEnd = `${currentViewYear}-${String(currentViewMonth + 1).padStart(2, '0')}-${new Date(currentViewYear, currentViewMonth + 1, 0).getDate()}`;
+
+      const monthAgendas = agendas.filter(a => {
+        return (a.start_date <= monthEnd && a.end_date >= monthStart);
+      }).sort((a, b) => a.start_date.localeCompare(b.start_date));
+
+      if (monthAgendas.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-400 py-4 text-sm">Belum ada agenda di bulan ini</p>';
+        return;
+      }
+
+      monthAgendas.forEach((agenda, index) => {
+        const card = document.createElement('div');
+        card.className = 'p-3 rounded-xl flex justify-between items-center text-white';
+        card.style.backgroundColor = agenda.color;
+        card.dataset.agendaId = agenda.id;
+        
+        const dateRange = formatDateShort(agenda.start_date) === formatDateShort(agenda.end_date) 
+          ? formatDateShort(agenda.start_date)
+          : `${formatDateShort(agenda.start_date)} - ${formatDateShort(agenda.end_date)}`;
+
+        card.innerHTML = `
+          <div>
+            <p class="font-bold text-sm">${agenda.description}</p>
+            <p class="text-xs opacity-80">${dateRange}</p>
+          </div>
+          <button onclick="deleteAgenda('${agenda.id}')" class="p-2 hover:bg-black/10 rounded-lg transition-all" title="Hapus">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          </button>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function deleteAgenda(agendaId) {
+      const container = document.getElementById('agenda-cards');
+      const card = container.querySelector(`[data-agenda-id="${agendaId}"]`);
+      if (!card) return;
+
+      card.innerHTML = `
+        <p class="text-sm font-bold">Hapus agenda ini?</p>
+        <div class="flex gap-2">
+          <button onclick="confirmDelete('${agendaId}')" class="px-3 py-1 text-white rounded-lg text-sm font-bold" style="background: linear-gradient(to right, #8b5cf6, #7c3aed);">Ya</button>
+          <button onclick="renderAgendaCards()" class="px-3 py-1 bg-gray-300 text-gray-700 rounded-lg text-sm font-bold">Tidak</button>
+        </div>
+      `;
+    }
+
+    // --- LOGIKA DATE PICKER (MINGGU BISA DIKLICK) ---
+
+    function openDatePicker(mode) {
+      pickerMode = mode;
+      pickerDate = mode === 'start' && startDate ? new Date(startDate) : 
+                   mode === 'end' && endDate ? new Date(endDate) : new Date();
+      tempSelectedDate = mode === 'start' ? startDate : endDate;
+      renderDatePicker();
+      document.getElementById('date-picker-modal').classList.remove('hidden');
+      document.getElementById('date-picker-modal').classList.add('flex');
+    }
+
+    function closeDatePicker() {
+      document.getElementById('date-picker-modal').classList.add('hidden');
+      document.getElementById('date-picker-modal').classList.remove('flex');
+    }
+
+    function changePickerMonth(delta) {
+      pickerDate.setMonth(pickerDate.getMonth() + delta);
+      renderDatePicker();
+    }
+
+    function renderDatePicker() {
+      const year = pickerDate.getFullYear();
+      const month = pickerDate.getMonth();
+      document.getElementById('picker-month-label').textContent = `${MONTH_NAMES[month]} ${year}`;
+
+      const grid = document.getElementById('picker-grid');
+      grid.innerHTML = '';
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      for (let i = 0; i < firstDay; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'date-cell disabled';
+        grid.appendChild(cell);
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const cell = document.createElement('div');
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const dayOfWeek = new Date(year, month, day).getDay();
+        
+        cell.className = 'date-cell';
+        cell.textContent = day;
+        cell.dataset.date = dateStr;
+
+        if (tempSelectedDate === dateStr) {
+          cell.classList.add('selected');
+        }
+
+        // Hapus pengecekan hari minggu (dayOfWeek === 0)
+        // Hanya cek logika tanggal start/end
+        if (pickerMode === 'end' && startDate && dateStr < startDate) {
+          cell.classList.add('disabled');
+        } else {
+          cell.onclick = () => selectPickerDate(dateStr);
+        }
+
+        grid.appendChild(cell);
+      }
+    }
+
+    function selectPickerDate(dateStr) {
+      tempSelectedDate = dateStr;
+      renderDatePicker();
+    }
+
+    function confirmDate() {
+      if (!tempSelectedDate) {
+        showToast('Pilih tanggal terlebih dahulu', 'warning');
+        return;
+      }
+
+      if (pickerMode === 'start') {
+        startDate = tempSelectedDate;
+        document.getElementById('start-date-text').textContent = formatDate(startDate);
+        if (endDate && endDate < startDate) {
+          endDate = null;
+          document.getElementById('end-date-text').textContent = 'Pilih Tanggal';
+        }
+      } else {
+        endDate = tempSelectedDate;
+        document.getElementById('end-date-text').textContent = formatDate(endDate);
+      }
+
+      closeDatePicker();
+    }
+
+    function formatDate(dateStr) {
+      const [y, m, d] = dateStr.split('-');
+      return `${parseInt(d)} ${MONTH_NAMES[parseInt(m) - 1].substring(0, 3)} ${y}`;
+    }
+
+    function formatDateShort(dateStr) {
+      const [y, m, d] = dateStr.split('-');
+      return `${parseInt(d)} ${MONTH_NAMES[parseInt(m) - 1].substring(0, 3)}`;
+    }
+
+    function resetForm() {
+      startDate = null;
+      endDate = null;
+      document.getElementById('start-date-text').textContent = 'Pilih Tanggal';
+      document.getElementById('end-date-text').textContent = 'Pilih Tanggal';
+      document.getElementById('description-text').value = '';
+    }
+
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        warning: 'bg-yellow-500',
+        info: 'bg-blue-500'
+      };
+      toast.className = `toast ${colors[type]}`;
+      toast.textContent = message;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+
+    // Mulai
+    if (window.supabase) initApp();
+    else window.addEventListener('DOMContentLoaded', initApp);
+
+  </script>
+</body>
+</html>
