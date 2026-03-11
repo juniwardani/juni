@@ -4,10 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PDF to JPG Converter High Quality</title>
+  <!-- PDF.js Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- JSZip Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap');
+    :root {
+      --primary: #0ea5e9; /* Sky Blue */
+      --primary-hover: #0284c7;
+      --secondary: #06b6d4; /* Cyan */
+      --bg-color: #f0f9ff;
+      --surface: #ffffff;
+      --text-main: #0c4a6e;
+      --text-muted: #64748b;
+      --danger: #ef4444;
+      --success: #10b981;
+      --radius: 16px;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
 
     * {
       margin: 0;
@@ -17,111 +33,146 @@
 
     body {
       font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-      overflow-x: hidden;
-      background-color: #f0f9ff; /* Default Background */
-      color: #0c4a6e; /* Default Text Color */
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
     .app-container {
-      min-height: 100%;
+      flex: 1;
       width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 48px 24px;
-      overflow-y: auto;
     }
 
+    /* Header Section */
     .header {
       text-align: center;
-      margin-bottom: 48px;
-      max-width: 600px;
+      margin-bottom: 40px;
+      animation: fadeInDown 0.6s ease-out;
     }
 
     .icon-wrapper {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 80px;
-      height: 80px;
+      width: 72px;
+      height: 72px;
       border-radius: 20px;
-      margin-bottom: 24px;
-      background-color: #0ea5e9; /* Primary Color */
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.3);
+      font-size: 36px;
     }
 
     .title {
-      font-size: 42px;
-      font-weight: 700;
+      font-size: 2.5rem;
+      font-weight: 800;
       margin-bottom: 12px;
-      line-height: 1.2;
+      letter-spacing: -0.025em;
+      color: #0f172a;
     }
 
     .subtitle {
-      font-size: 18px;
-      opacity: 0.8;
-      line-height: 1.5;
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      max-width: 500px;
+      margin: 0 auto;
     }
 
-    .main-content {
-      width: 100%;
-      max-width: 800px;
-    }
-
+    /* Upload Zone */
     .upload-zone {
-      border: 3px dashed #0ea5e9; /* Primary Color */
-      border-radius: 24px;
+      border: 2px dashed #bae6fd;
+      border-radius: var(--radius);
       padding: 48px 32px;
       text-align: center;
       cursor: pointer;
-      transition: all 0.3s ease;
-      margin-bottom: 32px;
-      background-color: #ffffff; /* Surface Color */
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      background-color: var(--surface);
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .upload-zone::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at center, rgba(14, 165, 233, 0.05) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s;
     }
 
     .upload-zone:hover {
+      border-color: var(--primary);
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+      box-shadow: var(--shadow);
+    }
+
+    .upload-zone:hover::before {
+      opacity: 1;
+    }
+
+    .upload-zone.drag-over {
+      border-style: solid;
+      border-color: var(--primary);
+      background-color: #f0f9ff;
+      transform: scale(1.01);
     }
 
     .upload-icon {
-      font-size: 56px;
+      font-size: 48px;
       margin-bottom: 16px;
+      display: block;
     }
 
     .upload-text {
-      font-size: 20px;
-      font-weight: 600;
+      font-size: 1.125rem;
+      font-weight: 700;
       margin-bottom: 8px;
+      color: #0369a1;
     }
 
     .upload-hint {
-      font-size: 14px;
-      opacity: 0.7;
+      font-size: 0.9rem;
+      color: var(--text-muted);
     }
 
+    /* File List */
     .file-list {
-      margin-bottom: 32px;
+      width: 100%;
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
 
     .file-item {
       display: flex;
       align-items: center;
       gap: 16px;
-      padding: 20px;
-      border-radius: 16px;
-      margin-bottom: 12px;
+      padding: 16px 20px;
+      border-radius: 12px;
+      background-color: var(--surface);
+      border: 1px solid #e2e8f0;
       transition: all 0.2s ease;
-      background-color: #ffffff;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
     .file-item:hover {
-      transform: translateX(4px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      border-color: var(--primary);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
 
     .file-icon {
-      font-size: 32px;
+      font-size: 28px;
       flex-shrink: 0;
     }
 
@@ -132,151 +183,287 @@
 
     .file-name {
       font-weight: 600;
-      font-size: 16px;
+      font-size: 0.95rem;
       margin-bottom: 4px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      color: #334155;
     }
 
     .file-size {
-      font-size: 13px;
-      opacity: 0.7;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
     }
 
     .remove-btn {
-      background: none;
+      background: #fee2e2;
       border: none;
-      font-size: 24px;
-      cursor: pointer;
-      padding: 8px;
-      opacity: 0.6;
-      transition: all 0.2s;
+      width: 32px;
+      height: 32px;
       border-radius: 8px;
-      color: #ef4444;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--danger);
+      transition: all 0.2s;
+      font-size: 18px;
+      flex-shrink: 0;
     }
 
     .remove-btn:hover {
-      opacity: 1;
-      transform: scale(1.1);
+      background: #fecaca;
+      transform: scale(1.05);
     }
 
+    /* Buttons */
     .button-group {
       display: flex;
       gap: 16px;
       justify-content: center;
       flex-wrap: wrap;
+      width: 100%;
+      margin-bottom: 32px;
     }
 
     .btn {
-      padding: 16px 32px;
+      padding: 14px 28px;
       border: none;
       border-radius: 12px;
-      font-size: 16px;
+      font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
       font-family: inherit;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+      gap: 10px;
       color: white;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
     }
 
     .btn-primary {
-      background-color: #0ea5e9;
+      background: linear-gradient(135deg, var(--primary), #0284c7);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.4);
     }
 
     .btn-secondary {
-      background-color: #06b6d4;
+      background: linear-gradient(135deg, var(--secondary), #0891b2);
     }
 
-    .btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    .btn-secondary:hover {
+      box-shadow: 0 10px 15px -3px rgba(6, 182, 212, 0.4);
     }
 
     .btn:disabled {
-      opacity: 0.5;
+      opacity: 0.6;
       cursor: not-allowed;
-    }
-
-    .btn-icon {
-      font-size: 20px;
+      filter: grayscale(0.8);
+      transform: none !important;
+      box-shadow: none !important;
     }
 
     .hidden {
       display: none !important;
     }
 
+    /* Status Message */
     .status-message {
       text-align: center;
-      padding: 16px;
-      border-radius: 12px;
-      margin-top: 24px;
+      padding: 12px 24px;
+      border-radius: 50px;
+      margin-top: 16px;
       font-weight: 500;
-      animation: slideIn 0.3s ease;
+      font-size: 0.95rem;
+      animation: slideUp 0.3s ease;
+      display: inline-block;
     }
 
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(-10px); }
+    /* Preview Gallery */
+    .preview-container {
+      width: 100%;
+      margin-top: 40px;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .preview-header {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 24px;
+      text-align: center;
+      color: #1e293b;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .image-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 24px;
+    }
+
+    .image-card {
+      background: white;
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #f1f5f9;
+    }
+
+    .image-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .image-card img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      object-fit: contain;
+      aspect-ratio: 1/1.414;
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+    }
+
+    .card-info {
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .card-filename {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #334155;
+    }
+
+    .card-pagenum {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      background: #f1f5f9;
+      padding: 2px 8px;
+      border-radius: 12px;
+      display: inline-block;
+    }
+
+    .card-btn {
+      margin-top: auto;
+      width: 100%;
+      padding: 10px;
+      font-size: 0.9rem;
+      background-color: #f8fafc;
+      color: var(--text-main);
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+    }
+    
+    .card-btn:hover {
+      background-color: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    /* Animations */
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .drag-over {
-      border-style: solid;
-      transform: scale(1.02);
-      background-color: #f0f9ff;
-    }
-
+    /* Responsive */
     @media (max-width: 640px) {
-      .title { font-size: 32px; }
+      .title { font-size: 28px; }
       .subtitle { font-size: 16px; }
-      .upload-zone { padding: 32px 24px; }
-      .button-group { flex-direction: column; width: 100%; }
-      .btn { width: 100%; justify-content: center; }
+      .upload-zone { padding: 32px 20px; }
+      .button-group { flex-direction: column; }
+      .btn { width: 100%; }
     }
   </style>
  </head>
  <body class="h-full">
   <div class="app-container">
+   <!-- Header -->
    <div class="header">
-    <div class="icon-wrapper"><span style="font-size: 48px;">ðŸ“„</span></div>
-    <h1 class="title">PDF to JPG</h1>
-    <p class="subtitle">Konversi halaman PDF menjadi gambar JPG berkualitas tinggi</p>
+    <div class="icon-wrapper">📄</div>
+    <h1 class="title">PDF to JPG Converter</h1>
+    <p class="subtitle">Konversi halaman PDF menjadi gambar JPG berkualitas tinggi secara instan di browser Anda.</p>
    </div>
-   <div class="main-content">
+
+   <!-- Main Content -->
+   <div class="main-content" style="width: 100%;">
     <input type="file" id="fileInput" accept=".pdf" multiple class="hidden">
+    
+    <!-- Drop Zone -->
     <div class="upload-zone" id="uploadZone">
-     <div class="upload-icon">ðŸ“</div>
+     <span class="upload-icon">📁</span>
      <div class="upload-text">Pilih File PDF</div>
      <div class="upload-hint">atau seret & lepas file di sini</div>
     </div>
+
+    <!-- List of Files -->
     <div class="file-list" id="fileList"></div>
+
+    <!-- Action Buttons -->
     <div class="button-group">
       <button class="btn btn-primary hidden" id="convertBtn"> 
-        <span class="btn-icon">ðŸ–¼ï¸</span> 
+        <span>🖼️</span> 
         <span>Konversi ke JPG (High Quality)</span> 
       </button> 
       <button class="btn btn-secondary hidden" id="downloadAllBtn"> 
-        <span class="btn-icon">ðŸ“¦</span> 
+        <span>📦</span> 
         <span>Unduh Semua (ZIP)</span> 
       </button>
     </div>
-    <div id="previewContainer" class="hidden" style="margin-top: 32px;">
-     <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 24px; text-align: center;">Hasil Konversi</h2>
-     <div id="imageGallery" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;"></div>
+
+    <!-- Status Message Area -->
+    <div style="text-align: center; width: 100%;">
+        <div id="statusMessage"></div>
     </div>
-    <div id="statusMessage"></div>
+
+    <!-- Preview Gallery -->
+    <div id="previewContainer" class="preview-container hidden">
+     <h2 class="preview-header">Hasil Konversi</h2>
+     <div class="image-gallery" id="imageGallery"></div>
+    </div>
    </div>
   </div>
+
   <script>
-    // Set Worker PDF.js
+    // --- Konfigurasi PDF.js ---
+    // Menggunakan worker dari CDN agar proses rendering tidak memblokir UI
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
+    // State Management
     let pdfFiles = [];
     let convertedImages = [];
 
+    // DOM Elements
     const fileInput = document.getElementById('fileInput');
     const uploadZone = document.getElementById('uploadZone');
     const fileList = document.getElementById('fileList');
@@ -286,10 +473,15 @@
     const previewContainer = document.getElementById('previewContainer');
     const imageGallery = document.getElementById('imageGallery');
 
-    // Event Listeners
+    // --- Event Listeners ---
+    
+    // Klik area upload memicu input file
     uploadZone.addEventListener('click', () => fileInput.click());
+    
+    // Handle file selection
     fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
 
+    // Drag & Drop Effects
     uploadZone.addEventListener('dragover', (e) => {
       e.preventDefault();
       uploadZone.classList.add('drag-over');
@@ -302,26 +494,35 @@
     uploadZone.addEventListener('drop', (e) => {
       e.preventDefault();
       uploadZone.classList.remove('drag-over');
+      // Filter hanya file PDF
       const files = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
       handleFiles(files);
     });
+
+    // --- Core Functions ---
 
     function handleFiles(files) {
       const pdfFilesArray = Array.from(files).filter(f => f.type === 'application/pdf');
 
       if (pdfFilesArray.length === 0) {
-        showStatus('Harap pilih file PDF yang valid', 'error');
+        showStatus('Harap pilih file PDF yang valid.', 'error');
         return;
       }
 
+      // Tambahkan file baru ke daftar
       pdfFiles = [...pdfFiles, ...pdfFilesArray];
+      
+      // Reset state hasil konversi jika ada file baru
       convertedImages = [];
       renderFileList();
       updateButtonVisibility();
+      
+      // Sembunyikan hasil lama
       downloadAllBtn.classList.add('hidden');
       previewContainer.classList.add('hidden');
       imageGallery.innerHTML = '';
-      showStatus(`${pdfFilesArray.length} file PDF berhasil dimuat`, 'success');
+      
+      showStatus(`${pdfFilesArray.length} file PDF berhasil ditambahkan.`, 'success');
     }
 
     function renderFileList() {
@@ -331,22 +532,27 @@
       pdfFiles.forEach((file, index) => {
         const fileItem = document.createElement('div');
         fileItem.className = 'file-item';
+        
+        // Menggunakan emoji yang benar (📄)
         fileItem.innerHTML = `
-          <span class="file-icon">ðŸ“„</span>
+          <span class="file-icon">📄</span>
           <div class="file-info">
-            <div class="file-name">${file.name}</div>
+            <div class="file-name" title="${file.name}">${file.name}</div>
             <div class="file-size">${formatFileSize(file.size)}</div>
           </div>
-          <button class="remove-btn" onclick="removeFile(${index})">Ã—</button>
+          <button class="remove-btn" onclick="removeFile(${index})" title="Hapus File">×</button>
         `;
         fileList.appendChild(fileItem);
       });
     }
 
+    // Fungsi global agar bisa dipanggil dari inline HTML onclick
     window.removeFile = function(index) {
       pdfFiles.splice(index, 1);
       renderFileList();
       updateButtonVisibility();
+      
+      // Bersihkan jika tidak ada file lagi
       if (pdfFiles.length === 0) {
         convertedImages = [];
         downloadAllBtn.classList.add('hidden');
@@ -365,52 +571,68 @@
     }
 
     function formatFileSize(bytes) {
-      if (bytes < 1024) return bytes + ' B';
-      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+      if (bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
     }
 
     function showStatus(message, type) {
       const colors = {
-        success: { bg: '#d1fae5', text: '#065f46' },
-        error: { bg: '#fee2e2', text: '#991b1b' },
-        info: { bg: '#dbeafe', text: '#1e40af' }
+        success: { bg: '#d1fae5', text: '#065f46', border: '#34d399' },
+        error: { bg: '#fee2e2', text: '#991b1b', border: '#f87171' },
+        info: { bg: '#dbeafe', text: '#1e40af', border: '#60a5fa' }
       };
 
-      const color = colors[type] || colors.info;
-      statusMessage.style.backgroundColor = color.bg;
-      statusMessage.style.color = color.text;
+      const style = colors[type] || colors.info;
+      
+      statusMessage.style.backgroundColor = style.bg;
+      statusMessage.style.color = style.text;
+      statusMessage.style.border = `1px solid ${style.border}`;
       statusMessage.textContent = message;
       statusMessage.className = 'status-message';
+      statusMessage.style.display = 'inline-block';
 
-      setTimeout(() => {
-        statusMessage.className = 'status-message hidden';
+      // Reset timer jika ada pesan baru
+      if (window.statusTimeout) clearTimeout(window.statusTimeout);
+      
+      window.statusTimeout = setTimeout(() => {
+        statusMessage.style.display = 'none';
       }, 5000);
     }
 
+    // --- Conversion Logic ---
+
     convertBtn.addEventListener('click', async () => {
       if (pdfFiles.length === 0) {
-        showStatus('Harap pilih file PDF terlebih dahulu', 'error');
+        showStatus('Harap pilih file PDF terlebih dahulu.', 'error');
         return;
       }
 
       convertBtn.disabled = true;
+      convertBtn.innerHTML = '<span>⏳</span> <span>Sedang Memproses...</span>';
       showStatus('Memulai konversi resolusi tinggi...', 'info');
+      
       imageGallery.innerHTML = '';
       convertedImages = [];
 
       try {
+        // Loop setiap file PDF yang diupload
         for (let fileIndex = 0; fileIndex < pdfFiles.length; fileIndex++) {
           const currentFile = pdfFiles[fileIndex];
           const arrayBuffer = await currentFile.arrayBuffer();
+          
+          // Load dokumen PDF
           const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
           const numPages = pdf.numPages;
 
+          // Loop setiap halaman dalam PDF
           for (let pageNum = 1; pageNum <= numPages; pageNum++) {
             const page = await pdf.getPage(pageNum);
-            
+
             // --- PENGATURAN RESOLUSI TINGGI ---
-            // Scale 3.0 meningkatkan resolusi secara signifikan (sekitar 300 DPI)
+            // Scale 3.0 = sekitar 300-360 DPI (tergantung ukuran asli PDF)
             const scale = 3.0; 
             const viewport = page.getViewport({ scale });
 
@@ -426,17 +648,18 @@
             }).promise;
 
             // --- PENGATURAN KUALITAS JPG ---
-            // Quality 1.0 berarti kualitas maksimal (100%), tanpa kompresi lossy yang berarti
+            // Quality 1.0 = Kualitas Maksimal (100%)
             const quality = 1.0; 
             const imageDataUrl = canvas.toDataURL('image/jpeg', quality);
 
             // Buat blob untuk keperluan ZIP
             const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
 
+            // Simpan data gambar
             const imageData = {
                 blob: blob,
                 dataUrl: imageDataUrl,
-                fileName: `${currentFile.name.replace('.pdf', '')}_halaman-${pageNum}.jpg`,
+                fileName: `${currentFile.name.replace('.pdf', '')}_hal-${pageNum}.jpg`,
                 pageNum: pageNum,
                 fileIndex: fileIndex,
                 originalFileName: currentFile.name
@@ -444,36 +667,52 @@
 
             convertedImages.push(imageData);
 
-            // Tambahkan ke galeri
-            const imageCard = document.createElement('div');
-            imageCard.style.cssText = 'background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);';
+            // Tambahkan kartu gambar ke galeri UI
+            addImageToGallery(imageData);
             
-            imageCard.innerHTML = `
-              <img src="${imageDataUrl}" style="width: 100%; height: auto; border-radius: 8px; margin-bottom: 12px;">
-              <div style="text-align: center; margin-bottom: 4px; font-weight: 600; font-size: 14px;">${currentFile.name}</div>
-              <div style="text-align: center; margin-bottom: 8px; font-size: 12px; opacity: 0.7;">Halaman ${pageNum}</div>
-              <button class="btn btn-primary" style="width: 100%; padding: 10px; font-size: 14px;" onclick="downloadSingleImage(${convertedImages.length - 1})">
-                <span>ðŸ’¾</span>
-                <span>Unduh</span>
-              </button>
-            `;
-
-            imageGallery.appendChild(imageCard);
-            showStatus(`Memproses ${currentFile.name} halaman ${pageNum}/${numPages}...`, 'info');
+            // Update status
+            showStatus(`Memproses: ${currentFile.name} (Hal. ${pageNum}/${numPages})`, 'info');
           }
         }
 
         previewContainer.classList.remove('hidden');
         downloadAllBtn.classList.remove('hidden');
-        showStatus(`Semua file berhasil dikonversi dengan resolusi tinggi!`, 'success');
+        showStatus(`✅ Berhasil mengonversi ${convertedImages.length} halaman!`, 'success');
       } catch (error) {
-        showStatus('Terjadi kesalahan saat mengkonversi PDF', 'error');
         console.error(error);
+        showStatus('❌ Gagal mengonversi PDF. Pastikan file tidak rusak.', 'error');
       } finally {
         convertBtn.disabled = false;
+        convertBtn.innerHTML = '<span>🖼️</span> <span>Konversi ke JPG (High Quality)</span>';
       }
     });
 
+    function addImageToGallery(imageData) {
+      const imageCard = document.createElement('div');
+      imageCard.className = 'image-card';
+
+      // Emoji 💾 yang diperbaiki
+      imageCard.innerHTML = `
+        <img src="${imageData.dataUrl}" alt="Halaman ${imageData.pageNum}" loading="lazy">
+        <div class="card-info">
+          <div class="card-filename" title="${imageData.originalFileName}">${imageData.originalFileName}</div>
+          <div class="card-pagenum">Halaman ${imageData.pageNum}</div>
+        </div>
+        <button class="btn card-btn" onclick="downloadSingleImage(${convertedImages.length - 1})">
+          <span>💾</span>
+          <span>Unduh</span>
+        </button>
+      `;
+
+      imageGallery.appendChild(imageCard);
+      
+      // Auto scroll ke galeri jika ini adalah gambar pertama
+      if (convertedImages.length === 1) {
+         previewContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    // Download Single Image
     window.downloadSingleImage = function(index) {
       const image = convertedImages[index];
       if (!image) return;
@@ -484,43 +723,53 @@
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      showStatus(`${image.fileName} berhasil diunduh!`, 'success');
+      showStatus(`Mengunduh ${image.fileName}...`, 'success');
     }
 
+    // Download All as ZIP
     downloadAllBtn.addEventListener('click', async () => {
       if (convertedImages.length === 0) {
-        showStatus('Tidak ada gambar untuk diunduh', 'error');
+        showStatus('Tidak ada gambar untuk diunduh.', 'error');
         return;
       }
 
       downloadAllBtn.disabled = true;
-      showStatus('Membuat file ZIP...', 'info');
+      const originalText = downloadAllBtn.innerHTML;
+      downloadAllBtn.innerHTML = '<span>⏳</span> <span>Mengompresi ZIP...</span>';
+      showStatus('Sedang membuat file ZIP...', 'info');
 
       try {
         const zip = new JSZip();
+        const folder = zip.folder("converted_jpgs");
 
         convertedImages.forEach((image) => {
           if (image.blob) {
-            zip.file(image.fileName, image.blob);
+            folder.file(image.fileName, image.blob);
           }
         });
 
-        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const zipBlob = await zip.generateAsync({ 
+            type: 'blob',
+            compression: "DEFLATE", 
+            compressionOptions: { level: 6 } 
+        });
+        
         const url = URL.createObjectURL(zipBlob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'converted-images-hq.zip';
+        a.download = 'images-high-quality.zip';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
-        showStatus(`File ZIP berhasil diunduh!`, 'success');
+        showStatus('✅ File ZIP berhasil diunduh!', 'success');
       } catch (error) {
-        showStatus('Terjadi kesalahan saat membuat file ZIP', 'error');
         console.error(error);
+        showStatus('Gagal membuat file ZIP.', 'error');
       } finally {
         downloadAllBtn.disabled = false;
+        downloadAllBtn.innerHTML = originalText;
       }
     });
   </script>
