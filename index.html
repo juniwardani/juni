@@ -30,7 +30,6 @@
       transform: scale(0.98);
     }
     
-    /* Style khusus View Transition (Browser Native) */
     @view-transition { 
       navigation: auto; 
     }
@@ -50,98 +49,11 @@
     <!-- Main Content -->
     <main class="flex-1 p-5">
       
-      <!-- Navigation Grid -->
-      <div class="grid grid-cols-2 gap-4 max-w-md mx-auto">
-
-        <!-- Catatan -->
-        <a href="catatan.html" class="menu-card bg-white rounded-2xl p-5 flex flex-col items-center justify-center shadow-xl border border-violet-100 text-decoration-none hover:shadow-2xl">
-          <div class="w-14 h-14 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center mb-3 shadow-lg">
-            <i class="fa-solid fa-file-lines text-2xl text-white"></i>
-          </div>
-          <span class="text-slate-700 font-semibold text-sm text-center">Catatan</span>
-        </a>
-
-        <!-- Agenda Pribadi -->
-        <a href="agenda.html" class="menu-card bg-white rounded-2xl p-5 flex flex-col items-center justify-center shadow-xl border border-teal-100 text-decoration-none hover:shadow-2xl">
-          <div class="w-14 h-14 bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center mb-3 shadow-lg">
-            <i class="fa-solid fa-calendar-days text-2xl text-white"></i>
-          </div>
-          <span class="text-slate-700 font-semibold text-sm text-center">Agenda Pribadi</span>
-        </a>
-
-        <!-- PDF to JPG -->
-        <a href="pdfjpg.html" class="menu-card bg-white rounded-2xl p-5 flex flex-col items-center justify-center shadow-xl border border-rose-100 text-decoration-none hover:shadow-2xl">
-          <div class="w-14 h-14 bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl flex items-center justify-center mb-3 shadow-lg">
-            <i class="fa-solid fa-file-image text-2xl text-white"></i>
-          </div>
-          <span class="text-slate-700 font-semibold text-sm text-center">PDF to JPG</span>
-        </a>
-
-        <!-- JPG ke PDF -->
-        <a href="jpgpdf.html" class="menu-card bg-white rounded-2xl p-5 flex flex-col items-center justify-center shadow-xl border border-lime-100 text-decoration-none hover:shadow-2xl">
-          <div class="w-14 h-14 bg-gradient-to-br from-lime-500 to-lime-600 rounded-2xl flex items-center justify-center mb-3 shadow-lg">
-            <i class="fa-solid fa-file-pdf text-2xl text-white"></i>
-          </div>
-          <span class="text-slate-700 font-semibold text-sm text-center">JPG ke PDF</span>
-        </a>
-
-        <!-- Merge PDF -->
-        <a href="merge.html" class="menu-card bg-white rounded-2xl p-5 flex flex-col items-center justify-center shadow-xl border border-amber-100 text-decoration-none hover:shadow-2xl">
-          <div class="w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center mb-3 shadow-lg">
-            <i class="fa-solid fa-layer-group text-2xl text-white"></i>
-          </div>
-          <span class="text-slate-700 font-semibold text-sm text-center">Merge PDF</span>
-        </a>
-
-        <!-- Extract PDF -->
-        <a href="extrak.html" class="menu-card bg-white rounded-2xl p-5 flex flex-col items-center justify-center shadow-xl border border-cyan-100 text-decoration-none hover:shadow-2xl">
-          <div class="w-14 h-14 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center mb-3 shadow-lg">
-            <i class="fa-solid fa-file-export text-2xl text-white"></i>
-          </div>
-          <span class="text-slate-700 font-semibold text-sm text-center">Extract PDF</span>
-        </a>
-
-        <!-- Insert PDF -->
-        <a href="insert.html" class="menu-card bg-white rounded-2xl p-5 flex flex-col items-center justify-center shadow-xl border border-sky-100 no-underline hover:shadow-2xl">
-          <div class="w-14 h-14 bg-gradient-to-br from-sky-500 to-sky-600 rounded-2xl flex items-center justify-center mb-3 shadow-lg">
-            <i class="fa-solid fa-file-circle-plus text-2xl text-white"></i>
-          </div>
-          <span class="text-slate-700 font-semibold text-sm text-center">Insert PDF</span>
-        </a>
-
-        <!-- Tanda Tangan -->
-        <a href="ttd.html" class="menu-card bg-white rounded-2xl p-5 flex flex-col items-center justify-center shadow-xl border border-fuchsia-100 text-decoration-none hover:shadow-2xl">
-          <div class="w-14 h-14 bg-gradient-to-br from-fuchsia-500 to-fuchsia-600 rounded-2xl flex items-center justify-center mb-3 shadow-lg">
-            <i class="fa-solid fa-signature text-2xl text-white"></i>
-          </div>
-          <span class="text-slate-700 font-semibold text-sm text-center">Tanda Tangan</span>
-        </a>
-
-        <!-- jsPDF -->
-        <a href="https://jspdf-delta.vercel.app/" target="_blank" rel="noopener noreferrer" class="menu-card bg-white rounded-2xl p-5 flex flex-col items-center justify-center shadow-xl border border-emerald-100 text-decoration-none hover:shadow-2xl">
-          <div class="w-14 h-14 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mb-3 shadow-lg">
-            <i class="fa-solid fa-link text-2xl text-white"></i>
-          </div>
-          <span class="text-slate-700 font-semibold text-sm text-center">jsPDF</span>
-        </a>
-
-        <!-- Supabase Manager -->
-        <a href="supabase.html" class="menu-card bg-white rounded-2xl p-5 flex flex-col items-center justify-center shadow-xl border border-indigo-100 text-decoration-none hover:shadow-2xl">
-          <div class="w-14 h-14 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-3 shadow-lg">
-            <i class="fa-solid fa-database text-2xl text-white"></i>
-          </div>
-          <span class="text-slate-700 font-semibold text-sm text-center">Supabase Manager</span>
-        </a>
-
-        <!-- RTS (New Item) -->
-        <a href="https://tahfidzktb.vercel.app/rts.html" class="menu-card bg-white rounded-2xl p-5 flex flex-col items-center justify-center shadow-xl border border-orange-100 text-decoration-none hover:shadow-2xl">
-          <div class="w-14 h-14 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mb-3 shadow-lg">
-            <i class="fa-solid fa-book-quran text-2xl text-white"></i>
-          </div>
-          <span class="text-slate-700 font-semibold text-sm text-center">RTS</span>
-        </a>
-
+      <!-- Container Grid Kosong (Akan diisi oleh JavaScript) -->
+      <div id="app-menu" class="grid grid-cols-2 gap-4 max-w-md mx-auto">
+        <!-- Item menu akan muncul di sini secara otomatis -->
       </div>
+      
     </main>
 
     <!-- Footer -->
@@ -150,5 +62,122 @@
     </footer>
   </div>
 
+  <!-- Script Data & Render Menu -->
+  <script>
+    // 1. DATA MENU (Ubah data di sini saja)
+    // warnaBg: kombinasi 'from-[warna] to-[warna]'
+    // warnaBorder: 'border-[warna]-100'
+    const menuItems = [
+      {
+        nama: "Catatan",
+        link: "catatan.html",
+        icon: "fa-file-lines",
+        warnaBg: "from-violet-500 to-purple-600",
+        warnaBorder: "border-violet-100"
+      },
+      {
+        nama: "Agenda Pribadi",
+        link: "agenda.html",
+        icon: "fa-calendar-days",
+        warnaBg: "from-teal-500 to-teal-600",
+        warnaBorder: "border-teal-100"
+      },
+      {
+        nama: "PDF to JPG",
+        link: "pdfjpg.html",
+        icon: "fa-file-image",
+        warnaBg: "from-rose-500 to-pink-600",
+        warnaBorder: "border-rose-100"
+      },
+      {
+        nama: "JPG ke PDF",
+        link: "jpgpdf.html",
+        icon: "fa-file-pdf",
+        warnaBg: "from-lime-500 to-lime-600",
+        warnaBorder: "border-lime-100"
+      },
+      {
+        nama: "Merge PDF",
+        link: "merge.html",
+        icon: "fa-layer-group",
+        warnaBg: "from-amber-500 to-orange-600",
+        warnaBorder: "border-amber-100"
+      },
+      {
+        nama: "Extract PDF",
+        link: "extrak.html",
+        icon: "fa-file-export",
+        warnaBg: "from-cyan-500 to-blue-600",
+        warnaBorder: "border-cyan-100"
+      },
+      {
+        nama: "Insert PDF",
+        link: "insert.html",
+        icon: "fa-file-circle-plus",
+        warnaBg: "from-sky-500 to-sky-600",
+        warnaBorder: "border-sky-100"
+      },
+      {
+        nama: "Tanda Tangan",
+        link: "ttd.html",
+        icon: "fa-signature",
+        warnaBg: "from-fuchsia-500 to-fuchsia-600",
+        warnaBorder: "border-fuchsia-100"
+      },
+      {
+        nama: "jsPDF",
+        link: "https://jspdf-delta.vercel.app/",
+        icon: "fa-link",
+        warnaBg: "from-emerald-500 to-green-600",
+        warnaBorder: "border-emerald-100",
+        isNewTab: true // Khusus buka di tab baru
+      },
+      {
+        nama: "Supabase Manager",
+        link: "supabase.html",
+        icon: "fa-database",
+        warnaBg: "from-indigo-500 to-indigo-600",
+        warnaBorder: "border-indigo-100"
+      },
+      {
+        nama: "OCR PDF",
+        link: "https://ocr-dun.vercel.app/",
+        icon: "fa-font",
+        warnaBg: "from-slate-500 to-slate-700",
+        warnaBorder: "border-slate-100"
+      },
+      {
+        nama: "RTS",
+        link: "https://tahfidzktb.vercel.app/rts.html",
+        icon: "fa-book-quran",
+        warnaBg: "from-orange-500 to-red-600",
+        warnaBorder: "border-orange-100"
+      }
+    ];
+
+    // 2. FUNGSI RENDER (Jangan diubah kecuali perlu desain)
+    const container = document.getElementById('app-menu');
+    
+    // Bersihkan container
+    container.innerHTML = '';
+
+    // Loop melalui data dan buat HTML
+    menuItems.forEach(item => {
+      // Cek apakah perlu target="_blank"
+      const targetAttr = item.isNewTab ? 'target="_blank" rel="noopener noreferrer"' : '';
+
+      const cardHTML = `
+        <a href="${item.link}" ${targetAttr} class="menu-card bg-white rounded-2xl p-5 flex flex-col items-center justify-center shadow-xl border ${item.warnaBorder} text-decoration-none hover:shadow-2xl cursor-pointer">
+          <div class="w-14 h-14 bg-gradient-to-br ${item.warnaBg} rounded-2xl flex items-center justify-center mb-3 shadow-lg">
+            <i class="fa-solid ${item.icon} text-2xl text-white"></i>
+          </div>
+          <span class="text-slate-700 font-semibold text-sm text-center">${item.nama}</span>
+        </a>
+      `;
+      
+      // Masukkan ke dalam container
+      container.innerHTML += cardHTML;
+    });
+  </script>
 </body>
 </html>
