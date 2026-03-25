@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Syahadah</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        :root {
+            /* Maroon Theme */
+            --primary-color: #800000;      /* Maroon Utama */
+            --secondary-color: #a52a2a;    /* Maroon Terang/Brown */
+            --accent-color: #ffcccc;       /* Pink Maroon Lembut */
+            --background-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding-bottom: 50px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-top: 20px;
+        }
+
+        /* Header Styling */
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(128, 0, 0, 0.3);
+            text-align: center;
+            border: 1px solid #5c0000;
+        }
+
+        .header h1 { margin: 0; font-weight: 700; font-size: 1.8rem; }
+
+        /* Card Styling */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            border-top: 4px solid var(--primary-color);
+        }
+
+        .card h3 {
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            margin-bottom: 1.2rem;
+            font-weight: 600;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+
+        /* Form Controls */
+        .form-label { font-weight: 600; color: #555; margin-bottom: 6px; font-size: 0.9rem; }
+        .form-control, .form-select {
+            border-radius: 6px; border: 1px solid #ccc; padding: 10px 12px; transition: all 0.2s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(128, 0, 0, 0.15);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none; border-radius: 6px; padding: 10px 20px; font-weight: 600;
+            transition: all 0.3s ease; color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px); box-shadow: 0 4px 12px rgba(128, 0, 0, 0.4);
+            background: linear-gradient(135deg, #6d0000, var(--secondary-color)); color: white;
+        }
+        .btn-warning { background-color: #ffc107; color: #000; border: none; border-radius: 6px; }
+        .btn-warning:hover { background-color: #e0a800; color: #000; }
+        .btn-danger { background-color: #dc3545; color: white; border-radius: 6px; }
+        .btn-danger:hover { background-color: #bb2d3b; color: white; }
+        .btn-download {
+            background: linear-gradient(135deg, #2e7d32, #43a047);
+            border: none; border-radius: 6px; padding: 8px 20px; font-weight: 500; color: white; transition: all 0.3s ease;
+        }
+        .btn-download:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3); color: white; }
+
+        /* Table Styling */
+        .table-container {
+            background-color: var(--card-bg); border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); overflow: hidden; border: 1px solid var(--border-color);
+        }
+        .table { margin-bottom: 0; font-size: 0.9rem; }
+        .table thead th {
+            background-color: var(--primary-color); color: white; font-weight: 600; text-align: center;
+            border-bottom: 2px solid #5c0000; padding: 12px 8px;
+        }
+        .table tbody td { vertical-align: middle; padding: 10px 8px; }
+
+        /* Autocomplete */
+        .autocomplete-container { position: relative; }
+        .autocomplete-items {
+            position: absolute; border: 1px solid #d4d4d4; border-bottom: none; border-top: none;
+            z-index: 99; top: 100%; left: 0; right: 0; border-radius: 0 0 6px 6px;
+            background-color: #fff; max-height: 200px; overflow-y: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .autocomplete-items div {
+            padding: 10px; cursor: pointer; background-color: #fff; border-bottom: 1px solid #d4d4d4; font-size: 0.9rem;
+        }
+        .autocomplete-items div:hover { background-color: var(--accent-color); color: var(--primary-color); }
+        .autocomplete-active { background-color: var(--accent-color) !important; color: var(--primary-color); }
+
+        /* Empty State */
+        .empty-state { text-align: center; padding: 40px 20px; color: #888; }
+        .empty-state i { font-size: 3rem; margin-bottom: 15px; color: #ddd; }
+
+        /* Toast Notification */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1055; }
+
+        @media (max-width: 768px) {
+            .container { padding: 10px; } .header { padding: 15px; margin-bottom: 15px; }
+            .header h1 { font-size: 1.4rem; } .card { padding: 15px; margin-bottom: 15px; }
+            .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .table { min-width: 600px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-graduation-cap me-2"></i>Data Syahadah</h1>
+            <small class="text-white-50">Sistem Manajemen Data Kelulusan</small>
+        </div>
+
+        <div class="row">
+            <!-- Kolom Input Form -->
+            <div class="col-lg-4 col-md-5 mb-4">
+                <div class="card">
+                    <h3 class="mb-3" id="formTitle"><i class="fas fa-user-plus me-2"></i>Input Data</h3>
+                    <form id="syahadahForm" novalidate>
+                        <!-- Hidden ID untuk Edit Mode -->
+                        <input type="hidden" id="editId">
+
+                        <div class="mb-2">
+                            <label for="nama" class="form-label">Nama Santri</label>
+                            <div class="autocomplete-container">
+                                <input type="text" class="form-control" id="nama" placeholder="Ketik nama..." autocomplete="off" required>
+                                <div id="namaAutocomplete" class="autocomplete-items"></div>
+                            </div>
+                            <div class="invalid-feedback">Nama wajib diisi.</div>
+                        </div>
+
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <label for="nilaiFashohah" class="form-label">Fashohah</label>
+                                <input type="number" class="form-control form-control-sm" id="nilaiFashohah" min="0" max="100" placeholder="0-100" required>
+                            </div>
+                            <div class="col-6">
+                                <label for="nilaiTajwid" class="form-label">Tajwid</label>
+                                <input type="number" class="form-control form-control-sm" id="nilaiTajwid" min="0" max="100" placeholder="0-100" required>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <label for="ghorib" class="form-label">Ghorib</label>
+                                <input type="number" class="form-control form-control-sm" id="ghorib" min="0" max="100" placeholder="0-100" required>
+                            </div>
+                            <div class="col-6">
+                                <label for="suara" class="form-label">Suara</label>
+                                <input type="number" class="form-control form-control-sm" id="suara" min="0" max="100" placeholder="0-100" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="keterangan" class="form-label">Keterangan</label>
+                            <select class="form-select form-select-sm" id="keterangan">
+                                <option value="Lulus" selected>Lulus</option>
+                                <option value="Tidak">Tidak Lulus</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100" id="btnSubmit">
+                            <i class="fas fa-save me-2"></i>Simpan Data
+                        </button>
+                        <button type="button" class="btn btn-secondary w-100 mt-2" id="btnCancel" style="display: none;" onclick="cancelEdit()">
+                            <i class="fas fa-times me-2"></i>Batal Edit
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Kolom Tabel Data -->
+            <div class="col-lg-8 col-md-7">
+                <div class="card h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <h3 class="mb-0"><i class="fas fa-list me-2"></i>Database</h3>
+                        <button id="downloadExcel" class="btn btn-download btn-sm">
+                            <i class="fas fa-file-excel me-2"></i>Excel
+                        </button>
+                    </div>
+
+                    <div class="table-container">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px;">No</th>
+                                        <th>Nama</th>
+                                        <th>Fsh</th>
+                                        <th>Tjw</th>
+                                        <th>Ghr</th>
+                                        <th>Sr</th>
+                                        <th>Ket</th>
+                                        <th style="width: 100px;">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dataTable">
+                                    <!-- Data dirender via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="emptyState" class="empty-state" style="display: none;">
+                        <i class="far fa-folder-open"></i>
+                        <p class="mb-0 mt-2">Belum ada data yang tersimpan.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script>
+        // --- KONFIGURASI SUPABASE ---
+        const supabaseUrl = 'https://lrkechznknwqnxckyfcg.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxya2VjaHpua253cW54Y2t5ZmNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjkxMjgzODEsImV4cCI6MjA0NDcwNDM4MX0.Tj8p1u3_DGQnqhPkS6AJGs5BwOSeebdvsknX2qHzwdQ';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // --- STATE GLOBAL ---
+        let syahadahData = []; 
+
+        // --- DATA MASTER (NAMA) ---
+        const namaList = [
+            "MUHAMMAD ROYHANULHUDA AL IHSAN", "ABID RAFASYA AHMAD", "MUHAMMAD AREEJ SIBARANI",
+            "MUHAMMAD ABID ADABY", "MUHAMMAD YAZID RIDHO", "AFIQAH QISMINA", "MAYDA AIS AMINAH",
+            "SAYINDRA MYLOWA SAYNA", "IBROTUL NAILA BULDAN", "DINDA JULIA MARSYA",
+            "MUHAMMAD HANIF NAZMI", "MUHAMMAD PASHA AL FATIH", "ANGGA NUR PRATAMA",
+            "MUHAMMAD FAIZAR ADZANTYO ARBAIN", "ANNISYA LUTHFIANI RAHMAH",
+            "ACHMAD ARDIPONSA YAKIMANGABU", "NAQIB HAIKAL", "FATHIR AL ADYAN", "NABOCHA SILMI KAFFAH"
+        ];
+
+        // Hitung frekuensi nama untuk logika autocomplete
+        const nameFrequency = namaList.reduce((acc, name) => {
+            acc[name] = (acc[name] || 0) + 1;
+            return acc;
+        }, {});
+
+        // --- FUNGSI UTAMA ---
+
+        // 1. Ambil Data dari Supabase
+        async function fetchSyahadahData() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('syahadah')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                syahadahData = data || [];
+                displayData();
+            } catch (err) {
+                console.error('Error fetching data:', err);
+                showToast('Gagal memuat data: ' + err.message, 'danger');
+            }
+        }
+
+        // 2. Render Tabel
+        function displayData() {
+            const tableBody = document.getElementById('dataTable');
+            const emptyState = document.getElementById('emptyState');
+
+            if (syahadahData.length === 0) {
+                tableBody.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            tableBody.innerHTML = '';
+
+            syahadahData.forEach((data, index) => {
+                const displayIndex = syahadahData.length - index; 
+                const row = document.createElement('tr');
+                
+                // Menggunakan data-id untuk Event Delegation (Lebih aman daripada onclick string)
+                row.innerHTML = `
+                    <td class="text-center">${displayIndex}</td>
+                    <td><strong>${data.nama}</strong></td>
+                    <td class="text-center">${data.fashohah}</td>
+                    <td class="text-center">${data.tajwid}</td>
+                    <td class="text-center">${data.ghorib}</td>
+                    <td class="text-center">${data.suara}</td>
+                    <td class="text-center">
+                        <span class="badge ${data.keterangan === 'Lulus' ? 'bg-success' : 'bg-danger'}">
+                            ${data.keterangan}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-sm btn-warning btn-action-edit" data-id="${data.id}" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger btn-action-delete" data-id="${data.id}" title="Hapus">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // 3. Simpan & Update Data
+        document.getElementById('syahadahForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const editId = document.getElementById('editId').value;
+            const nama = document.getElementById('nama').value.trim();
+            const nilaiFashohah = parseFloat(document.getElementById('nilaiFashohah').value) || 0;
+            const nilaiTajwid = parseFloat(document.getElementById('nilaiTajwid').value) || 0;
+            const ghorib = parseFloat(document.getElementById('ghorib').value) || 0;
+            const suara = parseFloat(document.getElementById('suara').value) || 0;
+            const keterangan = document.getElementById('keterangan').value;
+
+            if (!nama) {
+                showToast('Nama wajib diisi!', 'warning');
+                return;
+            }
+
+            const payload = {
+                nama: nama.toUpperCase(),
+                fashohah: nilaiFashohah,
+                tajwid: nilaiTajwid,
+                ghorib: ghorib,
+                suara: suara,
+                keterangan: keterangan
+            };
+
+            try {
+                let error;
+                let message;
+
+                if (editId) {
+                    // --- MODE UPDATE ---
+                    const { error: updateError } = await supabaseClient
+                        .from('syahadah')
+                        .update(payload)
+                        .eq('id', editId);
+                    
+                    error = updateError;
+                    message = 'Data berhasil diperbarui!';
+                } else {
+                    // --- MODE INSERT ---
+                    const isExist = syahadahData.some(d => d.nama.toUpperCase() === nama.toUpperCase());
+                    if (isExist) {
+                        if(!confirm(`Nama "${nama}" sudah ada di database. Lanjutkan simpan duplikat?`)) {
+                            return;
+                        }
+                    }
+
+                    const { error: insertError } = await supabaseClient
+                        .from('syahadah')
+                        .insert([payload]);
+                    
+                    error = insertError;
+                    message = 'Data berhasil disimpan!';
+                }
+
+                if (error) throw error;
+
+                showToast(message, 'success');
+                fetchSyahadahData(); 
+                resetForm();
+
+            } catch (err) {
+                console.error('Error submitting data:', err);
+                showToast('Gagal menyimpan: ' + err.message, 'danger');
+            }
+        });
+
+        // 4. Fungsi Edit (Populate Form)
+        function editData(id) {
+            // Cari data. Konversi ke String untuk keamanan pencocokan tipe data
+            const dataToEdit = syahadahData.find(d => String(d.id) === String(id));
+            
+            if (!dataToEdit) {
+                console.error("Data tidak ditemukan dengan ID:", id);
+                showToast('Data tidak ditemukan!', 'danger');
+                return;
+            }
+
+            // Isi form
+            document.getElementById('editId').value = dataToEdit.id;
+            document.getElementById('nama').value = dataToEdit.nama;
+            document.getElementById('nilaiFashohah').value = dataToEdit.fashohah;
+            document.getElementById('nilaiTajwid').value = dataToEdit.tajwid;
+            document.getElementById('ghorib').value = dataToEdit.ghorib;
+            document.getElementById('suara').value = dataToEdit.suara;
+            document.getElementById('keterangan').value = dataToEdit.keterangan;
+
+            // Ubah UI Form ke Mode Edit
+            document.getElementById('formTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Edit Data';
+            const btnSubmit = document.getElementById('btnSubmit');
+            btnSubmit.innerHTML = '<i class="fas fa-sync-alt me-2"></i>Update Data';
+            btnSubmit.classList.remove('btn-primary');
+            btnSubmit.classList.add('btn-warning');
+            
+            document.getElementById('btnCancel').style.display = 'block';
+
+            // Scroll ke form
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('nama').focus();
+        }
+
+        // 5. Fungsi Batal Edit
+        function cancelEdit() {
+            resetForm();
+            showToast('Mode edit dibatalkan.', 'info');
+        }
+
+        // 6. Reset Form Utilities
+        function resetForm() {
+            document.getElementById('syahadahForm').reset();
+            document.getElementById('editId').value = '';
+            document.getElementById('keterangan').value = 'Lulus';
+            
+            // Kembalikan UI Form ke kondisi awal
+            document.getElementById('formTitle').innerHTML = '<i class="fas fa-user-plus me-2"></i>Input Data';
+            const btnSubmit = document.getElementById('btnSubmit');
+            btnSubmit.innerHTML = '<i class="fas fa-save me-2"></i>Simpan Data';
+            btnSubmit.classList.remove('btn-warning');
+            btnSubmit.classList.add('btn-primary');
+            
+            document.getElementById('btnCancel').style.display = 'none';
+        }
+
+        // 7. Hapus Data
+        async function deleteData(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus data ini secara permanen?')) {
+                try {
+                    const { error } = await supabaseClient
+                        .from('syahadah')
+                        .delete()
+                        .eq('id', id);
+
+                    if (error) throw error;
+
+                    showToast('Data berhasil dihapus.', 'info');
+                    
+                    // Reset form jika data yang sedang diedit dihapus
+                    if(document.getElementById('editId').value === String(id)) {
+                        resetForm();
+                    }
+
+                    fetchSyahadahData();
+
+                } catch (err) {
+                    console.error('Error deleting data:', err);
+                    showToast('Gagal menghapus: ' + err.message, 'danger');
+                }
+            }
+        }
+
+        // 8. Autocomplete Logic (Diperbarui)
+        const namaInput = document.getElementById('nama');
+        const autocompleteDiv = document.getElementById('namaAutocomplete');
+
+        namaInput.addEventListener('input', function() {
+            const val = this.value.toUpperCase();
+            autocompleteDiv.innerHTML = '';
+            
+            if (!val) {
+                autocompleteDiv.style.display = 'none';
+                return;
+            }
+
+            const existingNamesInDB = new Set(syahadahData.map(item => item.nama.toUpperCase()));
+
+            // Filter: Cocok input DAN (Belum ada di DB ATAU Muncul > 1 kali di Master List)
+            const matches = namaList.filter(name => {
+                const upperName = name.toUpperCase();
+                const isInDB = existingNamesInDB.has(upperName);
+                const countInList = nameFrequency[upperName] || 0;
+
+                return upperName.includes(val) && (!isInDB || countInList > 1);
+            });
+
+            if (matches.length === 0) {
+                autocompleteDiv.style.display = 'none';
+                return;
+            }
+
+            autocompleteDiv.style.display = 'block';
+
+            matches.forEach(name => {
+                const item = document.createElement('div');
+                const regex = new RegExp(`(${val})`, "gi");
+                item.innerHTML = name.replace(regex, "<strong>$1</strong>");
+                
+                item.addEventListener('click', function() {
+                    namaInput.value = name;
+                    autocompleteDiv.style.display = 'none';
+                    document.getElementById('nilaiFashohah').focus();
+                });
+                autocompleteDiv.appendChild(item);
+            });
+        });
+
+        document.addEventListener('click', function(e) {
+            if (e.target !== namaInput) {
+                autocompleteDiv.style.display = 'none';
+            }
+        });
+
+        // 9. Download Excel
+        document.getElementById('downloadExcel').addEventListener('click', function() {
+            if (syahadahData.length === 0) {
+                showToast('Tidak ada data untuk diunduh.', 'warning');
+                return;
+            }
+
+            const excelData = syahadahData.map((data, i) => ({
+                'No': syahadahData.length - i,
+                'Nama Lengkap': data.nama,
+                'Nilai Fashohah': data.fashohah,
+                'Nilai Tajwid': data.tajwid,
+                'Nilai Ghorib': data.ghorib,
+                'Nilai Suara': data.suara,
+                'Keterangan': data.keterangan
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(excelData);
+            const wscols = [
+                {wch: 5}, {wch: 35}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}
+            ];
+            worksheet['!cols'] = wscols;
+
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Data Syahadah');
+
+            const date = new Date().toISOString().slice(0,10);
+            XLSX.writeFile(workbook, `Data_Syahadah_${date}.xlsx`);
+            
+            showToast('File Excel sedang diunduh...', 'success');
+        });
+
+        // 10. Toast Notification
+        function showToast(message, type = 'primary') {
+            const toastContainer = document.getElementById('toastContainer');
+            let bgClass = 'text-bg-primary';
+            let icon = 'fa-info-circle';
+            
+            if (type === 'success') { bgClass = 'text-bg-success'; icon = 'fa-check-circle'; }
+            if (type === 'danger') { bgClass = 'text-bg-danger'; icon = 'fa-exclamation-circle'; }
+            if (type === 'warning') { bgClass = 'text-bg-warning'; icon = 'fa-exclamation-triangle'; }
+            if (type === 'info') { bgClass = 'text-bg-info'; icon = 'fa-info-circle'; }
+
+            const toastId = 'toast_' + Date.now();
+            const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center ${bgClass} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="fas ${icon} me-2"></i> ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            const toastElement = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+            toast.show();
+            toastElement.addEventListener('hidden.bs.toast', () => { toastElement.remove(); });
+        }
+
+        // --- EVENT LISTENER UNTUK TOMBOL DI TABEL (EVENT DELEGATION) ---
+        // Ini menggantikan onclick="..." di dalam HTML agar lebih stabil
+        document.getElementById('dataTable').addEventListener('click', function(e) {
+            // Cek tombol Edit
+            const editBtn = e.target.closest('.btn-action-edit');
+            if (editBtn) {
+                const id = editBtn.getAttribute('data-id');
+                editData(id);
+                return;
+            }
+
+            // Cek tombol Hapus
+            const deleteBtn = e.target.closest('.btn-action-delete');
+            if (deleteBtn) {
+                const id = deleteBtn.getAttribute('data-id');
+                deleteData(id);
+                return;
+            }
+        });
+
+        // --- INIT ---
+        fetchSyahadahData();
+
+    </script>
+</body>
+</html>
