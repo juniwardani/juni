@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aplikasi Pribadi</title>
+  <title>Login - Aplikasi Pribadi</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Fonts -->
@@ -29,6 +29,18 @@
     .menu-card:active {
       transform: scale(0.98);
     }
+
+    /* Animasi getar saat password salah */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+      20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+    
+    .shake-animation {
+      animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+      border-color: #ef4444 !important; /* Merah */
+    }
     
     @view-transition { 
       navigation: auto; 
@@ -38,10 +50,51 @@
 
 <body class="h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 text-slate-800">
 
-  <div class="h-full w-full flex flex-col overflow-auto">
+  <!-- === HALAMAN LOGIN (OVERLAY) === -->
+  <div id="login-overlay" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-900/70 backdrop-blur-sm p-4 transition-opacity duration-500">
+    <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-8 border border-slate-100 transform transition-all">
+      
+      <!-- Ikon & Judul -->
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 bg-indigo-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg mb-4">
+          <i class="fa-solid fa-lock text-3xl text-white"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-800">Selamat Datang</h2>
+        <p class="text-slate-500 text-sm mt-1">Silakan masuk untuk melanjutkan</p>
+      </div>
+
+      <!-- Form Login -->
+      <div class="space-y-4">
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fa-solid fa-key text-slate-400"></i>
+          </div>
+          <input type="password" id="password-input" 
+            class="block w-full pl-10 pr-3 py-3 border border-slate-300 rounded-xl leading-5 bg-slate-50 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out sm:text-sm" 
+            placeholder="Masukkan Password">
+        </div>
+
+        <!-- Pesan Error -->
+        <p id="error-msg" class="text-red-500 text-xs text-center font-medium hidden opacity-0 transition-opacity duration-300">
+          <i class="fa-solid fa-circle-exclamation mr-1"></i> Password salah!
+        </p>
+
+        <button onclick="checkLogin()" 
+          class="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-indigo-700 to-blue-600 hover:from-indigo-800 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-lg transform active:scale-95 transition-all">
+          MASUK
+        </button>
+      </div>
+      
+      <p class="text-center text-xs text-slate-400 mt-6">© 2024 Juni Wardani, S.Pd</p>
+    </div>
+  </div>
+
+  <!-- === KONTEN UTAMA APLIKASI (Awalnya Tersembunyi) === -->
+  <!-- Tambahkan class 'hidden' agar tidak muncul sebelum login -->
+  <div id="main-app" class="h-full w-full flex flex-col overflow-auto hidden opacity-0 transition-opacity duration-700">
     
     <!-- Header -->
-    <header class="bg-gradient-to-r from-indigo-700 via-blue-700 to-cyan-600 px-6 py-6 shadow-xl">
+    <header class="bg-gradient-to-r from-indigo-700 via-blue-700 to-cyan-600 px-6 py-6 shadow-xl relative z-10">
       <h1 class="text-xl font-bold text-white text-center tracking-wide">Juni Wardani, S.Pd</h1>
       <p class="text-blue-100 text-sm text-center mt-2 font-medium">Aplikasi Pribadi</p>
     </header>
@@ -58,15 +111,99 @@
 
     <!-- Footer -->
     <footer class="px-4 py-4 text-center bg-white/50 backdrop-blur-sm border-t border-slate-200">
-      <p class="text-slate-600 text-xs font-medium">© 2024 Juni Wardani, S.Pd</p>
+      <button onclick="logout()" class="text-slate-400 hover:text-red-500 text-xs transition-colors">
+        <i class="fa-solid fa-right-from-bracket mr-1"></i> Keluar
+      </button>
     </footer>
   </div>
 
-  <!-- Script Data & Render Menu -->
+  <!-- Script Data & Render Menu & Logika Login -->
   <script>
-    // 1. DATA MENU (Ubah data di sini saja)
-    // warnaBg: kombinasi 'from-[warna] to-[warna]'
-    // warnaBorder: 'border-[warna]-100'
+    // ==========================================
+    // 1. LOGIKA LOGIN
+    // ==========================================
+    const CORRECT_PASSWORD = "juni123";
+    
+    const loginOverlay = document.getElementById('login-overlay');
+    const mainApp = document.getElementById('main-app');
+    const passwordInput = document.getElementById('password-input');
+    const errorMsg = document.getElementById('error-msg');
+
+    // Fokus otomatis ke input password saat load
+    window.onload = function() {
+      passwordInput.focus();
+    };
+
+    // Event listener untuk tombol Enter
+    passwordInput.addEventListener("keypress", function(event) {
+      if (event.key === "Enter") {
+        checkLogin();
+      }
+    });
+
+    function checkLogin() {
+      const inputPass = passwordInput.value;
+
+      if (inputPass === CORRECT_PASSWORD) {
+        // Jika Benar
+        loginSuccess();
+      } else {
+        // Jika Salah
+        loginError();
+      }
+    }
+
+    function loginSuccess() {
+      // Sembunyikan login
+      loginOverlay.classList.add('opacity-0');
+      setTimeout(() => {
+        loginOverlay.style.display = 'none';
+        
+        // Tampilkan Main App
+        mainApp.classList.remove('hidden');
+        // Sedikit delay agar transisi opacity berjalan
+        setTimeout(() => {
+          mainApp.classList.remove('opacity-0');
+        }, 50);
+        
+      }, 500); // Sesuaikan dengan durasi transisi CSS
+    }
+
+    function loginError() {
+      // Tampilkan pesan error
+      errorMsg.classList.remove('hidden');
+      // Trigger reflow agar animasi bisa dijalankan ulang
+      void passwordInput.offsetWidth; 
+      
+      // Tambahkan class getar
+      passwordInput.classList.add('shake-animation');
+      passwordInput.classList.add('border-red-400', 'bg-red-50');
+      
+      // Tampilkan pesan text
+      errorMsg.style.opacity = '1';
+
+      // Hapus class getar setelah 400ms
+      setTimeout(() => {
+        passwordInput.classList.remove('shake-animation');
+      }, 400);
+
+      // Reset input style setelah user mengetik ulang
+      passwordInput.addEventListener('input', function resetStyle() {
+        passwordInput.classList.remove('border-red-400', 'bg-red-50');
+        errorMsg.style.opacity = '0';
+        errorMsg.classList.add('hidden');
+        passwordInput.removeEventListener('input', resetStyle);
+      });
+    }
+
+    function logout() {
+      // Reload halaman untuk kembali ke state awal
+      window.location.reload();
+    }
+
+    // ==========================================
+    // 2. DATA MENU (Sesuai permintaan awal)
+    // ==========================================
     const menuItems = [
       {
         nama: "Catatan",
@@ -130,7 +267,7 @@
         icon: "fa-link",
         warnaBg: "from-emerald-500 to-green-600",
         warnaBorder: "border-emerald-100",
-        isNewTab: true // Khusus buka di tab baru
+        isNewTab: true
       },
       {
         nama: "Supabase Manager",
@@ -146,13 +283,13 @@
         warnaBg: "from-slate-500 to-slate-700",
         warnaBorder: "border-slate-100"
       },
-{  
-  nama: "Penilaian Diklat",  
-  link: "hasildiklat.html",  
-  icon: "fa-clipboard-check",  
-  warnaBg: "from-green-500 to-emerald-600",  
-  warnaBorder: "border-green-100"  
-},
+      {  
+        nama: "Penilaian Diklat",  
+        link: "hasildiklat.html",  
+        icon: "fa-clipboard-check",  
+        warnaBg: "from-green-500 to-emerald-600",  
+        warnaBorder: "border-green-100"  
+      },
       {
         nama: "RTS",
         link: "https://tahfidzktb.vercel.app/rts.html",
@@ -162,7 +299,9 @@
       }
     ];
 
-    // 2. FUNGSI RENDER (Jangan diubah kecuali perlu desain)
+    // ==========================================
+    // 3. FUNGSI RENDER MENU
+    // ==========================================
     const container = document.getElementById('app-menu');
     
     // Bersihkan container
