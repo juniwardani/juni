@@ -18,8 +18,11 @@
         :root {
             /* Maroon Theme */
             --primary-color: #800000;
+            /* Maroon Utama */
             --secondary-color: #a52a2a;
+            /* Maroon Terang/Brown */
             --accent-color: #ffcccc;
+            /* Pink Maroon Lembut */
             --background-color: #f8f9fa;
             --card-bg: #ffffff;
             --text-color: #333333;
@@ -75,6 +78,15 @@
             font-weight: 600;
             border-bottom: 2px solid var(--accent-color);
             padding-bottom: 10px;
+        }
+
+        /* Styling Khusus untuk Card Tidak Syahadah */
+        .card-not-syahadah {
+            border-top: 4px solid #dc3545;
+        }
+        .card-not-syahadah h3 {
+            color: #dc3545;
+            border-bottom-color: #ffcccc;
         }
 
         /* Form Controls */
@@ -196,6 +208,11 @@
             padding: 12px 8px;
             white-space: nowrap;
         }
+        
+        .table-not-syahadah thead th {
+            background-color: #dc3545;
+            border-bottom: 2px solid #a71d2a;
+        }
 
         .table tbody td {
             vertical-align: middle;
@@ -203,7 +220,22 @@
             white-space: nowrap;
         }
 
-        /* Autocomplete Styles (Shared for Input and Search) */
+        /* Pagination Styling */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        
+        .page-link {
+            color: var(--primary-color);
+        }
+        .page-item.active .page-link {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        /* Autocomplete */
         .autocomplete-container {
             position: relative;
         }
@@ -260,13 +292,10 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            z-index: 9999; 
+            z-index: 9999;
         }
 
-        /* =========================================
-           MODAL & GAMBAR
-           ========================================= */
-        
+        /* Modal Area */
         .modal-body {
             overflow-x: auto; 
             background-color: #f0f2f5;
@@ -277,7 +306,6 @@
             min-width: 650px; 
             max-width: 800px;
             margin: 0 auto;
-            
             background-color: white;
             padding: 25px;
             border-radius: 8px;
@@ -295,20 +323,16 @@
             padding-bottom: 10px;
         }
 
-        .rank-1 { color: #d4af37; font-weight: bold; font-size: 1.2rem; } 
-        .rank-2 { color: #c0c0c0; font-weight: bold; font-size: 1.1rem; } 
-        .rank-3 { color: #cd7f32; font-weight: bold; font-size: 1.1rem; } 
+        .rank-1 { color: #d4af37; font-weight: bold; font-size: 1.2rem; }
+        .rank-2 { color: #c0c0c0; font-weight: bold; font-size: 1.1rem; }
+        .rank-3 { color: #cd7f32; font-weight: bold; font-size: 1.1rem; }
 
         @media (max-width: 768px) {
             .container { padding: 10px; }
             .header { padding: 15px; margin-bottom: 15px; }
             .header h1 { font-size: 1.4rem; }
             .card { padding: 15px; margin-bottom: 15px; }
-            
-            .table-responsive {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
+            .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
             .table { min-width: 600px; }
         }
     </style>
@@ -331,7 +355,6 @@
                 <div class="card">
                     <h3 class="mb-3" id="formTitle"><i class="fas fa-user-plus me-2"></i>Input Data</h3>
                     <form id="syahadahForm" novalidate>
-                        <!-- Hidden ID untuk Edit Mode -->
                         <input type="hidden" id="editId">
 
                         <div class="mb-2">
@@ -404,17 +427,6 @@
                         </div>
                     </div>
 
-                    <!-- TAMBAHAN: FILTER PENCARIAN (SEARCH) -->
-                    <div class="mb-3 position-relative">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white"><i class="fas fa-search text-secondary"></i></span>
-                            <input type="text" id="searchName" class="form-control form-control-sm" placeholder="Cari nama santri..." autocomplete="off">
-                            <button class="btn btn-outline-danger btn-sm" type="button" id="clearSearch" title="Hapus Filter"><i class="fas fa-times"></i></button>
-                        </div>
-                        <div id="searchAutocomplete" class="autocomplete-items"></div>
-                    </div>
-                    <!-- END TAMBAHAN -->
-
                     <div class="table-container">
                         <div class="table-responsive">
                             <table class="table table-striped table-hover mb-0">
@@ -437,13 +449,51 @@
                         </div>
                     </div>
 
+                    <!-- Pagination untuk Database -->
                     <div id="emptyState" class="empty-state" style="display: none;">
                         <i class="far fa-folder-open"></i>
                         <p class="mb-0 mt-2">Belum ada data yang tersimpan.</p>
                     </div>
+                    <div id="paginationMain" class="pagination-container"></div>
                 </div>
             </div>
         </div>
+
+        <!-- TABEL DATA TIDAK SYAHAHDAH -->
+        <div class="row mt-2">
+            <div class="col-12">
+                <div class="card card-not-syahadah">
+                    <h3 class="mb-3"><i class="fas fa-user-times me-2"></i>Data Tidak Syahadah</h3>
+                    <p class="text-muted small mb-2">Daftar santri yang belum memiliki data nilai di database.</p>
+                    
+                    <div class="table-container">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 table-not-syahadah">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">No</th>
+                                        <th>Nama Santri</th>
+                                        <th style="width: 120px; text-align: center;">Status</th>
+                                        <th style="width: 80px; text-align: center;">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableNonSyahadah">
+                                    <!-- Data non-syahadah dirender via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Pagination untuk Tidak Syahadah -->
+                    <div id="emptyNonSyahadah" class="empty-state" style="display: none;">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <p class="mb-0 mt-2">Semua santri sudah memiliki data.</p>
+                    </div>
+                    <div id="paginationNonSyahadah" class="pagination-container"></div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- MODAL 10 BESAR -->
@@ -506,6 +556,12 @@
         // --- STATE GLOBAL ---
         let syahadahData = [];
         let top10Modal; 
+        
+        // Pagination State
+        const rowsPerPage = 10;
+        let currentPageMain = 1;
+        let currentPageNonSyahadah = 1;
+        let currentNonSyahadahData = []; // Menyimpan data hasil filter non-syahadah
 
         // --- DATA MASTER (NAMA) ---
         const namaList = [
@@ -565,42 +621,56 @@
 
                 if (error) throw error;
                 syahadahData = data || [];
-                displayData(); // Tampilkan semua data saat pertama load
+                
+                // Cek apakah halaman saat ini valid setelah perubahan data
+                const totalPagesMain = Math.ceil(syahadahData.length / rowsPerPage);
+                if (currentPageMain > totalPagesMain && totalPagesMain > 0) {
+                    currentPageMain = totalPagesMain;
+                }
+                
+                displayData();
+                displayNonSyahadahData();
             } catch (err) {
                 console.error('Error fetching data:', err);
                 showToast('Gagal memuat data: ' + err.message, 'danger');
             }
         }
 
-        // Fungsi Display Data dengan Parameter Filter
-        function displayData(dataSet = null) {
+        function displayData() {
             const tableBody = document.getElementById('dataTable');
             const emptyState = document.getElementById('emptyState');
+            const paginationDiv = document.getElementById('paginationMain');
 
-            // Gunakan dataset yang diterima (filter) atau data global
-            const dataToRender = dataSet || syahadahData;
-
-            if (dataToRender.length === 0) {
+            if (syahadahData.length === 0) {
                 tableBody.innerHTML = '';
-                // Tampilkan pesan berbeda jika hasil pencarian kosong vs DB kosong
-                if(dataSet !== null && dataSet.length === 0) {
-                     emptyState.innerHTML = '<i class="fas fa-search"></i><p class="mb-0 mt-2">Data tidak ditemukan.</p>';
-                } else {
-                     emptyState.innerHTML = '<i class="far fa-folder-open"></i><p class="mb-0 mt-2">Belum ada data yang tersimpan.</p>';
-                }
                 emptyState.style.display = 'block';
+                paginationDiv.innerHTML = '';
                 return;
             }
 
             emptyState.style.display = 'none';
             tableBody.innerHTML = '';
 
-            dataToRender.forEach((data, index) => {
-                const displayIndex = dataToRender.length - index;
+            // Pagination Logic
+            const totalPages = Math.ceil(syahadahData.length / rowsPerPage);
+            const start = (currentPageMain - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedData = syahadahData.slice(start, end);
+
+            // Hitung nomor urut global (misal page 2 dimulai dari 11)
+            // syahadahData sudah diurutkan descending (terbaru diatas), jadi index 0 adalah data terbaru
+            // Jika ingin urutan 1,2,3 sesuai inputan, data harus diurutkan ascending. 
+            // Namun biasanya DB table menampilkan terbaru di atas (descending).
+            // Mari kita gunakan urutan descending untuk tampilan.
+            
+            paginatedData.forEach((data, index) => {
+                // Hitung nomor berdasarkan urutan global di array syahadahData
+                const globalIndex = syahadahData.indexOf(data) + 1;
+                
                 const row = document.createElement('tr');
 
                 row.innerHTML = `
-                    <td class="text-center">${displayIndex}</td>
+                    <td class="text-center">${globalIndex}</td>
                     <td><strong>${data.nama}</strong></td>
                     <td class="text-center">${data.fashohah}</td>
                     <td class="text-center">${data.tajwid}</td>
@@ -624,7 +694,139 @@
                 `;
                 tableBody.appendChild(row);
             });
+
+            renderPagination('main', totalPages, currentPageMain, 'displayData');
         }
+
+        // --- FUNGSI TAMPILKAN DATA TIDAK SYAHAHDAH DENGAN PAGINATION ---
+        function displayNonSyahadahData() {
+            const tbody = document.getElementById('tableNonSyahadah');
+            const emptyState = document.getElementById('emptyNonSyahadah');
+            const paginationDiv = document.getElementById('paginationNonSyahadah');
+            
+            const dbNames = new Set(syahadahData.map(item => item.nama.toUpperCase()));
+            let missingNames = namaList.filter(name => !dbNames.has(name));
+            missingNames.sort((a, b) => a.localeCompare(b));
+            
+            // Simpan hasil filter ke state global agar pagination bisa bekerja
+            currentNonSyahadahData = missingNames;
+
+            if (missingNames.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                paginationDiv.innerHTML = '';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            tbody.innerHTML = '';
+
+            // Pagination Logic
+            const totalPages = Math.ceil(missingNames.length / rowsPerPage);
+            
+            // Cek validasi halaman
+            if (currentPageNonSyahadah > totalPages && totalPages > 0) {
+                currentPageNonSyahadah = totalPages;
+            }
+
+            const start = (currentPageNonSyahadah - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedData = missingNames.slice(start, end);
+
+            paginatedData.forEach((name, index) => {
+                // Hitung nomor global
+                const globalIndex = missingNames.indexOf(name) + 1;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="text-center">${globalIndex}</td>
+                    <td>${name}</td>
+                    <td class="text-center">
+                        <span class="badge bg-secondary">Belum Input</span>
+                    </td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-primary btn-input-quick" data-name="${name}" title="Input Nilai">
+                            <i class="fas fa-plus"></i> Input
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            renderPagination('nonSyahadah', totalPages, currentPageNonSyahadah, 'displayNonSyahadahData');
+        }
+
+        // --- GENERATOR PAGINATION ---
+        function renderPagination(type, totalPages, currentPage, callbackName) {
+            const container = document.getElementById(type === 'main' ? 'paginationMain' : 'paginationNonSyahadah');
+            
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = `<nav aria-label="Page navigation"><ul class="pagination pagination-sm">`;
+
+            // Tombol Previous
+            html += `
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage('${type}', ${currentPage - 1}, '${callbackName}')">
+                        <i class="fas fa-chevron-left"></i> Prev
+                    </a>
+                </li>
+            `;
+
+            // Logic untuk menampilkan nomor halaman (1, 2, 3 ...)
+            // Batasi maksimal 5 tombol nomor agar tidak memenuhi layar
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+
+            if (endPage - startPage < 4) {
+                startPage = Math.max(1, endPage - 4);
+            }
+
+            // Tombol First (jika start > 1)
+            if (startPage > 1) {
+                html += `<li class="page-item"><a class="page-link" href="#" onclick="changePage('${type}', 1, '${callbackName}')">1</a></li>`;
+                if (startPage > 2) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                html += `
+                    <li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="changePage('${type}', ${i}, '${callbackName}')">${i}</a>
+                    </li>
+                `;
+            }
+
+            // Tombol Last (jika end < total)
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                html += `<li class="page-item"><a class="page-link" href="#" onclick="changePage('${type}', ${totalPages}, '${callbackName}')">${totalPages}</a></li>`;
+            }
+
+            // Tombol Next
+            html += `
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage('${type}', ${currentPage + 1}, '${callbackName}')">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            `;
+
+            html += `</ul></nav>`;
+            container.innerHTML = html;
+        }
+
+        // --- HANDLER GANTI HALAMAN ---
+        window.changePage = function(type, page, callbackName) {
+            if (type === 'main') {
+                currentPageMain = page;
+            } else {
+                currentPageNonSyahadah = page;
+            }
+            // Panggil fungsi display yang sesuai
+            window[callbackName]();
+        };
 
         document.getElementById('syahadahForm').addEventListener('submit', async function (e) {
             e.preventDefault();
@@ -679,6 +881,12 @@
                 if (error) throw error;
 
                 showToast(message, 'success');
+                
+                // Jika input baru (bukan edit), pindah ke halaman 1 untuk melihat data terbaru
+                if (!editId) {
+                    currentPageMain = 1;
+                }
+                
                 fetchSyahadahData();
                 resetForm();
 
@@ -751,6 +959,12 @@
                         resetForm();
                     }
 
+                    // Logic pagination: jika halaman terakhir menjadi kosong, mundur
+                    const totalPages = Math.ceil((syahadahData.length - 1) / rowsPerPage);
+                    if (currentPageMain > totalPages && totalPages > 0) {
+                        currentPageMain = totalPages;
+                    }
+
                     fetchSyahadahData();
 
                 } catch (err) {
@@ -760,7 +974,20 @@
             }
         }
 
-        // --- AUTOCOMPLETE INPUT FORM (SUDAH ADA) ---
+        // --- QUICK INPUT ---
+        document.getElementById('tableNonSyahadah').addEventListener('click', function (e) {
+            const btn = e.target.closest('.btn-input-quick');
+            if (btn) {
+                const name = btn.getAttribute('data-name');
+                resetForm();
+                document.getElementById('nama').value = name;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                document.getElementById('nilaiFashohah').focus();
+                showToast(`Silakan input nilai untuk ${name}`, 'info');
+            }
+        });
+
+        // --- AUTOCOMPLETE ---
         const namaInput = document.getElementById('nama');
         const autocompleteDiv = document.getElementById('namaAutocomplete');
 
@@ -774,10 +1001,12 @@
             }
 
             const existingNamesInDB = new Set(syahadahData.map(item => item.nama.toUpperCase()));
+
             const matches = namaList.filter(name => {
                 const upperName = name.toUpperCase();
                 const isInDB = existingNamesInDB.has(upperName);
                 const countInList = nameFrequency[upperName] || 0;
+
                 return upperName.includes(val) && (!isInDB || countInList > 1);
             });
 
@@ -802,79 +1031,13 @@
             });
         });
 
-        // --- BARU: FITUR PENCARIAN & FILTER ---
-        const searchInput = document.getElementById('searchName');
-        const searchAutocomplete = document.getElementById('searchAutocomplete');
-        const clearSearchBtn = document.getElementById('clearSearch');
-
-        // Event Listener untuk Autocomplete di Search Bar
-        searchInput.addEventListener('input', function() {
-            const val = this.value.toUpperCase();
-            searchAutocomplete.innerHTML = '';
-
-            if (!val) {
-                searchAutocomplete.style.display = 'none';
-                return;
-            }
-
-            // Sumber data untuk autocomplete search adalah data yang SUDAH ADA di DB
-            const matches = syahadahData.filter(item => item.nama.toUpperCase().includes(val));
-
-            if (matches.length === 0) {
-                searchAutocomplete.style.display = 'none';
-            } else {
-                searchAutocomplete.style.display = 'block';
-                matches.forEach(data => {
-                    const item = document.createElement('div');
-                    const regex = new RegExp(`(${val})`, "gi");
-                    item.innerHTML = data.nama.replace(regex, "<strong>$1</strong>");
-                    
-                    item.addEventListener('click', function() {
-                        searchInput.value = data.nama;
-                        searchAutocomplete.style.display = 'none';
-                        // Trigger filter manual
-                        filterTable(data.nama);
-                    });
-                    searchAutocomplete.appendChild(item);
-                });
-            }
-        });
-
-        // Event Listener untuk Filter Real-time saat mengetik manual
-        searchInput.addEventListener('input', function() {
-            filterTable(this.value);
-        });
-
-        // Fungsi Filter Tabel
-        function filterTable(keyword) {
-            if (!keyword) {
-                displayData(); // Tampilkan semua jika kosong
-                return;
-            }
-            const upperKeyword = keyword.toUpperCase();
-            const filteredData = syahadahData.filter(d => d.nama.toUpperCase().includes(upperKeyword));
-            displayData(filteredData);
-        }
-
-        // Event Listener Tombol Reset
-        clearSearchBtn.addEventListener('click', function() {
-            searchInput.value = '';
-            searchAutocomplete.style.display = 'none';
-            displayData(); // Reset ke data lengkap
-            searchInput.focus();
-        });
-
-        // Tutup autocomplete jika klik di luar
         document.addEventListener('click', function (e) {
             if (e.target !== namaInput) {
                 autocompleteDiv.style.display = 'none';
             }
-            if (e.target !== searchInput) {
-                searchAutocomplete.style.display = 'none';
-            }
         });
 
-
+        // --- EXCEL ---
         document.getElementById('downloadExcel').addEventListener('click', function () {
             if (syahadahData.length === 0) {
                 showToast('Tidak ada data untuk diunduh.', 'warning');
@@ -906,7 +1069,7 @@
             showToast('File Excel sedang diunduh...', 'success');
         });
 
-        // --- LOGIKA TOP 10 & DOWNLOAD JPG ---
+        // --- TOP 10 ---
         top10Modal = new bootstrap.Modal(document.getElementById('top10Modal'));
 
         document.getElementById('btnTop10').addEventListener('click', function() {
@@ -937,7 +1100,6 @@
                 };
             });
 
-            // Sorting Multi-Kriteria
             processedData.sort((a, b) => {
                 if (b.total !== a.total) return b.total - a.total;
                 if (b.tajwid !== a.tajwid) return b.tajwid - a.tajwid;
