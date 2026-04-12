@@ -18,8 +18,11 @@
         :root {
             /* Maroon Theme */
             --primary-color: #800000;
+            /* Maroon Utama */
             --secondary-color: #a52a2a;
+            /* Maroon Terang/Brown */
             --accent-color: #ffcccc;
+            /* Pink Maroon Lembut */
             --background-color: #f8f9fa;
             --card-bg: #ffffff;
             --text-color: #333333;
@@ -441,7 +444,6 @@
 
     <!-- MODAL 10 BESAR -->
     <div class="modal fade" id="top10Modal" tabindex="-1" aria-labelledby="top10ModalLabel" aria-hidden="true">
-        <!-- Modal dialog centered. Di HP, akan tetap berada di tengah. -->
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-light">
@@ -450,7 +452,6 @@
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <!-- Modal body memungkinkan scroll horizontal jika konten lebar -->
                 <div class="modal-body p-0">
                     <div class="p-3" style="background-color: #f0f2f5;">
                         <!-- Area yang akan di-capture untuk JPG -->
@@ -826,7 +827,7 @@
             showToast('File Excel sedang diunduh...', 'success');
         });
 
-        // --- LOGIKA TOP 10 & DOWNLOAD JPG (DIPERBAIKI) ---
+        // --- LOGIKA TOP 10 & DOWNLOAD JPG (DENGAN SORTING MULTI KRITERIA) ---
 
         top10Modal = new bootstrap.Modal(document.getElementById('top10Modal'));
 
@@ -843,15 +844,41 @@
             const tbody = document.getElementById('top10TableBody');
             tbody.innerHTML = '';
 
+            // 1. Clone data & convert ke Number untuk memastikan sorting akurat
             let processedData = syahadahData.map(item => {
-                const total = (parseFloat(item.fashohah) || 0) + 
-                              (parseFloat(item.tajwid) || 0) + 
-                              (parseFloat(item.ghorib) || 0) + 
-                              (parseFloat(item.suara) || 0);
-                return { ...item, total: total };
+                const f = parseFloat(item.fashohah) || 0;
+                const t = parseFloat(item.tajwid) || 0;
+                const g = parseFloat(item.ghorib) || 0;
+                const s = parseFloat(item.suara) || 0;
+                return {
+                    ...item,
+                    fashohah: f,
+                    tajwid: t,
+                    ghorib: g,
+                    suara: s,
+                    total: f + t + g + s
+                };
             });
 
-            processedData.sort((a, b) => b.total - a.total);
+            // 2. Sort Logic Multi-Kriteria (Total -> Tajwid -> Fashohah -> Ghorib -> Suara)
+            processedData.sort((a, b) => {
+                // Prioritas 1: Total Tertinggi
+                if (b.total !== a.total) return b.total - a.total;
+                
+                // Prioritas 2: Tajwid Tertinggi
+                if (b.tajwid !== a.tajwid) return b.tajwid - a.tajwid;
+                
+                // Prioritas 3: Fashohah Tertinggi
+                if (b.fashohah !== a.fashohah) return b.fashohah - a.fashohah;
+                
+                // Prioritas 4: Ghorib Tertinggi
+                if (b.ghorib !== a.ghorib) return b.ghorib - a.ghorib;
+                
+                // Prioritas 5: Suara Tertinggi
+                return b.suara - a.suara;
+            });
+
+            // 3. Ambil 10 Data Pertama
             const top10Data = processedData.slice(0, 10);
 
             top10Data.forEach((data, index) => {
@@ -887,27 +914,23 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Memproses...';
             btn.disabled = true;
 
-            // PERBAIKAN: Ambil lebar dan tinggi sebenarnya dari elemen (scrollWidth/scrollHeight)
-            // Ini memastikan gambar tidak terpotong meskipun di layar kecil
             const width = element.scrollWidth;
             const height = element.scrollHeight;
 
             html2canvas(element, {
-                scale: 2, // Tingkatkan resolusi
+                scale: 2,
                 backgroundColor: '#ffffff',
                 useCORS: true,
-                width: width,       // Paksa lebar canvas sesuai konten
-                height: height,     // Paksa tinggi canvas sesuai konten
+                width: width,
+                height: height,
                 windowWidth: width,
                 windowHeight: height,
                 scrollX: 0,
                 scrollY: 0
             }).then(canvas => {
-                // Kembalikan tombol
                 btn.innerHTML = originalText;
                 btn.disabled = false;
 
-                // Buat link download
                 const link = document.createElement('a');
                 link.download = '10_Besar_Syahadah.jpg';
                 link.href = canvas.toDataURL('image/jpeg', 0.9);
