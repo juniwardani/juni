@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Data Syahadah</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -18,11 +18,8 @@
         :root {
             /* Maroon Theme */
             --primary-color: #800000;
-            /* Maroon Utama */
             --secondary-color: #a52a2a;
-            /* Maroon Terang/Brown */
             --accent-color: #ffcccc;
-            /* Pink Maroon Lembut */
             --background-color: #f8f9fa;
             --card-bg: #ffffff;
             --text-color: #333333;
@@ -197,11 +194,13 @@
             text-align: center;
             border-bottom: 2px solid #5c0000;
             padding: 12px 8px;
+            white-space: nowrap; /* Mencegah header turun baris */
         }
 
         .table tbody td {
             vertical-align: middle;
             padding: 10px 8px;
+            white-space: nowrap; /* Mencegah konten turun baris agar rapi di tabel lebar */
         }
 
         /* Autocomplete */
@@ -261,16 +260,32 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            z-index: 1055;
+            z-index: 9999; /* Di atas modal */
         }
 
-        /* Custom Styling untuk Modal 10 Besar & Download Area */
-        .top10-wrapper {
+        /* =========================================
+           PERBAIKAN MODAL & GAMBAR (RESPONSIVE)
+           ========================================= */
+        
+        /* Agar Modal Body bisa di-scroll horizontal di HP */
+        .modal-body {
+            overflow-x: auto; 
+            background-color: #f0f2f5; /* Background abu-abu muda agar batas gambar terlihat */
+        }
+
+        /* Wrapper yang akan difoto */
+        #top10CaptureArea {
+            /* PENTING: Paksa lebar minimum agar gambar tidak gepeng */
+            width: 100%;
+            min-width: 650px; 
+            max-width: 800px; /* Batas maksimal agar tidak terlalu lebar di PC */
+            margin: 0 auto; /* Tengah */
+            
             background-color: white;
-            padding: 20px;
+            padding: 25px;
             border-radius: 8px;
-            /* Border untuk memastikan hasil gambar rapi */
             border: 1px solid #dee2e6; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Shadow halus untuk efek foto */
         }
 
         .top10-header-title {
@@ -288,32 +303,17 @@
         .rank-3 { color: #cd7f32; font-weight: bold; font-size: 1.1rem; } /* Bronze */
 
         @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-
-            .header {
-                padding: 15px;
-                margin-bottom: 15px;
-            }
-
-            .header h1 {
-                font-size: 1.4rem;
-            }
-
-            .card {
-                padding: 15px;
-                margin-bottom: 15px;
-            }
-
+            .container { padding: 10px; }
+            .header { padding: 15px; margin-bottom: 15px; }
+            .header h1 { font-size: 1.4rem; }
+            .card { padding: 15px; margin-bottom: 15px; }
+            
+            /* Pastikan tabel utama juga bisa di-scroll horizontal */
             .table-responsive {
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
             }
-
-            .table {
-                min-width: 600px;
-            }
+            .table { min-width: 600px; }
         }
     </style>
 </head>
@@ -441,6 +441,7 @@
 
     <!-- MODAL 10 BESAR -->
     <div class="modal fade" id="top10Modal" tabindex="-1" aria-labelledby="top10ModalLabel" aria-hidden="true">
+        <!-- Modal dialog centered. Di HP, akan tetap berada di tengah. -->
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-light">
@@ -449,30 +450,33 @@
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body bg-white">
-                    <!-- Area yang akan di-capture untuk JPG -->
-                    <div id="top10CaptureArea" class="top10-wrapper">
-                        <div class="top10-header-title">
-                            10 BESAR NILAI TERTINGGI<br>
-                            <span style="font-size: 0.9rem; font-weight: normal; color: #666;">Berdasarkan Total Nilai</span>
+                <!-- Modal body memungkinkan scroll horizontal jika konten lebar -->
+                <div class="modal-body p-0">
+                    <div class="p-3" style="background-color: #f0f2f5;">
+                        <!-- Area yang akan di-capture untuk JPG -->
+                        <div id="top10CaptureArea">
+                            <div class="top10-header-title">
+                                10 BESAR NILAI TERTINGGI<br>
+                                <span style="font-size: 0.9rem; font-weight: normal; color: #666;">Berdasarkan Total Nilai</span>
+                            </div>
+                            
+                            <table class="table table-bordered align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 10%; text-align: center;">No.</th>
+                                        <th style="width: 35%;">Nama</th>
+                                        <th style="width: 10%; text-align: center;">Fsh</th>
+                                        <th style="width: 10%; text-align: center;">Tjw</th>
+                                        <th style="width: 10%; text-align: center;">Ghr</th>
+                                        <th style="width: 10%; text-align: center;">Sr</th>
+                                        <th style="width: 15%; text-align: center;">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="top10TableBody">
+                                    <!-- Data Top 10 di sini -->
+                                </tbody>
+                            </table>
                         </div>
-                        
-                        <table class="table table-bordered align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th style="width: 10%; text-align: center;">No.</th>
-                                    <th style="width: 35%;">Nama</th>
-                                    <th style="width: 10%; text-align: center;">Fsh</th>
-                                    <th style="width: 10%; text-align: center;">Tjw</th>
-                                    <th style="width: 10%; text-align: center;">Ghr</th>
-                                    <th style="width: 10%; text-align: center;">Sr</th>
-                                    <th style="width: 15%; text-align: center;">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody id="top10TableBody">
-                                <!-- Data Top 10 di sini -->
-                            </tbody>
-                        </table>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -497,7 +501,7 @@
 
         // --- STATE GLOBAL ---
         let syahadahData = [];
-        let top10Modal; // Instance modal Bootstrap
+        let top10Modal; 
 
         // --- DATA MASTER (NAMA) ---
         const namaList = [
@@ -541,8 +545,6 @@
             "SYAFIYA RAHMA", "MUHAMMAD FAQIH PRASETYO"
         ];
 
-
-        // Hitung frekuensi nama untuk logika autocomplete
         const nameFrequency = namaList.reduce((acc, name) => {
             acc[name] = (acc[name] || 0) + 1;
             return acc;
@@ -550,7 +552,6 @@
 
         // --- FUNGSI UTAMA ---
 
-        // 1. Ambil Data dari Supabase
         async function fetchSyahadahData() {
             try {
                 const { data, error } = await supabaseClient
@@ -567,7 +568,6 @@
             }
         }
 
-        // 2. Render Tabel
         function displayData() {
             const tableBody = document.getElementById('dataTable');
             const emptyState = document.getElementById('emptyState');
@@ -612,7 +612,6 @@
             });
         }
 
-        // 3. Simpan & Update Data
         document.getElementById('syahadahForm').addEventListener('submit', async function (e) {
             e.preventDefault();
 
@@ -643,27 +642,22 @@
                 let message;
 
                 if (editId) {
-                    // --- MODE UPDATE ---
                     const { error: updateError } = await supabaseClient
                         .from('syahadah')
                         .update(payload)
                         .eq('id', editId);
-
                     error = updateError;
                     message = 'Data berhasil diperbarui!';
                 } else {
-                    // --- MODE INSERT ---
                     const isExist = syahadahData.some(d => d.nama.toUpperCase() === nama.toUpperCase());
                     if (isExist) {
                         if (!confirm(`Nama "${nama}" sudah ada di database. Lanjutkan simpan duplikat?`)) {
                             return;
                         }
                     }
-
                     const { error: insertError } = await supabaseClient
                         .from('syahadah')
                         .insert([payload]);
-
                     error = insertError;
                     message = 'Data berhasil disimpan!';
                 }
@@ -680,10 +674,8 @@
             }
         });
 
-        // 4. Fungsi Edit (Populate Form)
         function editData(id) {
             const dataToEdit = syahadahData.find(d => String(d.id) === String(id));
-
             if (!dataToEdit) {
                 console.error("Data tidak ditemukan dengan ID:", id);
                 showToast('Data tidak ditemukan!', 'danger');
@@ -710,13 +702,11 @@
             document.getElementById('nama').focus();
         }
 
-        // 5. Fungsi Batal Edit
         function cancelEdit() {
             resetForm();
             showToast('Mode edit dibatalkan.', 'info');
         }
 
-        // 6. Reset Form Utilities
         function resetForm() {
             document.getElementById('syahadahForm').reset();
             document.getElementById('editId').value = '';
@@ -731,7 +721,6 @@
             document.getElementById('btnCancel').style.display = 'none';
         }
 
-        // 7. Hapus Data
         async function deleteData(id) {
             if (confirm('Apakah Anda yakin ingin menghapus data ini secara permanen?')) {
                 try {
@@ -757,7 +746,6 @@
             }
         }
 
-        // 8. Autocomplete Logic
         const namaInput = document.getElementById('nama');
         const autocompleteDiv = document.getElementById('namaAutocomplete');
 
@@ -807,7 +795,6 @@
             }
         });
 
-        // 9. Download Excel
         document.getElementById('downloadExcel').addEventListener('click', function () {
             if (syahadahData.length === 0) {
                 showToast('Tidak ada data untuk diunduh.', 'warning');
@@ -839,12 +826,10 @@
             showToast('File Excel sedang diunduh...', 'success');
         });
 
-        // 10. LOGIKA TOP 10 & DOWNLOAD JPG (BARU)
+        // --- LOGIKA TOP 10 & DOWNLOAD JPG (DIPERBAIKI) ---
 
-        // Inisialisasi Modal
         top10Modal = new bootstrap.Modal(document.getElementById('top10Modal'));
 
-        // Listener Tombol 10 Besar
         document.getElementById('btnTop10').addEventListener('click', function() {
             if (syahadahData.length === 0) {
                 showToast('Data kosong, tidak bisa menampilkan 10 besar.', 'warning');
@@ -854,12 +839,10 @@
             top10Modal.show();
         });
 
-        // Fungsi Render Tabel Top 10
         function renderTop10Table() {
             const tbody = document.getElementById('top10TableBody');
             tbody.innerHTML = '';
 
-            // 1. Clone data untuk dimanipulasi tanpa mengubah urutan asli
             let processedData = syahadahData.map(item => {
                 const total = (parseFloat(item.fashohah) || 0) + 
                               (parseFloat(item.tajwid) || 0) + 
@@ -868,13 +851,9 @@
                 return { ...item, total: total };
             });
 
-            // 2. Sort berdasarkan Total (descending)
             processedData.sort((a, b) => b.total - a.total);
-
-            // 3. Ambil 10 data pertama
             const top10Data = processedData.slice(0, 10);
 
-            // 4. Render baris
             top10Data.forEach((data, index) => {
                 const rank = index + 1;
                 let rankClass = '';
@@ -899,7 +878,6 @@
             });
         }
 
-        // Listener Tombol Download JPG
         document.getElementById('btnDownloadJPG').addEventListener('click', function() {
             const element = document.getElementById('top10CaptureArea');
             const btn = this;
@@ -909,10 +887,21 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Memproses...';
             btn.disabled = true;
 
+            // PERBAIKAN: Ambil lebar dan tinggi sebenarnya dari elemen (scrollWidth/scrollHeight)
+            // Ini memastikan gambar tidak terpotong meskipun di layar kecil
+            const width = element.scrollWidth;
+            const height = element.scrollHeight;
+
             html2canvas(element, {
-                scale: 2, // Perbesar skala agar hasil tajam
-                backgroundColor: '#ffffff', // Pastikan background putih
-                useCORS: true
+                scale: 2, // Tingkatkan resolusi
+                backgroundColor: '#ffffff',
+                useCORS: true,
+                width: width,       // Paksa lebar canvas sesuai konten
+                height: height,     // Paksa tinggi canvas sesuai konten
+                windowWidth: width,
+                windowHeight: height,
+                scrollX: 0,
+                scrollY: 0
             }).then(canvas => {
                 // Kembalikan tombol
                 btn.innerHTML = originalText;
@@ -921,7 +910,7 @@
                 // Buat link download
                 const link = document.createElement('a');
                 link.download = '10_Besar_Syahadah.jpg';
-                link.href = canvas.toDataURL('image/jpeg', 0.9); // Kualitas 0.9
+                link.href = canvas.toDataURL('image/jpeg', 0.9);
                 link.click();
                 
                 showToast('Gambar berhasil diunduh.', 'success');
@@ -933,8 +922,6 @@
             });
         });
 
-
-        // 11. Toast Notification
         function showToast(message, type = 'primary') {
             const toastContainer = document.getElementById('toastContainer');
             let bgClass = 'text-bg-primary';
@@ -964,7 +951,6 @@
             toastElement.addEventListener('hidden.bs.toast', () => { toastElement.remove(); });
         }
 
-        // --- EVENT LISTENER UNTUK TOMBOL DI TABEL (EVENT DELEGATION) ---
         document.getElementById('dataTable').addEventListener('click', function (e) {
             const editBtn = e.target.closest('.btn-action-edit');
             if (editBtn) {
@@ -981,7 +967,6 @@
             }
         });
 
-        // --- INIT ---
         fetchSyahadahData();
 
     </script>
