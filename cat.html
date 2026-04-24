@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulasi Tes CPNS 2025</title>
+  
+  <!-- External Libs (CDN) -->
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+
+  <style>
+   /* Custom Styles */
+   * { font-family: 'Plus Jakarta Sans', sans-serif; }
+   html, body { height: 100%; margin: 0; }
+
+   .gradient-bg {
+     background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+   }
+   
+   .card-glass {
+     background: rgba(30, 41, 59, 0.7);
+     backdrop-filter: blur(12px);
+     -webkit-backdrop-filter: blur(12px);
+     border: 1px solid rgba(100, 116, 139, 0.2);
+   }
+   
+   .btn-primary {
+     background: linear-gradient(135deg, #3b82f6, #2563eb);
+     transition: all 0.2s;
+   }
+   .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(37,99,235,0.3); }
+   .btn-primary:disabled { opacity: 0.5; transform: none; box-shadow: none; cursor: not-allowed; }
+
+   .option-btn {
+     transition: all 0.15s;
+     border: 2px solid rgba(100, 116, 139, 0.3);
+     background: rgba(15, 23, 42, 0.5);
+   }
+   .option-btn:hover { border-color: rgba(59, 130, 246, 0.5); background: rgba(59, 130, 246, 0.08); }
+   .option-btn.selected { border-color: #3b82f6; background: rgba(59, 130, 246, 0.15); }
+   .option-btn.correct { border-color: #22c55e; background: rgba(34, 197, 94, 0.15); }
+   .option-btn.wrong { border-color: #ef4444; background: rgba(239, 68, 68, 0.15); }
+
+   .progress-ring { transition: stroke-dashoffset 1s ease; }
+
+   .fade-in { animation: fadeIn 0.3s ease; }
+   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+   .toast {
+     position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+     background: #1e293b; border: 1px solid rgba(100,116,139,0.3);
+     padding: 12px 24px; border-radius: 12px; color: #e2e8f0;
+     z-index: 100; animation: toastIn 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+   }
+   @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+   /* Updated Nav Dot Styling for Centering */
+   .nav-dot {
+     width: 28px;
+     height: 28px;
+     border-radius: 6px;
+     font-size: 11px;
+     display: flex;
+     align-items: center;
+     justify-content: center; /* Ensures horizontal centering */
+     cursor: pointer;
+     transition: all 0.15s;
+     text-align: center;
+   }
+   
+   .nav-dot.answered { background: rgba(59,130,246,0.3); color: #93c5fd; }
+   .nav-dot.current { background: #3b82f6; color: white; font-weight: 700; }
+   .nav-dot.unanswered { background: rgba(100,116,139,0.2); color: #94a3b8; }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body class="h-full gradient-bg text-slate-200 overflow-auto">
+  
+  <div id="app" class="h-full w-full flex flex-col">
+   
+   <!-- HOME SCREEN -->
+   <div id="screen-home" class="flex-1 flex flex-col items-center justify-center p-6 fade-in">
+    <div class="text-center mb-10">
+     <div class="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-1.5 text-blue-400 text-sm mb-6">
+      <i data-lucide="shield-check" style="width:16px;height:16px"></i> <span>CAT BKN Simulator</span>
+     </div>
+     <h1 id="home-title" class="text-4xl md:text-5xl font-extrabold text-white mb-3">Simulasi Tes CPNS 2025</h1>
+     <p id="home-subtitle" class="text-lg text-slate-400">Seleksi Kompetensi Dasar (SKD)</p>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-3xl mb-10">
+     <div class="card-glass rounded-2xl p-5 text-center">
+      <div class="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center mx-auto mb-3"><i data-lucide="landmark" style="width:24px;height:24px;color:#f59e0b"></i></div>
+      <h3 class="font-bold text-white text-sm">TWK</h3>
+      <p class="text-xs text-slate-400 mt-1">Tes Wawasan Kebangsaan</p>
+      <p class="text-xs text-slate-500 mt-2">10 Soal • Passing: 65</p>
+     </div>
+     <div class="card-glass rounded-2xl p-5 text-center">
+      <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mx-auto mb-3"><i data-lucide="brain" style="width:24px;height:24px;color:#3b82f6"></i></div>
+      <h3 class="font-bold text-white text-sm">TIU</h3>
+      <p class="text-xs text-slate-400 mt-1">Tes Intelegensia Umum</p>
+      <p class="text-xs text-slate-500 mt-2">10 Soal • Passing: 80</p>
+     </div>
+     <div class="card-glass rounded-2xl p-5 text-center">
+      <div class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-3"><i data-lucide="heart-handshake" style="width:24px;height:24px;color:#22c55e"></i></div>
+      <h3 class="font-bold text-white text-sm">TKP</h3>
+      <p class="text-xs text-slate-400 mt-1">Tes Karakteristik Pribadi</p>
+      <p class="text-xs text-slate-500 mt-2">10 Soal • Passing: 166</p>
+     </div>
+    </div>
+
+    <button onclick="startTest()" class="btn-primary text-white font-bold px-10 py-4 rounded-2xl text-lg flex items-center gap-3 shadow-lg shadow-blue-500/20">
+     <i data-lucide="play" style="width:22px;height:22px"></i> Mulai Simulasi 
+    </button>
+
+    <div id="history-section" class="w-full max-w-3xl mt-10 hidden">
+     <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-semibold text-slate-400 flex items-center gap-2"><i data-lucide="history" style="width:16px;height:16px"></i> Riwayat Tes Lokal</h3>
+        <button onclick="clearHistory()" class="text-xs text-red-400 hover:text-red-300 underline">Hapus Riwayat</button>
+     </div>
+     <div id="history-list" class="space-y-2"></div>
+    </div>
+   </div>
+
+   <!-- TEST SCREEN -->
+   <div id="screen-test" class="flex-1 flex-col p-4 md:p-6 hidden">
+    <!-- Top Bar -->
+    <div class="flex items-center justify-between mb-4">
+     <div class="flex items-center gap-3">
+      <span id="test-category-badge" class="text-xs font-bold px-3 py-1 rounded-full bg-amber-500/20 text-amber-400">TWK</span> 
+      <span id="test-progress-text" class="text-sm text-slate-400">Soal 1/30</span>
+     </div>
+     <div id="timer-display" class="flex items-center gap-2 text-sm font-mono bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700">
+      <i data-lucide="clock" style="width:16px;height:16px;color:#f59e0b"></i> 
+      <span id="timer-text" class="text-amber-400 font-bold">90:00</span>
+     </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="w-full h-1.5 bg-slate-700/50 rounded-full mb-5">
+     <div id="progress-bar" class="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all duration-300" style="width:3.33%"></div>
+    </div>
+
+    <!-- Question Area -->
+    <div class="flex-1 max-w-3xl mx-auto w-full">
+     <div id="question-card" class="card-glass rounded-2xl p-6 md:p-8 mb-5 fade-in min-h-[140px]">
+      <p id="question-text" class="text-base md:text-lg text-white leading-relaxed font-medium"></p>
+     </div>
+     
+     <div id="options-container" class="space-y-3 mb-6"></div>
+
+     <!-- Question Navigation Dots -->
+     <div class="card-glass rounded-xl p-3 mb-5">
+      <p class="text-xs text-slate-500 mb-2">Navigasi Soal:</p>
+      <div id="nav-dots" class="flex flex-wrap gap-1.5"></div>
+     </div>
+
+     <!-- Navigation -->
+     <div class="flex items-center justify-between">
+      <button onclick="prevQuestion()" id="btn-prev" class="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition px-4 py-2.5 rounded-xl hover:bg-slate-700/50"> 
+       <i data-lucide="chevron-left" style="width:18px;height:18px"></i> Sebelumnya 
+      </button> 
+      
+      <button onclick="nextQuestion()" id="btn-next" class="btn-primary text-white font-semibold px-6 py-2.5 rounded-xl text-sm flex items-center gap-2"> 
+       Selanjutnya <i data-lucide="chevron-right" style="width:18px;height:18px"></i> 
+      </button> 
+      
+      <button onclick="confirmFinish()" id="btn-finish" class="hidden btn-primary text-white font-semibold px-6 py-2.5 rounded-xl text-sm flex items-center gap-2"> 
+       Selesai <i data-lucide="check-circle" style="width:18px;height:18px"></i> 
+      </button>
+     </div>
+
+     <!-- Inline finish confirmation -->
+     <div id="finish-confirm" class="hidden card-glass rounded-2xl p-6 mt-4 text-center fade-in border border-red-500/30">
+      <i data-lucide="alert-triangle" class="mx-auto text-red-400 mb-2" style="width:24px;height:24px"></i>
+      <p class="text-white font-semibold mb-1">Yakin ingin menyelesaikan tes?</p>
+      <p id="unanswered-warning" class="text-sm text-amber-400 mb-4"></p>
+      <div class="flex gap-3 justify-center">
+       <button onclick="hideFinishConfirm()" class="px-5 py-2 rounded-xl bg-slate-700 text-slate-300 text-sm hover:bg-slate-600 transition">Kembali</button> 
+       <button onclick="finishTest()" class="px-5 py-2 rounded-xl bg-red-500/80 text-white text-sm font-semibold hover:bg-red-500 transition">Ya, Selesaikan</button>
+      </div>
+     </div>
+    </div>
+   </div>
+
+   <!-- RESULT SCREEN -->
+   <div id="screen-result" class="flex-1 flex-col items-center p-6 hidden overflow-y-auto">
+    <div class="max-w-2xl mx-auto w-full fade-in pb-10">
+     <div class="text-center mb-8">
+      <div id="result-icon" class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"></div>
+      <h2 id="result-title" class="text-3xl font-extrabold text-white mb-2"></h2>
+      <p id="result-subtitle" class="text-slate-400"></p>
+     </div>
+     
+     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="card-glass rounded-2xl p-5 text-center">
+       <p class="text-xs text-slate-500 mb-1">TWK</p>
+       <p id="score-twk" class="text-2xl font-extrabold text-amber-400">0</p>
+       <p id="pass-twk" class="text-xs mt-1">Passing: 65</p>
+      </div>
+      <div class="card-glass rounded-2xl p-5 text-center">
+       <p class="text-xs text-slate-500 mb-1">TIU</p>
+       <p id="score-tiu" class="text-2xl font-extrabold text-blue-400">0</p>
+       <p id="pass-tiu" class="text-xs mt-1">Passing: 80</p>
+      </div>
+      <div class="card-glass rounded-2xl p-5 text-center">
+       <p class="text-xs text-slate-500 mb-1">TKP</p>
+       <p id="score-tkp" class="text-2xl font-extrabold text-emerald-400">0</p>
+       <p id="pass-tkp" class="text-xs mt-1">Passing: 166</p>
+      </div>
+     </div>
+     
+     <div class="card-glass rounded-2xl p-5 text-center mb-6">
+      <p class="text-xs text-slate-500 mb-1">Total Skor</p>
+      <p id="score-total" class="text-4xl font-extrabold text-white">0</p>
+      <p class="text-xs text-slate-500 mt-1">dari 500</p>
+     </div>
+     
+     <div id="review-section" class="mb-6">
+      <button onclick="toggleReview()" class="w-full card-glass rounded-2xl p-4 text-left flex items-center justify-between hover:bg-slate-700/30 transition group"> 
+       <span class="text-sm font-semibold text-slate-300 flex items-center gap-2 group-hover:text-white"> 
+        <i data-lucide="eye" style="width:16px;height:16px"></i> Lihat Pembahasan 
+       </span> 
+       <i data-lucide="chevron-down" style="width:18px;height:18px;color:#94a3b8" id="review-chevron"></i> 
+      </button>
+      <div id="review-content" class="hidden mt-3 space-y-3 max-h-96 overflow-y-auto pr-1"></div>
+     </div>
+     
+     <div class="flex gap-3">
+      <button onclick="goHome()" class="flex-1 py-3 rounded-2xl bg-slate-700/50 text-slate-300 font-semibold hover:bg-slate-700 transition flex items-center justify-center gap-2 text-sm"> 
+       <i data-lucide="home" style="width:18px;height:18px"></i> Beranda 
+      </button> 
+      <button onclick="startTest()" class="flex-1 btn-primary py-3 rounded-2xl text-white font-semibold flex items-center justify-center gap-2 text-sm"> 
+       <i data-lucide="rotate-ccw" style="width:18px;height:18px"></i> Coba Lagi 
+      </button>
+     </div>
+    </div>
+   </div>
+  </div>
+
+  <script>
+// ==================== QUESTION BANK ====================
+const questionBank = {
+  TWK: [
+    { q: "Pancasila sebagai dasar negara secara yuridis tercantum dalam...", opts: ["Pembukaan UUD 1945 Alinea IV", "Batang Tubuh UUD 1945", "Penjelasan UUD 1945", "TAP MPR"], ans: 0, exp: "Pancasila secara yuridis tercantum dalam Pembukaan UUD 1945 Alinea IV." },
+    { q: "Sidang BPUPKI pertama membahas tentang...", opts: ["Dasar negara", "Undang-undang dasar", "Pemilihan presiden", "Pembentukan kabinet"], ans: 0, exp: "Sidang BPUPKI pertama (29 Mei - 1 Juni 1945) membahas dasar negara." },
+    { q: "Sistem pemerintahan Indonesia menurut UUD 1945 adalah...", opts: ["Parlementer", "Presidensial", "Semi presidensial", "Liberal"], ans: 1, exp: "Indonesia menganut sistem presidensial dimana presiden sebagai kepala negara sekaligus kepala pemerintahan." },
+    { q: "Bhinneka Tunggal Ika berasal dari kitab...", opts: ["Negarakertagama", "Sutasoma", "Pararaton", "Arjunawiwaha"], ans: 1, exp: "Semboyan Bhinneka Tunggal Ika berasal dari kitab Sutasoma karangan Mpu Tantular." },
+    { q: "Lembaga negara yang berwenang menguji undang-undang terhadap UUD adalah...", opts: ["Mahkamah Agung", "Mahkamah Konstitusi", "DPR", "MPR"], ans: 1, exp: "MK berwenang menguji UU terhadap UUD 1945 (judicial review)." },
+    { q: "Sumpah Pemuda diperingati setiap tanggal...", opts: ["17 Agustus", "28 Oktober", "1 Juni", "10 November"], ans: 1, exp: "Sumpah Pemuda diikrarkan pada 28 Oktober 1928." },
+    { q: "Hak asasi manusia diatur dalam UUD 1945 pasal...", opts: ["Pasal 26", "Pasal 28A-28J", "Pasal 30", "Pasal 33"], ans: 1, exp: "HAM diatur secara khusus dalam Pasal 28A sampai 28J UUD 1945." },
+    { q: "Proklamasi kemerdekaan Indonesia dibacakan di...", opts: ["Lapangan Ikada", "Jalan Pegangsaan Timur 56", "Gedung Merdeka", "Istana Negara"], ans: 1, exp: "Proklamasi dibacakan di Jalan Pegangsaan Timur 56, Jakarta." },
+    { q: "Otonomi daerah diatur dalam UU Nomor...", opts: ["UU No. 23 Tahun 2014", "UU No. 32 Tahun 2004", "UU No. 5 Tahun 1974", "UU No. 12 Tahun 2008"], ans: 0, exp: "Otonomi daerah saat ini diatur dalam UU No. 23 Tahun 2014 tentang Pemerintahan Daerah." },
+    { q: "Lambang negara Garuda Pancasila ditetapkan melalui...", opts: ["PP No. 66 Tahun 1951", "UU No. 24 Tahun 2009", "Keppres No. 1 Tahun 1950", "TAP MPR No. 1 Tahun 1945"], ans: 1, exp: "Lambang negara diatur dalam UU No. 24 Tahun 2009 tentang Bendera, Bahasa, Lambang Negara, dan Lagu Kebangsaan." }
+  ],
+  TIU: [
+    { q: "Jika semua dokter adalah sarjana, dan sebagian sarjana adalah peneliti, maka...", opts: ["Semua dokter adalah peneliti", "Sebagian dokter mungkin peneliti", "Tidak ada dokter yang peneliti", "Semua peneliti adalah dokter"], ans: 1, exp: "Karena hanya sebagian sarjana yang peneliti, maka sebagian dokter mungkin saja peneliti." },
+    { q: "12, 15, 21, 30, 42, ...", opts: ["55", "57", "56", "54"], ans: 1, exp: "Selisih: 3, 6, 9, 12, 15. Jadi 42 + 15 = 57." },
+    { q: "HARMONI >< ...", opts: ["Keindahan", "Keselarasan", "Kekacauan", "Ketenangan"], ans: 2, exp: "Lawan kata (antonim) dari harmoni adalah kekacauan." },
+    { q: "Harga barang naik 20%, kemudian turun 20%. Perubahan harga dari harga awal adalah...", opts: ["Tetap", "Turun 4%", "Naik 4%", "Turun 2%"], ans: 1, exp: "100 × 1.2 = 120, lalu 120 × 0.8 = 96. Turun 4% dari harga awal." },
+    { q: "Sinonim dari ESOTERIS adalah...", opts: ["Umum", "Rahasia", "Terbuka", "Jelas"], ans: 1, exp: "Esoteris berarti bersifat rahasia atau hanya diketahui/dipahami oleh kalangan tertentu." },
+    { q: "Jika A = 2, B = 4, C = 8, maka D = ...", opts: ["10", "12", "16", "14"], ans: 2, exp: "Pola: setiap huruf bernilai 2x lipat sebelumnya. D = 16." },
+    { q: "Sebuah bak diisi air 3/4 penuh. Setelah digunakan 1/3 dari air tersebut, sisa air adalah...", opts: ["1/2", "1/4", "5/12", "7/12"], ans: 0, exp: "3/4 - (1/3 × 3/4) = 3/4 - 1/4 = 1/2." },
+    { q: "KUANTITAS : JUMLAH = KUALITAS : ...", opts: ["Banyak", "Mutu", "Harga", "Ukuran"], ans: 1, exp: "Kuantitas bersinonim dengan jumlah, kualitas bersinonim dengan mutu." },
+    { q: "2, 3, 5, 8, 13, 21, ...", opts: ["29", "34", "32", "28"], ans: 1, exp: "Deret Fibonacci: setiap angka = jumlah dua angka sebelumnya. 13+21=34." },
+    { q: "Jika 5 orang menyelesaikan pekerjaan dalam 12 hari, berapa hari jika dikerjakan 10 orang?", opts: ["6 hari", "8 hari", "24 hari", "10 hari"], ans: 0, exp: "Perbandingan terbalik: 5×12 = 10×x, x = 6 hari." }
+  ],
+  TKP: [
+    { q: "Anda ditugaskan menyelesaikan laporan penting, namun rekan kerja meminta bantuan mendesak. Anda akan...", opts: ["Menolak karena sibuk", "Membantu lalu lembur menyelesaikan laporan", "Menyuruh rekan minta tolong orang lain", "Membantu sedikit tanpa mengorbankan deadline", "Mengabaikan permintaan rekan"], ans: 3, scores: [2,4,1,5,1], exp: "Sikap terbaik: membantu tanpa mengabaikan tanggung jawab utama." },
+    { q: "Atasan memberikan kritik terhadap hasil kerja Anda di depan umum. Sikap Anda...", opts: ["Marah dan membela diri", "Menerima dengan lapang dada dan memperbaiki", "Diam tapi menyimpan dendam", "Meminta klarifikasi secara pribadi setelahnya", "Mengabaikan kritik tersebut"], ans: 1, scores: [1,5,1,4,2], exp: "Profesional: menerima kritik dengan positif dan memperbaiki diri." },
+    { q: "Anda menemukan rekan kerja melakukan kecurangan kecil. Anda akan...", opts: ["Melaporkan ke atasan langsung", "Mengingatkan rekan secara pribadi", "Mengabaikan karena bukan urusan Anda", "Ikut melakukan hal serupa", "Menyebarkan ke rekan lain"], ans: 1, scores: [4,5,2,1,1], exp: "Mengingatkan secara pribadi menunjukkan integritas dan empati." },
+    { q: "Anda dipindahkan ke unit kerja baru yang tidak sesuai keahlian. Sikap Anda...", opts: ["Menolak dan mengajukan keberatan", "Menerima dan beradaptasi sambil belajar", "Menerima tapi tidak bersemangat", "Meminta pindah kembali", "Mengerjakan seadanya saja"], ans: 1, scores: [2,5,2,3,1], exp: "Menerima tantangan baru dengan semangat belajar menunjukkan adaptabilitas." },
+    { q: "Dalam rapat, pendapat Anda ditolak oleh mayoritas anggota. Anda...", opts: ["Tetap memaksakan pendapat", "Menerima keputusan bersama dengan lapang dada", "Keluar dari rapat", "Mengkritik keputusan di belakang", "Diam dan tidak berpartisipasi lagi"], ans: 1, scores: [2,5,1,1,2], exp: "Menghormati keputusan bersama menunjukkan kedewasaan profesional." },
+    { q: "Anda diminta menggantikan tugas rekan yang sedang cuti mendadak. Anda...", opts: ["Menolak karena bukan tugas Anda", "Menerima dengan senang hati", "Menerima tapi mengeluh", "Meminta kompensasi tambahan dahulu", "Mengerjakan setengah hati"], ans: 1, scores: [1,5,2,3,1], exp: "Kesediaan membantu tanpa pamrih menunjukkan kerja sama tim yang baik." },
+    { q: "Target kerja Anda bulan ini sangat tinggi dan sulit dicapai. Anda...", opts: ["Menyerah sejak awal", "Menyusun strategi dan bekerja keras", "Meminta target diturunkan", "Bekerja biasa saja", "Menyalahkan atasan yang menetapkan target"], ans: 1, scores: [1,5,3,2,1], exp: "Menyusun strategi menunjukkan orientasi pada hasil dan kemampuan problem solving." },
+    { q: "Rekan kerja sering datang terlambat dan mengganggu kinerja tim. Anda...", opts: ["Melaporkan langsung ke atasan", "Mengajak bicara baik-baik untuk mencari solusi", "Mengabaikan saja", "Membicarakan di belakang", "Ikut datang terlambat"], ans: 1, scores: [3,5,2,1,1], exp: "Komunikasi langsung yang konstruktif adalah pendekatan terbaik." },
+    { q: "Anda mendapat tawaran kerja dengan gaji lebih tinggi dari instansi swasta. Anda...", opts: ["Langsung menerima tawaran tersebut", "Mempertimbangkan dengan matang dan berkonsultasi keluarga", "Minta kenaikan gaji ke atasan", "Mengabaikan tawaran", "Menerima sambil tetap bekerja di instansi"], ans: 1, scores: [2,5,3,3,1], exp: "Pertimbangan matang menunjukkan kebijaksanaan dalam mengambil keputusan." },
+    { q: "Anda ditunjuk memimpin proyek besar pertama kali. Sikap Anda...", opts: ["Menolak karena belum berpengalaman", "Menerima dan segera menyusun perencanaan", "Menerima tapi menyerahkan semua ke bawahan", "Menerima dan langsung bekerja tanpa rencana", "Meminta orang lain menggantikan"], ans: 1, scores: [2,5,1,2,1], exp: "Menerima tantangan dan merencanakan dengan baik menunjukkan kepemimpinan." }
+  ]
+};
+
+// ==================== STATE ====================
+let currentScreen = 'home';
+let questions = [];
+let answers = []; 
+let currentQ = 0;
+let timerInterval = null;
+let timeLeft = 90 * 60; 
+let startTime = null;
+let testHistory = [];
+
+// ==================== LOCAL STORAGE HELPERS (SDK Replacement) ====================
+const STORAGE_KEY = 'cpns_sim_history_v1';
+
+// Mock SDK objects to prevent errors
+window.elementSdk = { setConfig: () => {}, init: () => {} };
+
+// Data Logic using LocalStorage
+const LocalStorageDataHandler = {
+    create: async (data) => {
+        return new Promise((resolve) => {
+            try {
+                const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+                const newRecord = { 
+                    ...data, 
+                    __backendId: Date.now().toString() + Math.random().toString(36).substr(2, 9) 
+                };
+                history.push(newRecord);
+                
+                // Keep only last 50 records to save space
+                if(history.length > 50) history.shift();
+                
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+                resolve({ isError: false, data: newRecord });
+            } catch (e) {
+                console.error("Storage save failed", e);
+                resolve({ isError: true });
+            }
+        });
+    },
+    list: async () => {
+        return new Promise((resolve) => {
+            try {
+                const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+                // Sort by date descending
+                history.sort((a, b) => new Date(b.date) - new Date(a.date));
+                resolve(history);
+            } catch (e) {
+                resolve([]);
+            }
+        });
+    },
+    clear: async () => {
+        return new Promise((resolve) => {
+            localStorage.removeItem(STORAGE_KEY);
+            resolve();
+        });
+    }
+};
+
+// ==================== CONFIG & INIT ====================
+const defaultConfig = {
+  app_title: "Simulasi Tes CPNS 2025",
+  subtitle_text: "Seleksi Kompetensi Dasar (SKD)",
+  background_color: "#0f172a",
+  surface_color: "#1e293b",
+  text_color: "#e2e8f0",
+  primary_color: "#3b82f6",
+  accent_color: "#f59e0b",
+  font_family: "Plus Jakarta Sans",
+  font_size: 16
+};
+
+function applyConfig(config) {
+  const t = config.app_title || defaultConfig.app_title;
+  const s = config.subtitle_text || defaultConfig.subtitle_text;
+  // Apply simple text updates
+  const el = (id) => document.getElementById(id);
+  if(el('home-title')) el('home-title').textContent = t;
+  if(el('home-subtitle')) el('home-subtitle').textContent = s;
+  
+  // Apply basic styles
+  document.body.style.color = config.text_color || defaultConfig.text_color;
+  document.body.style.fontFamily = `${config.font_family || defaultConfig.font_family}, sans-serif`;
+}
+
+async function loadHistory() {
+    testHistory = await LocalStorageDataHandler.list();
+    renderHistory();
+}
+
+function clearHistory() {
+    if(confirm('Hapus semua riwayat tes?')) {
+        LocalStorageDataHandler.clear().then(() => {
+            testHistory = [];
+            renderHistory();
+            showToast('Riwayat berhasil dihapus');
+        });
+    }
+}
+
+function renderHistory() {
+  const section = document.getElementById('history-section');
+  const list = document.getElementById('history-list');
+  if (!testHistory.length) { section.classList.add('hidden'); return; }
+  section.classList.remove('hidden');
+
+  const existing = new Map([...list.children].map(el => [el.dataset.id, el]));
+  const ids = new Set();
+
+  testHistory.slice(0, 5).forEach(h => {
+    const id = h.__backendId;
+    ids.add(id);
+    const passed = h.passed;
+    const date = new Date(h.date);
+    const dateStr = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    const dur = Math.floor((h.duration_seconds || 0) / 60);
+
+    if (existing.has(id)) {
+      const el = existing.get(id);
+      el.querySelector('.h-score').textContent = h.total_score;
+      existing.delete(id);
+    } else {
+      const el = document.createElement('div');
+      el.dataset.id = id;
+      el.className = 'card-glass rounded-xl p-3 flex items-center justify-between fade-in';
+      el.innerHTML = `
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center ${passed ? 'bg-emerald-500/20' : 'bg-red-500/20'}">
+            <i data-lucide="${passed ? 'check' : 'x'}" style="width:16px;height:16px;color:${passed ? '#22c55e' : '#ef4444'}"></i>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-white">Skor: <span class="h-score">${h.total_score}</span></p>
+            <p class="text-xs text-slate-500">${dateStr} • ${dur} menit</p>
+          </div>
+        </div>
+        <div class="text-xs ${passed ? 'text-emerald-400' : 'text-red-400'} font-bold">${passed ? 'LULUS' : 'TIDAK LULUS'}</div>
+      `;
+      list.appendChild(el);
+    }
+  });
+
+  existing.forEach(el => el.remove());
+  lucide.createIcons();
+}
+
+// ==================== TEST LOGIC ====================
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startTest() {
+  questions = [
+    ...shuffleArray(questionBank.TWK).slice(0, 10).map((q, i) => ({ ...q, type: 'TWK', idx: i })),
+    ...shuffleArray(questionBank.TIU).slice(0, 10).map((q, i) => ({ ...q, type: 'TIU', idx: i + 10 })),
+    ...shuffleArray(questionBank.TKP).slice(0, 10).map((q, i) => ({ ...q, type: 'TKP', idx: i + 20 }))
+  ];
+  answers = new Array(30).fill(-1);
+  currentQ = 0;
+  timeLeft = 90 * 60;
+  startTime = Date.now();
+
+  showScreen('test');
+  renderQuestion();
+  startTimer();
+  buildNavDots();
+}
+
+function showScreen(name) {
+  ['home', 'test', 'result'].forEach(s => {
+    const el = document.getElementById('screen-' + s);
+    if (s === name) { el.classList.remove('hidden'); el.classList.add('flex'); }
+    else { el.classList.add('hidden'); el.classList.remove('flex'); }
+  });
+  currentScreen = name;
+  // Re-render icons when switching screens
+  setTimeout(() => lucide.createIcons(), 50);
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  const colors = { TWK: ['bg-amber-500/20', 'text-amber-400'], TIU: ['bg-blue-500/20', 'text-blue-400'], TKP: ['bg-emerald-500/20', 'text-emerald-400'] };
+  const [bgC, txC] = colors[q.type];
+
+  const badge = document.getElementById('test-category-badge');
+  badge.className = `text-xs font-bold px-3 py-1 rounded-full ${bgC} ${txC}`;
+  badge.textContent = q.type;
+  
+  document.getElementById('test-progress-text').textContent = `Soal ${currentQ + 1}/30`;
+  document.getElementById('progress-bar').style.width = `${((currentQ + 1) / 30) * 100}%`;
+  document.getElementById('question-text').textContent = `${currentQ + 1}. ${q.q}`;
+
+  const container = document.getElementById('options-container');
+  container.innerHTML = '';
+  const labels = ['A', 'B', 'C', 'D', 'E'];
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = `option-btn w-full text-left p-4 rounded-xl flex items-center gap-3 ${answers[currentQ] === i ? 'selected' : ''}`;
+    btn.innerHTML = `<span class="w-8 h-8 rounded-lg bg-slate-700/50 flex items-center justify-center text-sm font-bold shrink-0">${labels[i]}</span><span class="text-sm">${opt}</span>`;
+    btn.onclick = () => selectAnswer(i);
+    container.appendChild(btn);
+  });
+
+  // Navigation buttons
+  document.getElementById('btn-prev').style.visibility = currentQ > 0 ? 'visible' : 'hidden';
+  if (currentQ === 29) {
+    document.getElementById('btn-next').classList.add('hidden');
+    document.getElementById('btn-finish').classList.remove('hidden');
+    document.getElementById('btn-finish').classList.add('flex');
+  } else {
+    document.getElementById('btn-next').classList.remove('hidden');
+    document.getElementById('btn-finish').classList.add('hidden');
+    document.getElementById('btn-finish').classList.remove('flex');
+  }
+
+  updateNavDots();
+  document.getElementById('finish-confirm').classList.add('hidden');
+}
+
+function selectAnswer(idx) {
+  answers[currentQ] = idx;
+  const btns = document.getElementById('options-container').children;
+  [...btns].forEach((b, i) => {
+    b.classList.toggle('selected', i === idx);
+  });
+  updateNavDots();
+}
+
+function nextQuestion() { if (currentQ < 29) { currentQ++; renderQuestion(); } }
+function prevQuestion() { if (currentQ > 0) { currentQ--; renderQuestion(); } }
+function goToQuestion(i) { currentQ = i; renderQuestion(); }
+
+function buildNavDots() {
+  const container = document.getElementById('nav-dots');
+  container.innerHTML = '';
+  for (let i = 0; i < 30; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'nav-dot unanswered';
+    dot.textContent = i + 1;
+    dot.onclick = () => goToQuestion(i);
+    container.appendChild(dot);
+  }
+}
+
+function updateNavDots() {
+  const dots = document.getElementById('nav-dots').children;
+  [...dots].forEach((d, i) => {
+    d.className = 'nav-dot ' + (i === currentQ ? 'current' : answers[i] >= 0 ? 'answered' : 'unanswered');
+  });
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+    const s = (timeLeft % 60).toString().padStart(2, '0');
+    document.getElementById('timer-text').textContent = `${m}:${s}`;
+    if (timeLeft <= 300) document.getElementById('timer-text').classList.replace('text-amber-400', 'text-red-400');
+    if (timeLeft > 300) document.getElementById('timer-text').classList.replace('text-red-400', 'text-amber-400');
+    if (timeLeft <= 0) { clearInterval(timerInterval); finishTest(); }
+  }, 1000);
+}
+
+function confirmFinish() {
+  const unanswered = answers.filter(a => a < 0).length;
+  const warn = document.getElementById('unanswered-warning');
+  warn.textContent = unanswered > 0 ? `${unanswered} soal belum dijawab!` : 'Semua soal telah dijawab.';
+  document.getElementById('finish-confirm').classList.remove('hidden');
+}
+
+function hideFinishConfirm() { document.getElementById('finish-confirm').classList.add('hidden'); }
+
+async function finishTest() {
+  clearInterval(timerInterval);
+  const duration = Math.floor((Date.now() - startTime) / 1000);
+
+  let scoreTWK = 0, scoreTIU = 0, scoreTKP = 0;
+  questions.forEach((q, i) => {
+    const a = answers[i];
+    if (q.type === 'TKP') {
+      scoreTKP += (a >= 0 && q.scores) ? q.scores[a] : 0;
+    } else {
+      const pts = a === q.ans ? 5 : 0;
+      if (q.type === 'TWK') scoreTWK += pts;
+      else scoreTIU += pts;
+    }
+  });
+
+  const total = scoreTWK + scoreTIU + scoreTKP;
+  const passed = scoreTWK >= 65 && scoreTIU >= 80 && scoreTKP >= 166;
+
+  // Show results
+  showScreen('result');
+  document.getElementById('score-twk').textContent = scoreTWK;
+  document.getElementById('score-tiu').textContent = scoreTIU;
+  document.getElementById('score-tkp').textContent = scoreTKP;
+  document.getElementById('score-total').textContent = total;
+
+  const passTWK = scoreTWK >= 65;
+  const passTIU = scoreTIU >= 80;
+  const passTKP = scoreTKP >= 166;
+  
+  const updateStatus = (id, pass, min) => {
+    const el = document.getElementById(id);
+    el.className = `text-xs mt-1 ${pass ? 'text-emerald-400' : 'text-red-400'}`;
+    el.textContent = pass ? '✓ Lulus' : `✗ Tidak Lulus (min. ${min})`;
+  };
+
+  updateStatus('pass-twk', passTWK, 65);
+  updateStatus('pass-tiu', passTIU, 80);
+  updateStatus('pass-tkp', passTKP, 166);
+
+  const icon = document.getElementById('result-icon');
+  icon.className = `w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${passed ? 'bg-emerald-500/20' : 'bg-red-500/20'}`;
+  icon.innerHTML = `<i data-lucide="${passed ? 'trophy' : 'alert-circle'}" style="width:40px;height:40px;color:${passed ? '#22c55e' : '#ef4444'}"></i>`;
+
+  document.getElementById('result-title').textContent = passed ? 'Selamat, Anda Lulus!' : 'Belum Berhasil';
+  document.getElementById('result-subtitle').textContent = passed ? 
+    `Total skor ${total} — semua kategori memenuhi passing grade.` : 
+    `Total skor ${total} — ada kategori yang belum memenuhi passing grade.`;
+
+  buildReview();
+  lucide.createIcons();
+
+  // Save to LocalStorage (Replacement for Data SDK)
+  if (testHistory.length >= 999) {
+    showToast('Riwayat penuh (999). Data lama tidak disimpan.');
+    return;
+  }
+  const result = await LocalStorageDataHandler.create({
+    test_type: 'SKD',
+    score_twk: scoreTWK,
+    score_tiu: scoreTIU,
+    score_tkp: scoreTKP,
+    total_score: total,
+    passed: passed,
+    date: new Date().toISOString(),
+    duration_seconds: duration
+  });
+  
+  if (!result.isError) {
+      // Reload history for home screen
+      loadHistory();
+  } else {
+      showToast('Gagal menyimpan hasil tes ke local storage.');
+  }
+}
+
+function buildReview() {
+  const container = document.getElementById('review-content');
+  container.innerHTML = '';
+  const labels = ['A', 'B', 'C', 'D', 'E'];
+  questions.forEach((q, i) => {
+    const a = answers[i];
+    const isTKP = q.type === 'TKP';
+    // For TKP, we assume Score 5 is the best "correct" for visualization purposes
+    const isCorrect = isTKP ? (a >= 0 && q.scores[a] === 5) : a === q.ans;
+    const colors = { TWK: 'amber', TIU: 'blue', TKP: 'emerald' };
+    const c = colors[q.type];
+
+    const div = document.createElement('div');
+    div.className = 'card-glass rounded-xl p-4';
+    
+    let correctAnswerHtml = '';
+    if(!isTKP) {
+        correctAnswerHtml = `<p class="text-xs text-slate-400">Jawaban benar: <span class="text-emerald-400 font-semibold">${labels[q.ans]}. ${q.opts[q.ans]}</span></p>`;
+    } else {
+        correctAnswerHtml = `<p class="text-xs text-slate-400">Skor Jawaban: <span class="text-blue-400 font-semibold">${a >= 0 ? q.scores[a] : 0}/5</span></p>`;
+    }
+
+    div.innerHTML = `
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-xs font-bold px-2 py-0.5 rounded bg-${c}-500/20 text-${c}-400">${q.type}</span>
+        <span class="text-xs ${isCorrect ? 'text-emerald-400' : 'text-red-400'} font-bold">${isCorrect ? '✓ Benar' : '✗ Salah'}</span>
+      </div>
+      <p class="text-sm text-white mb-2">${i + 1}. ${q.q}</p>
+      <p class="text-xs text-slate-400">Jawaban Anda: <span class="${isCorrect ? 'text-emerald-400' : 'text-red-400'} font-semibold">${a >= 0 ? labels[a] + '. ' + q.opts[a] : 'Tidak dijawab'}</span></p>
+      ${correctAnswerHtml}
+      <p class="text-xs text-slate-500 mt-2 italic border-t border-slate-700/50 pt-2">${q.exp}</p>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function toggleReview() {
+  const c = document.getElementById('review-content');
+  const icon = document.getElementById('review-chevron');
+  c.classList.toggle('hidden');
+  if(c.classList.contains('hidden')) {
+      icon.setAttribute('data-lucide', 'chevron-down');
+  } else {
+      icon.setAttribute('data-lucide', 'chevron-up');
+  }
+  lucide.createIcons();
+}
+
+function goHome() { showScreen('home'); }
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => {
+    t.style.opacity = '0';
+    t.style.transform = 'translate(-50%, 20px)';
+    setTimeout(() => t.remove(), 300);
+  }, 3000);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  lucide.createIcons();
+  applyConfig(defaultConfig);
+  loadHistory(); // Load history from local storage on start
+});
+  </script>
+ </body>
+</html>
