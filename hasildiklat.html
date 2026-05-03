@@ -303,7 +303,7 @@
 
         #top10CaptureArea {
             width: 100%;
-            min-width: 650px; 
+            min-width: 750px; 
             max-width: 800px;
             margin: 0 auto;
             background-color: white;
@@ -332,17 +332,22 @@
             .header { padding: 15px; margin-bottom: 15px; }
             .header h1 { font-size: 1.4rem; }
             .card { padding: 15px; margin-bottom: 15px; }
-            .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-            .table { min-width: 600px; }
             
-            /* Agar tombol tidak menumpuk di mobile */
-            .d-flex.flex-wrap.gap-2 {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .d-flex.flex-wrap.gap-2 .btn {
+            /* Layout Tombol di Smartphone agar Berjejer Horizontal */
+            .card .d-flex.gap-2 {
+                flex-direction: row !important;
                 width: 100%;
             }
+            .card .d-flex.gap-2 .btn {
+                flex: 1;
+                font-size: 0.8rem;
+                padding: 8px 5px;
+                white-space: nowrap;
+                text-align: center;
+            }
+
+            .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .table { min-width: 650px; }
         }
     </style>
 </head>
@@ -402,6 +407,13 @@
                             </div>
                         </div>
 
+                        <!-- Input Micro Teaching Baru (Optional) -->
+                        <div class="mb-2">
+                            <label for="micro" class="form-label">Micro Teaching <small class="text-muted fw-normal">(Opsional)</small></label>
+                            <input type="number" class="form-control form-control-sm" id="micro" min="0" max="100"
+                                placeholder="0-100">
+                        </div>
+
                         <div class="mb-3">
                             <label for="keterangan" class="form-label">Keterangan</label>
                             <select class="form-select form-select-sm" id="keterangan">
@@ -433,7 +445,6 @@
                             <button id="downloadExcel" class="btn btn-download btn-sm">
                                 <i class="fas fa-file-excel me-2"></i>Excel
                             </button>
-                            <!-- Tombol Hapus Semua Baru -->
                             <button id="btnDeleteAll" class="btn btn-danger btn-sm">
                                 <i class="fas fa-trash-alt me-2"></i>Hapus Semua
                             </button>
@@ -451,6 +462,7 @@
                                         <th>Tjw</th>
                                         <th>Ghr</th>
                                         <th>Sr</th>
+                                        <th>Micro</th>
                                         <th>Ket</th>
                                         <th style="width: 100px;">Aksi</th>
                                     </tr>
@@ -531,12 +543,13 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th style="width: 10%; text-align: center;">No.</th>
-                                        <th style="width: 35%;">Nama</th>
+                                        <th style="width: 30%;">Nama</th>
                                         <th style="width: 10%; text-align: center;">Fsh</th>
                                         <th style="width: 10%; text-align: center;">Tjw</th>
                                         <th style="width: 10%; text-align: center;">Ghr</th>
                                         <th style="width: 10%; text-align: center;">Sr</th>
-                                        <th style="width: 15%; text-align: center;">Total</th>
+                                        <th style="width: 10%; text-align: center;">Micro</th>
+                                        <th style="width: 10%; text-align: center;">Total</th>
                                     </tr>
                                 </thead>
                                 <tbody id="top10TableBody">
@@ -574,7 +587,7 @@
         const rowsPerPage = 10;
         let currentPageMain = 1;
         let currentPageNonSyahadah = 1;
-        let currentNonSyahadahData = []; // Menyimpan data hasil filter non-syahadah
+        let currentNonSyahadahData = []; 
 
         // --- DATA MASTER (NAMA) ---
         const namaList = [
@@ -600,7 +613,6 @@
                 if (error) throw error;
                 syahadahData = data || [];
                 
-                // Cek apakah halaman saat ini valid setelah perubahan data
                 const totalPagesMain = Math.ceil(syahadahData.length / rowsPerPage);
                 if (currentPageMain > totalPagesMain && totalPagesMain > 0) {
                     currentPageMain = totalPagesMain;
@@ -629,7 +641,6 @@
             emptyState.style.display = 'none';
             tableBody.innerHTML = '';
 
-            // Pagination Logic
             const totalPages = Math.ceil(syahadahData.length / rowsPerPage);
             const start = (currentPageMain - 1) * rowsPerPage;
             const end = start + rowsPerPage;
@@ -647,6 +658,7 @@
                     <td class="text-center">${data.tajwid}</td>
                     <td class="text-center">${data.ghorib}</td>
                     <td class="text-center">${data.suara}</td>
+                    <td class="text-center text-muted">${data.micro !== undefined && data.micro !== null ? data.micro : '-'}</td>
                     <td class="text-center">
                         <span class="badge ${data.keterangan === 'Lulus' ? 'bg-success' : 'bg-danger'}">
                             ${data.keterangan}
@@ -669,7 +681,6 @@
             renderPagination('main', totalPages, currentPageMain, 'displayData');
         }
 
-        // --- FUNGSI TAMPILKAN DATA TIDAK SYAHAHDAH DENGAN PAGINATION ---
         function displayNonSyahadahData() {
             const tbody = document.getElementById('tableNonSyahadah');
             const emptyState = document.getElementById('emptyNonSyahadah');
@@ -722,7 +733,6 @@
             renderPagination('nonSyahadah', totalPages, currentPageNonSyahadah, 'displayNonSyahadahData');
         }
 
-        // --- GENERATOR PAGINATION ---
         function renderPagination(type, totalPages, currentPage, callbackName) {
             const container = document.getElementById(type === 'main' ? 'paginationMain' : 'paginationNonSyahadah');
             
@@ -733,7 +743,6 @@
 
             let html = `<nav aria-label="Page navigation"><ul class="pagination pagination-sm">`;
 
-            // Tombol Previous
             html += `
                 <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
                     <a class="page-link" href="#" onclick="changePage('${type}', ${currentPage - 1}, '${callbackName}')">
@@ -749,7 +758,6 @@
                 startPage = Math.max(1, endPage - 4);
             }
 
-            // Tombol First
             if (startPage > 1) {
                 html += `<li class="page-item"><a class="page-link" href="#" onclick="changePage('${type}', 1, '${callbackName}')">1</a></li>`;
                 if (startPage > 2) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
@@ -763,13 +771,11 @@
                 `;
             }
 
-            // Tombol Last
             if (endPage < totalPages) {
                 if (endPage < totalPages - 1) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
                 html += `<li class="page-item"><a class="page-link" href="#" onclick="changePage('${type}', ${totalPages}, '${callbackName}')">${totalPages}</a></li>`;
             }
 
-            // Tombol Next
             html += `
                 <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
                     <a class="page-link" href="#" onclick="changePage('${type}', ${currentPage + 1}, '${callbackName}')">
@@ -800,6 +806,8 @@
             const nilaiTajwid = parseFloat(document.getElementById('nilaiTajwid').value) || 0;
             const ghorib = parseFloat(document.getElementById('ghorib').value) || 0;
             const suara = parseFloat(document.getElementById('suara').value) || 0;
+            // Ambil nilai micro (optional), default 0 jika kosong
+            const micro = parseFloat(document.getElementById('micro').value) || 0;
             const keterangan = document.getElementById('keterangan').value;
 
             if (!nama) {
@@ -813,6 +821,7 @@
                 tajwid: nilaiTajwid,
                 ghorib: ghorib,
                 suara: suara,
+                micro: micro, // Simpan ke kolom micro
                 keterangan: keterangan
             };
 
@@ -872,6 +881,7 @@
             document.getElementById('nilaiTajwid').value = dataToEdit.tajwid;
             document.getElementById('ghorib').value = dataToEdit.ghorib;
             document.getElementById('suara').value = dataToEdit.suara;
+            document.getElementById('micro').value = dataToEdit.micro || ''; // Tampilkan micro jika ada
             document.getElementById('keterangan').value = dataToEdit.keterangan;
 
             document.getElementById('formTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Edit Data';
@@ -935,22 +945,17 @@
             }
         }
 
-        // --- EVENT LISTENER TOMBOL HAPUS SEMUA (BARU) ---
         document.getElementById('btnDeleteAll').addEventListener('click', async function() {
-            // Cek apakah data kosong
             if (syahadahData.length === 0) {
                 showToast('Database sudah kosong, tidak ada data untuk dihapus.', 'warning');
                 return;
             }
 
-            // Konfirmasi keamanan
             if (!confirm('PERINGATAN KRITIS!\n\nAnda akan menghapus SEMUA data di database.\nTindakan ini TIDAK DAPAT dibatalkan.\n\nApakah Anda benar-benar yakin?')) {
                 return;
             }
 
             try {
-                // Supabase v2 memerlukan filter untuk delete. 
-                // .gte('id', 0) akan memilih semua baris (asumsi ID >= 0).
                 const { error } = await supabaseClient
                     .from('syahadah')
                     .delete()
@@ -968,7 +973,6 @@
             }
         });
 
-        // --- QUICK INPUT ---
         document.getElementById('tableNonSyahadah').addEventListener('click', function (e) {
             const btn = e.target.closest('.btn-input-quick');
             if (btn) {
@@ -981,7 +985,6 @@
             }
         });
 
-        // --- AUTOCOMPLETE ---
         const namaInput = document.getElementById('nama');
         const autocompleteDiv = document.getElementById('namaAutocomplete');
 
@@ -1031,7 +1034,6 @@
             }
         });
 
-        // --- EXCEL ---
         document.getElementById('downloadExcel').addEventListener('click', function () {
             if (syahadahData.length === 0) {
                 showToast('Tidak ada data untuk diunduh.', 'warning');
@@ -1045,12 +1047,13 @@
                 'Nilai Tajwid': data.tajwid,
                 'Nilai Ghorib': data.ghorib,
                 'Nilai Suara': data.suara,
+                'Micro Teaching': data.micro || 0,
                 'Keterangan': data.keterangan
             }));
 
             const worksheet = XLSX.utils.json_to_sheet(excelData);
             const wscols = [
-                { wch: 5 }, { wch: 35 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }
+                { wch: 5 }, { wch: 35 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }
             ];
             worksheet['!cols'] = wscols;
 
@@ -1063,7 +1066,6 @@
             showToast('File Excel sedang diunduh...', 'success');
         });
 
-        // --- TOP 10 ---
         top10Modal = new bootstrap.Modal(document.getElementById('top10Modal'));
 
         document.getElementById('btnTop10').addEventListener('click', function() {
@@ -1084,13 +1086,16 @@
                 const t = parseFloat(item.tajwid) || 0;
                 const g = parseFloat(item.ghorib) || 0;
                 const s = parseFloat(item.suara) || 0;
+                // Ambil nilai micro, 0 jika null/undefined
+                const m = parseFloat(item.micro) || 0;
                 return {
                     ...item,
                     fashohah: f,
                     tajwid: t,
                     ghorib: g,
                     suara: s,
-                    total: f + t + g + s
+                    micro: m,
+                    total: f + t + g + s + m // Tambahkan micro ke total
                 };
             });
 
@@ -1121,6 +1126,7 @@
                         <td class="text-center">${data.tajwid}</td>
                         <td class="text-center">${data.ghorib}</td>
                         <td class="text-center">${data.suara}</td>
+                        <td class="text-center text-muted">${data.micro}</td>
                         <td class="text-center fw-bold text-primary">${data.total}</td>
                     </tr>
                 `;
