@@ -1,568 +1,1220 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ceklist Santri Kompak</title>
+    <title>Data Syahadah</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Html2Canvas (Untuk Download JPG) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <style>
-        /* Reset & Base Styles */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
+        :root {
+            /* Maroon Theme */
+            --primary-color: #800000;
+            /* Maroon Utama */
+            --secondary-color: #a52a2a;
+            /* Maroon Terang/Brown */
+            --accent-color: #ffcccc;
+            /* Pink Maroon Lembut */
+            --background-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #e0e0e0;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f4f4;
-            color: #333;
-            font-size: 13px; /* Ukuran font kecil agar kompak */
-            padding-bottom: 40px;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding-bottom: 50px;
         }
 
-        /* Container Utama */
         .container {
-            max-width: 480px; /* Batas lebar ala smartphone */
+            max-width: 1200px;
             margin: 0 auto;
-            background: #fff;
-            min-height: 100vh;
-            box-shadow: 0 0 10px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
+            padding-top: 20px;
         }
 
-        /* Header */
-        header {
-            background-color: #2c3e50;
-            color: #fff;
-            padding: 15px;
+        /* Header Styling */
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(128, 0, 0, 0.3);
             text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border: 1px solid #5c0000;
         }
 
-        h1 {
-            font-size: 16px;
+        .header h1 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 1.8rem;
+        }
+
+        /* Card Styling */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            border-top: 4px solid var(--primary-color);
+        }
+
+        .card h3 {
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            margin-bottom: 1.2rem;
             font-weight: 600;
-            letter-spacing: 0.5px;
-            text-transform: lowercase; /* Sesuai request: huruf kecil */
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
         }
 
-        /* Controls Area */
-        .controls-area {
-            padding: 10px 15px;
-            background: #fff;
-            border-bottom: 1px solid #eee;
+        /* Styling Khusus untuk Card Tidak Syahadah */
+        .card-not-syahadah {
+            border-top: 4px solid #dc3545;
+        }
+        .card-not-syahadah h3 {
+            color: #dc3545;
+            border-bottom-color: #ffcccc;
         }
 
-        /* Filter Pembimbing */
-        .filter-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        label {
-            font-weight: bold;
-            white-space: nowrap;
-            text-transform: lowercase;
+        /* Form Controls */
+        .form-label {
+            font-weight: 600;
             color: #555;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
         }
 
-        select {
-            flex-grow: 1;
-            padding: 8px;
-            font-size: 13px;
+        .form-control,
+        .form-select {
+            border-radius: 6px;
             border: 1px solid #ccc;
-            border-radius: 4px;
-            background-color: #fff;
-            text-transform: lowercase; /* Opsi juga huruf kecil */
+            padding: 10px 12px;
+            transition: all 0.2s ease;
         }
 
-        /* Pencarian Santri */
-        .search-row {
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(128, 0, 0, 0.15);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(128, 0, 0, 0.4);
+            background: linear-gradient(135deg, #6d0000, var(--secondary-color));
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: #ffc107;
+            color: #000;
+            border: none;
+            border-radius: 6px;
+        }
+
+        .btn-warning:hover {
+            background-color: #e0a800;
+            color: #000;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+            border-radius: 6px;
+        }
+
+        .btn-danger:hover {
+            background-color: #bb2d3b;
+            color: white;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #2e7d32, #43a047);
+            border: none;
+            border-radius: 6px;
+            padding: 8px 20px;
+            font-weight: 500;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+            color: white;
+        }
+
+        /* Button 10 Besar */
+        .btn-top10 {
+            background: linear-gradient(135deg, #fbc02d, #f57f17);
+            border: none;
+            border-radius: 6px;
+            padding: 8px 20px;
+            font-weight: 500;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-top10:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 127, 23, 0.3);
+            color: white;
+        }
+
+        /* Table Styling */
+        .table-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .table {
+            margin-bottom: 0;
+            font-size: 0.9rem;
+        }
+
+        .table thead th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            text-align: center;
+            border-bottom: 2px solid #5c0000;
+            padding: 12px 8px;
+            white-space: nowrap;
+        }
+        
+        .table-not-syahadah thead th {
+            background-color: #dc3545;
+            border-bottom: 2px solid #a71d2a;
+        }
+
+        .table tbody td {
+            vertical-align: middle;
+            padding: 10px 8px;
+            white-space: nowrap;
+        }
+
+        /* Pagination Styling */
+        .pagination-container {
             display: flex;
-            gap: 10px;
-            align-items: center;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        
+        .page-link {
+            color: var(--primary-color);
+        }
+        .page-item.active .page-link {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
         }
 
-        .search-input-wrapper {
-            flex-grow: 1;
+        /* Autocomplete */
+        .autocomplete-container {
             position: relative;
         }
 
-        input[type="text"] {
-            width: 100%;
-            padding: 8px;
-            font-size: 13px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            text-transform: lowercase; /* Input huruf kecil */
+        .autocomplete-items {
+            position: absolute;
+            border: 1px solid #d4d4d4;
+            border-bottom: none;
+            border-top: none;
+            z-index: 99;
+            top: 100%;
+            left: 0;
+            right: 0;
+            border-radius: 0 0 6px 6px;
+            background-color: #fff;
+            max-height: 200px;
+            overflow-y: auto;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
-        button.reset-btn {
-            background: none;
-            border: 1px solid #e74c3c;
-            color: #e74c3c;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 11px;
+        .autocomplete-items div {
+            padding: 10px;
             cursor: pointer;
-            text-transform: lowercase;
-            white-space: nowrap;
+            background-color: #fff;
+            border-bottom: 1px solid #d4d4d4;
+            font-size: 0.9rem;
         }
 
-        /* Tabel Kompak */
-        .table-wrapper {
-            overflow-x: auto;
-            flex-grow: 1;
+        .autocomplete-items div:hover {
+            background-color: var(--accent-color);
+            color: var(--primary-color);
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-transform: lowercase; /* Sesuai request: isi tabel huruf kecil */
-        }
-
-        thead {
-            background-color: #ecf0f1;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        th {
-            text-align: left;
-            padding: 10px 8px;
-            font-size: 12px;
-            font-weight: 700;
-            color: #555;
-            border-bottom: 2px solid #bdc3c7;
-        }
-
-        td {
-            padding: 8px;
-            border-bottom: 1px solid #eee;
-            vertical-align: middle;
-        }
-
-        /* Kolom No */
-        td.no-col {
-            width: 40px;
-            text-align: center;
-            color: #7f8c8d;
-            font-size: 11px;
-        }
-
-        /* Kolom Nama */
-        td.nama-col {
-            font-weight: 500;
-            color: #2c3e50;
-        }
-        
-        .pembimbing-label {
-            display: block;
-            font-size: 10px;
-            color: #95a5a6;
-            margin-top: 2px;
-        }
-
-        /* Kolom Aksi (Checkbox) */
-        td.aksi-col {
-            width: 50px;
-            text-align: center;
-        }
-
-        /* Styling Checkbox */
-        input[type="checkbox"] {
-            width: 24px;
-            height: 24px;
-            accent-color: #27ae60;
-            cursor: pointer;
-        }
-
-        /* State Checked */
-        tr.checked td.nama-col {
-            color: #95a5a6;
-            text-decoration: line-through;
-        }
-        
-        tr.checked {
-            background-color: #f9f9f9;
-        }
-
-        /* Status Bar (Info) */
-        .status-bar {
-            padding: 10px 15px;
-            background: #e8f6f3;
-            border-top: 1px solid #d0ece7;
-            font-size: 11px;
-            color: #16a085;
-            text-align: center;
-            text-transform: lowercase;
+        .autocomplete-active {
+            background-color: var(--accent-color) !important;
+            color: var(--primary-color);
         }
 
         /* Empty State */
         .empty-state {
-            padding: 20px;
             text-align: center;
-            color: #999;
-            font-style: italic;
+            padding: 40px 20px;
+            color: #888;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #ddd;
+        }
+
+        /* Toast Notification */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        /* Modal Area */
+        .modal-body {
+            overflow-x: auto; 
+            background-color: #f0f2f5;
+        }
+
+        #top10CaptureArea {
+            width: 100%;
+            min-width: 650px; 
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .top10-header-title {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-weight: 700;
+            font-size: 1.5rem;
+            border-bottom: 3px double var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .rank-1 { color: #d4af37; font-weight: bold; font-size: 1.2rem; }
+        .rank-2 { color: #c0c0c0; font-weight: bold; font-size: 1.1rem; }
+        .rank-3 { color: #cd7f32; font-weight: bold; font-size: 1.1rem; }
+
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .header { padding: 15px; margin-bottom: 15px; }
+            .header h1 { font-size: 1.4rem; }
+            .card { padding: 15px; margin-bottom: 15px; }
+            .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .table { min-width: 600px; }
+            
+            /* Agar tombol tidak menumpuk di mobile */
+            .d-flex.flex-wrap.gap-2 {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .d-flex.flex-wrap.gap-2 .btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
+
 <body>
 
-<div class="container">
-    <header>
-        <h1>ceklist kehadiran santri</h1>
-    </header>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
 
-    <div class="controls-area">
-        <!-- Filter Pembimbing -->
-        <div class="filter-row">
-            <label for="pembimbingFilter">filter:</label>
-            <select id="pembimbingFilter">
-                <option value="all">semua pembimbing</option>
-                <!-- Opsi akan diisi oleh JavaScript -->
-            </select>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-graduation-cap me-2"></i>Data Syahadah</h1>
+            <small class="text-white-50">Sistem Manajemen Data Kelulusan</small>
         </div>
 
-        <!-- Pencarian Santri dengan Autocomplete -->
-        <div class="search-row">
-            <label for="searchSantri" style="font-size: 11px; color: #777;">cari:</label>
-            <div class="search-input-wrapper">
-                <input type="text" id="searchSantri" list="santriList" placeholder="ketik nama santri..." autocomplete="off">
-                <!-- Data Autocomplete -->
-                <datalist id="santriList">
-                    <!-- Opsi diisi otomatis oleh JS -->
-                </datalist>
+        <div class="row">
+            <!-- Kolom Input Form -->
+            <div class="col-lg-4 col-md-5 mb-4">
+                <div class="card">
+                    <h3 class="mb-3" id="formTitle"><i class="fas fa-user-plus me-2"></i>Input Data</h3>
+                    <form id="syahadahForm" novalidate>
+                        <input type="hidden" id="editId">
+
+                        <div class="mb-2">
+                            <label for="nama" class="form-label">Nama Santri</label>
+                            <div class="autocomplete-container">
+                                <input type="text" class="form-control" id="nama" placeholder="Ketik nama..."
+                                    autocomplete="off" required>
+                                <div id="namaAutocomplete" class="autocomplete-items"></div>
+                            </div>
+                            <div class="invalid-feedback">Nama wajib diisi.</div>
+                        </div>
+
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <label for="nilaiFashohah" class="form-label">Fashohah</label>
+                                <input type="number" class="form-control form-control-sm" id="nilaiFashohah" min="0"
+                                    max="100" placeholder="0-100" required>
+                            </div>
+                            <div class="col-6">
+                                <label for="nilaiTajwid" class="form-label">Tajwid</label>
+                                <input type="number" class="form-control form-control-sm" id="nilaiTajwid" min="0"
+                                    max="100" placeholder="0-100" required>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <label for="ghorib" class="form-label">Ghorib</label>
+                                <input type="number" class="form-control form-control-sm" id="ghorib" min="0" max="100"
+                                    placeholder="0-100" required>
+                            </div>
+                            <div class="col-6">
+                                <label for="suara" class="form-label">Suara</label>
+                                <input type="number" class="form-control form-control-sm" id="suara" min="0" max="100"
+                                    placeholder="0-100" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="keterangan" class="form-label">Keterangan</label>
+                            <select class="form-select form-select-sm" id="keterangan">
+                                <option value="Lulus" selected>Lulus</option>
+                                <option value="Tidak">Tidak Lulus</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100" id="btnSubmit">
+                            <i class="fas fa-save me-2"></i>Simpan Data
+                        </button>
+                        <button type="button" class="btn btn-secondary w-100 mt-2" id="btnCancel" style="display: none;"
+                            onclick="cancelEdit()">
+                            <i class="fas fa-times me-2"></i>Batal Edit
+                        </button>
+                    </form>
+                </div>
             </div>
-            <button class="reset-btn" onclick="resetData()">reset</button>
+
+            <!-- Kolom Tabel Data -->
+            <div class="col-lg-8 col-md-7">
+                <div class="card h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <h3 class="mb-0"><i class="fas fa-list me-2"></i>Database</h3>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button id="btnTop10" class="btn btn-top10 btn-sm">
+                                <i class="fas fa-trophy me-2"></i>10 Besar
+                            </button>
+                            <button id="downloadExcel" class="btn btn-download btn-sm">
+                                <i class="fas fa-file-excel me-2"></i>Excel
+                            </button>
+                            <!-- Tombol Hapus Semua Baru -->
+                            <button id="btnDeleteAll" class="btn btn-danger btn-sm">
+                                <i class="fas fa-trash-alt me-2"></i>Hapus Semua
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px;">No</th>
+                                        <th>Nama</th>
+                                        <th>Fsh</th>
+                                        <th>Tjw</th>
+                                        <th>Ghr</th>
+                                        <th>Sr</th>
+                                        <th>Ket</th>
+                                        <th style="width: 100px;">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dataTable">
+                                    <!-- Data dirender via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Pagination untuk Database -->
+                    <div id="emptyState" class="empty-state" style="display: none;">
+                        <i class="far fa-folder-open"></i>
+                        <p class="mb-0 mt-2">Belum ada data yang tersimpan.</p>
+                    </div>
+                    <div id="paginationMain" class="pagination-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABEL DATA TIDAK SYAHAHDAH -->
+        <div class="row mt-2">
+            <div class="col-12">
+                <div class="card card-not-syahadah">
+                    <h3 class="mb-3"><i class="fas fa-user-times me-2"></i>Data Tidak Syahadah</h3>
+                    <p class="text-muted small mb-2">Daftar santri yang belum memiliki data nilai di database.</p>
+                    
+                    <div class="table-container">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 table-not-syahadah">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">No</th>
+                                        <th>Nama Santri</th>
+                                        <th style="width: 120px; text-align: center;">Status</th>
+                                        <th style="width: 80px; text-align: center;">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableNonSyahadah">
+                                    <!-- Data non-syahadah dirender via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Pagination untuk Tidak Syahadah -->
+                    <div id="emptyNonSyahadah" class="empty-state" style="display: none;">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <p class="mb-0 mt-2">Semua santri sudah memiliki data.</p>
+                    </div>
+                    <div id="paginationNonSyahadah" class="pagination-container"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL 10 BESAR -->
+    <div class="modal fade" id="top10Modal" tabindex="-1" aria-labelledby="top10ModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title text-primary fw-bold" id="top10ModalLabel">
+                        <i class="fas fa-medal me-2"></i>Peringkat 10 Besar
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="p-3" style="background-color: #f0f2f5;">
+                        <div id="top10CaptureArea">
+                            <div class="top10-header-title">
+                                10 BESAR NILAI TERTINGGI<br>
+                                <span style="font-size: 0.9rem; font-weight: normal; color: #666;">Berdasarkan Total Nilai</span>
+                            </div>
+                            
+                            <table class="table table-bordered align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 10%; text-align: center;">No.</th>
+                                        <th style="width: 35%;">Nama</th>
+                                        <th style="width: 10%; text-align: center;">Fsh</th>
+                                        <th style="width: 10%; text-align: center;">Tjw</th>
+                                        <th style="width: 10%; text-align: center;">Ghr</th>
+                                        <th style="width: 10%; text-align: center;">Sr</th>
+                                        <th style="width: 15%; text-align: center;">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="top10TableBody">
+                                    <!-- Data Top 10 di sini -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="btnDownloadJPG">
+                        <i class="fas fa-image me-2"></i>Download JPG
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="table-wrapper">
-        <table id="santriTable">
-            <thead>
-                <tr>
-                    <th style="width: 40px;">no</th>
-                    <th>nama santri</th>
-                    <th style="width: 50px; text-align: center;">aksi</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody">
-                <!-- Data akan dimuat di sini -->
-            </tbody>
-        </table>
-    </div>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-    <div class="status-bar" id="statusBar">
-        memuat data...
-    </div>
-</div>
+    <script>
+        // --- KONFIGURASI SUPABASE ---
+        const supabaseUrl = 'https://lrkechznknwqnxckyfcg.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxya2VjaHpua253cW54Y2t5ZmNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjkxMjgzODEsImV4cCI6MjA0NDcwNDM4MX0.Tj8p1u3_DGQnqhPkS6AJGs5BwOSeebdvsknX2qHzwdQ';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-<script>
-    // Data Array Santri (Data awal)
-    const santriPembimbing = [
-  { nama: "MUHAMMAD SATRIA DIRGANTARA", pembimbing: "Ustadz Khairul Umam" },
-  { nama: "MUHAMMAD RIZKY RADITYA TOKAN", pembimbing: "Ustadz Haidir Akbar" },
-  { nama: "MUHAMMAD SHOLIHIN", pembimbing: "Ustadzah Norhasanah (Megin)" },
-  { nama: "ALYA NUR ASYILA", pembimbing: "Ustadzah Norhasanah (Megin)" },
-  { nama: "SITI ALIYAH", pembimbing: "Ustadzah Norhasanah (Megin)" },
-  { nama: "NUR AFIKA HUMAIRA", pembimbing: "Ustadzah Arisdayanti" },
-  { nama: "ELVIRA AISYAH AZZAHRA", pembimbing: "Ustadzah Arisdayanti" },
-  { nama: "AZWA SAFRINA DINIY NAZURAH", pembimbing: "Ustadzah Arisdayanti" },
-  { nama: "FAYRA NUR RABIYA", pembimbing: "Ustadzah Arisdayanti" },
-  { nama: "KHADIJAH IZZATI", pembimbing: "Ustadzah Arisdayanti" },
-  { nama: "SYAFIYA RAHMA", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "AINAYYA FATHIYYATU RAHMA", pembimbing: "Ustadzah Arisdayanti" },
-  { nama: "ALIKA NAILA PUTRI", pembimbing: "Ustadzah Arisdayanti" },
-  { nama: "HUMAIRA ASSIFA NUR JANNAH", pembimbing: "Ustadzah Arisdayanti" },
-  { nama: "MUHAMMAD ADAM AL FATIH", pembimbing: "Ustadzah Arisdayanti" },
-  { nama: "MUHAMMAD SALMAN FARIS", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "ALISIA AURELIA", pembimbing: "Ustadzah Arisdayanti" },
-  { nama: "ANDI EARLYTA SALSABILA", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "ARRAFIF AHMAD ALFARIZQI", pembimbing: "Ustadz Khairul Umam" },
-  { nama: "GHINA RAFHANDA", pembimbing: "Ustadzah Arisdayanti" },
-  { nama: "MUHAMMAD FAEYZA NAUFAL", pembimbing: "Ustadzah Norhasanah (Megin)" },
-  { nama: "NUR NAAILA NABIHAH", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "MUHAMMAD RAKHA HAIKAL", pembimbing: "Ustadz Khairul Umam" },
-  { nama: "ADEVA RAKHSHANDRANIA", pembimbing: "Ustadz Khairul Umam" },
-  { nama: "M. RENDY PUTRA CANDRAWINATA", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "TALITA ANINDYA SYAKIRA", pembimbing: "Ustadz Haidir Akbar" },
-  { nama: "HAUZAN IRHAF NABIL", pembimbing: "Ustadzah Arisdayanti" },
-  { nama: "NUR VIRDA AYUNDA", pembimbing: "Ustadzah Norhasanah (Megin)" },
-  { nama: "AULIA RAHMADANI", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "MUHAMMAD SYAFIQ MU'AFA", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "KHANSA HUMAIRA", pembimbing: "Ustadzah Noor Halifah" },
-  { nama: "MUHAMMAD NABHAN AHNAF", pembimbing: "Ustadzah Noor Halifah" },
-  { nama: "RAISYA SABILA MUSAKINA", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "SYARIFAH NAFIISAH", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "ATIKA MAHIRA ZALFA", pembimbing: "Ustadzah Arisdayanti" },
-  { nama: "MUHAMMAD FATHAN AL-GHIFARI", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "ALMA TARA KHUMAIRA", pembimbing: "Ustadzah Norhasanah (Megin)" },
-  { nama: "AZZILA KHAIRUNNISA", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "FAHEEMA ARSYAD", pembimbing: "Ustadz Khairul Umam" },
-  { nama: "MUHAMMAD AZKA ALVARO", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "ABID AQILA PRANAJA", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "MUHAMMAD FAQIH PRASETYO", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "AQILA KHAIRINA", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "MUHAMMAD HAVIZ RAMADHAN", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "RADEN FADHIL PRATAMA", pembimbing: "Ustadz Haidir Akbar" },
-  { nama: "MUHAMMAD HAIKAL FIRDAUS", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "QUEENA RAIHANA YASMINE", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "QYARA ALIFAH AZZAHRA", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "ATHA ZADA APRILIA", pembimbing: "Ustadz Haidir Akbar" },
-  { nama: "AQILAH NIRMALA DEWI", pembimbing: "Ustadzah Norhasanah (Megin)" },
-  { nama: "MUHAMMAD ZAINUL SULTHON", pembimbing: "Ustadz Haidir Akbar" },
-  { nama: "RISKY ANNISA RASYIDAH", pembimbing: "Ustadzah Arisdayanti" },
-  { nama: "RAISA AQILAH", pembimbing: "Ustadz Khairul Umam" },
-  { nama: "MUHAMMAD NAJIBILKHAIRY", pembimbing: "Ustadzah Noor Halifah" },
-  { nama: "MUHAMMAD SAMMAN", pembimbing: "Ustadzah Noor Halifah" },
-  { nama: "FARAH AZKIYA", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "AKMAL BISMA AJI", pembimbing: "Ustadzah Norhasanah (Megin)" },
-  { nama: "RIZKI AUFAR OKTAVIAN", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "ANGGITA AZZAHRA", pembimbing: "Ustadzah Noor Halifah" },
-  { nama: "SYAILA NAMIRA", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "MUHAMMAD FATIH NAJIB", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "MUHAMMAD ZAKY MIRZA", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "NUR KEYSA HUMAIRA", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "MUHAMMAD NASYID HAIKAL", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "LATISHA PRAMESTI BUDIONO", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "M.RESTU PIRDAUS", pembimbing: "Ustadzah Noor Halifah" },
-  { nama: "ASYIFA KURNIA DIRAMIX", pembimbing: "Ustadzah Noor Halifah" },
-  { nama: "RIZKA RAMADHANI", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "DHEANETA PUTRI AZZAHRA TANJUNG", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "MUHAMMAD FAIQ JAYYIDAN", pembimbing: "Ustadz Haidir Akbar" },
-  { nama: "HERY ANDI RIYANTO", pembimbing: "Ustadz Khairul Umam" },
-  { nama: "NADIFA ZAFIRA", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "ALAYYA AFSHEEN HUMAIRA", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "AHMAD RIZIQ PRATAMA", pembimbing: "Ustadz Khairul Umam" },
-  { nama: "MUHAMMAD IBDHAL", pembimbing: "Ustadz Khairul Umam" },
-  { nama: "ZAHIDA QOLBI NADHIFA", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "BAHID LINDAN NUGROHO", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "NAZWA SALSABILA", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "AZZAHRA NUR KAMILA", pembimbing: "Ustadzah Noor Halifah" },
-  { nama: "AMIRAIFA SAJIDA", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "ANANDA DAFFA ARYAWAN", pembimbing: "Ustadz Khairul Umam" },
-  { nama: "LUTHFI ZAIN FUADY", pembimbing: "Ustadz Khairul Umam" },
-  { nama: "ZAITUN NISA", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "TAMINA NUR ASSYIFA", pembimbing: "Ustadzah Norhasanah (Megin)" },
-  { nama: "NAFIATUL NAFISAH", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "MUHAMMAD RAFKA ANWAR", pembimbing: "Ustadzah Norhasanah (Megin)" },
-  { nama: "NUR HUMAIRA AZ ZAHRA", pembimbing: "Ustadz Haidir Akbar" },
-  { nama: "GT.SEPTIA AMINAH", pembimbing: "Ustadz Khairul Umam" },
-  { nama: "AHMAD RIZIQ PRATA", pembimbing: "Ustadz Khairul Umam" },
-  { nama: "NAYSYILA AZIZAH", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "NUTFA NUR MAGHFIRAH", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "AHMAD FAKHRI AKBAR", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "ANDIKKA NOVIANNOR", pembimbing: "Ustadz Khairul Umam" },
-  { nama: "MUHAMMAD AFIF NAWABIGHNA", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "LULU AZQIA ZIDNIE", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "KEYRA ANDITA BALQIS", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "YUMNA GITA KINANTI", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "MUHAMMAD MUHAJIR ANSHORY", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "SHIREEN ZEA ASSYIFA", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "FAIRA MEHRUNISA ARBAIN", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "M. HAFID FADILLAH", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "ADIBA MUKTAZZAH NAZHIFA", pembimbing: "Ustadzah Noor Halifah" },
-  { nama: "MUHAMMAD TIRTA FARSYA UTAMA", pembimbing: "Ustadzah Noor Halifah" },
-  { nama: "AZKA MAULIDA NURRACHMAH", pembimbing: "Ustadzah Noor Halifah" },
-  { nama: "NAFEEZA IQLIMA ANDENI", pembimbing: "Ustadzah Noor Halifah" },
-  { nama: "NOOR AZIZAH", pembimbing: "Ustadzah Noor Halifah" },
-  { nama: "MUHAMMAD NAHRU ROHMAN", pembimbing: "Ustadzah Noor Halifah" },
-  { nama: "NEYRA ALSHERA", pembimbing: "Ustadz Khairul Umam" },
-  { nama: "RAISA AQILA PUTRI", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "MUHAMMAD AZKA NAZHAN", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "ARMAND MAULANA", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "Nur zahidah zulfa", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "Noor assya", pembimbing: "Ustadz Ahmad Hussaini" },
-  { nama: "Manacika parisudha cahya putri", pembimbing: "Ustadz Khairul Umam" },
-  { nama: "Ahmad Riziq Pratama", pembimbing: "Ustadz Khairul Umam" },
-  { nama: "Affan", pembimbing: "Ustadzah Norhasanah (Stagen)" },
-  { nama: "Jahra", pembimbing: "Ustadz Ahmad Hussaini" }
-];
-
-    // Kunci untuk LocalStorage
-    const STORAGE_KEY = 'ceklist_santri_data_v2';
-
-    // State Aplikasi
-    let checkedList = new Set(); // Menyimpan nama santri yang sudah dicentang
-
-    // 1. Inisialisasi Aplikasi
-    document.addEventListener('DOMContentLoaded', () => {
-        loadData();
-        sortData();
-        populateFilter();
-        populateDatalist(); // Memanggil fungsi baru untuk autocomplete
-        renderTable('all', ''); // Render awal
+        // --- STATE GLOBAL ---
+        let syahadahData = [];
+        let top10Modal; 
         
-        // Event Listener Filter Pembimbing
-        document.getElementById('pembimbingFilter').addEventListener('change', handleFilterChange);
-        
-        // Event Listener Pencarian (Input)
-        document.getElementById('searchSantri').addEventListener('input', handleFilterChange);
-    });
+        // Pagination State
+        const rowsPerPage = 10;
+        let currentPageMain = 1;
+        let currentPageNonSyahadah = 1;
+        let currentNonSyahadahData = []; // Menyimpan data hasil filter non-syahadah
 
-    // 2. Fungsi Load Data dari LocalStorage
-    function loadData() {
-        const storedData = localStorage.getItem(STORAGE_KEY);
-        if (storedData) {
-            const parsed = JSON.parse(storedData);
-            checkedList = new Set(parsed);
-        }
-    }
+        // --- DATA MASTER (NAMA) ---
+        const namaList = [
+            "RIZKA RAMADHANI",
+            "NAFIATUL NAFISAH",
+            "NAYSYILA AZIZAH"
+        ];
 
-    // 3. Fungsi Simpan Data ke LocalStorage
-    function saveData() {
-        const arrayToStore = Array.from(checkedList);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(arrayToStore));
-        updateStatus();
-    }
+        const nameFrequency = namaList.reduce((acc, name) => {
+            acc[name] = (acc[name] || 0) + 1;
+            return acc;
+        }, {});
 
-    // 4. Mengurutkan Data (Pembimbing -> Abjad Nama)
-    function sortData() {
-        santriPembimbing.sort((a, b) => {
-            // Urutkan berdasarkan Nama Pembimbing
-            const comparePembimbing = a.pembimbing.localeCompare(b.pembimbing, 'id');
-            if (comparePembimbing !== 0) {
-                return comparePembimbing;
+        // --- FUNGSI UTAMA ---
+
+        async function fetchSyahadahData() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('syahadah')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                syahadahData = data || [];
+                
+                // Cek apakah halaman saat ini valid setelah perubahan data
+                const totalPagesMain = Math.ceil(syahadahData.length / rowsPerPage);
+                if (currentPageMain > totalPagesMain && totalPagesMain > 0) {
+                    currentPageMain = totalPagesMain;
+                }
+                
+                displayData();
+                displayNonSyahadahData();
+            } catch (err) {
+                console.error('Error fetching data:', err);
+                showToast('Gagal memuat data: ' + err.message, 'danger');
             }
-            // Jika pembimbing sama, urutkan berdasarkan Nama Santri (Abjadi)
-            return a.nama.localeCompare(b.nama, 'id');
-        });
-    }
-
-    // 5. Mengisi Dropdown Filter
-    function populateFilter() {
-        const select = document.getElementById('pembimbingFilter');
-        // Ambil daftar nama pembimbing unik
-        const mentors = [...new Set(santriPembimbing.map(s => s.pembimbing))];
-        
-        // Urutkan pembimbing agar rapi di dropdown
-        mentors.sort((a, b) => a.localeCompare(b, 'id'));
-
-        mentors.forEach(mentor => {
-            const option = document.createElement('option');
-            option.value = mentor;
-            option.textContent = mentor.toLowerCase(); // Tampilan huruf kecil
-            select.appendChild(option);
-        });
-    }
-
-    // 5b. Mengisi Datalist untuk Autocomplete
-    function populateDatalist() {
-        const datalist = document.getElementById('santriList');
-        
-        // Ambil semua nama santri dan urutkan
-        const names = santriPembimbing.map(s => s.nama).sort((a, b) => a.localeCompare(b, 'id'));
-
-        names.forEach(name => {
-            const option = document.createElement('option');
-            option.value = name;
-            datalist.appendChild(option);
-        });
-    }
-
-    // 6. Handle Filter Change (Baik filter pembimbing maupun pencarian)
-    function handleFilterChange() {
-        const mentorValue = document.getElementById('pembimbingFilter').value;
-        const searchValue = document.getElementById('searchSantri').value;
-        renderTable(mentorValue, searchValue);
-    }
-
-    // 7. Render Tabel (Diperbarui mendukung search term)
-    function renderTable(filterMentor, searchTerm) {
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = '';
-
-        let counter = 1;
-        
-        // Normalisasi searchTerm ke huruf kecil untuk pencarian tidak case-sensitive
-        const term = searchTerm.toLowerCase();
-
-        // Filter data (Gabungan Filter Pembimbing DAN Pencarian Nama)
-        const filteredData = santriPembimbing.filter(item => {
-            const matchMentor = (filterMentor === 'all') || (item.pembimbing === filterMentor);
-            const matchName = item.nama.toLowerCase().includes(term);
-            return matchMentor && matchName;
-        });
-
-        if (filteredData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" class="empty-state">data tidak ditemukan</td></tr>';
-            return;
         }
 
-        filteredData.forEach(santri => {
-            const tr = document.createElement('tr');
-            const isChecked = checkedList.has(santri.nama);
+        function displayData() {
+            const tableBody = document.getElementById('dataTable');
+            const emptyState = document.getElementById('emptyState');
+            const paginationDiv = document.getElementById('paginationMain');
 
-            // Tambahkan class 'checked' jika dicentang untuk styling
-            if (isChecked) {
-                tr.classList.add('checked');
+            if (syahadahData.length === 0) {
+                tableBody.innerHTML = '';
+                emptyState.style.display = 'block';
+                paginationDiv.innerHTML = '';
+                return;
             }
 
-            tr.innerHTML = `
-                <td class="no-col">${counter}.</td>
-                <td class="nama-col">
-                    ${santri.nama}
-                    <span class="pembimbing-label">${santri.pembimbing}</span>
-                </td>
-                <td class="aksi-col">
-                    <input type="checkbox" 
-                        ${isChecked ? 'checked' : ''} 
-                        onchange="toggleCheck('${santri.nama}', this)">
-                </td>
+            emptyState.style.display = 'none';
+            tableBody.innerHTML = '';
+
+            // Pagination Logic
+            const totalPages = Math.ceil(syahadahData.length / rowsPerPage);
+            const start = (currentPageMain - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedData = syahadahData.slice(start, end);
+
+            paginatedData.forEach((data, index) => {
+                const globalIndex = syahadahData.indexOf(data) + 1;
+                
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+                    <td class="text-center">${globalIndex}</td>
+                    <td><strong>${data.nama}</strong></td>
+                    <td class="text-center">${data.fashohah}</td>
+                    <td class="text-center">${data.tajwid}</td>
+                    <td class="text-center">${data.ghorib}</td>
+                    <td class="text-center">${data.suara}</td>
+                    <td class="text-center">
+                        <span class="badge ${data.keterangan === 'Lulus' ? 'bg-success' : 'bg-danger'}">
+                            ${data.keterangan}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-sm btn-warning btn-action-edit" data-id="${data.id}" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger btn-action-delete" data-id="${data.id}" title="Hapus">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            renderPagination('main', totalPages, currentPageMain, 'displayData');
+        }
+
+        // --- FUNGSI TAMPILKAN DATA TIDAK SYAHAHDAH DENGAN PAGINATION ---
+        function displayNonSyahadahData() {
+            const tbody = document.getElementById('tableNonSyahadah');
+            const emptyState = document.getElementById('emptyNonSyahadah');
+            const paginationDiv = document.getElementById('paginationNonSyahadah');
+            
+            const dbNames = new Set(syahadahData.map(item => item.nama.toUpperCase()));
+            let missingNames = namaList.filter(name => !dbNames.has(name));
+            missingNames.sort((a, b) => a.localeCompare(b));
+            
+            currentNonSyahadahData = missingNames;
+
+            if (missingNames.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                paginationDiv.innerHTML = '';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            tbody.innerHTML = '';
+
+            const totalPages = Math.ceil(missingNames.length / rowsPerPage);
+            
+            if (currentPageNonSyahadah > totalPages && totalPages > 0) {
+                currentPageNonSyahadah = totalPages;
+            }
+
+            const start = (currentPageNonSyahadah - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedData = missingNames.slice(start, end);
+
+            paginatedData.forEach((name, index) => {
+                const globalIndex = missingNames.indexOf(name) + 1;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="text-center">${globalIndex}</td>
+                    <td>${name}</td>
+                    <td class="text-center">
+                        <span class="badge bg-secondary">Belum Input</span>
+                    </td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-primary btn-input-quick" data-name="${name}" title="Input Nilai">
+                            <i class="fas fa-plus"></i> Input
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            renderPagination('nonSyahadah', totalPages, currentPageNonSyahadah, 'displayNonSyahadahData');
+        }
+
+        // --- GENERATOR PAGINATION ---
+        function renderPagination(type, totalPages, currentPage, callbackName) {
+            const container = document.getElementById(type === 'main' ? 'paginationMain' : 'paginationNonSyahadah');
+            
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = `<nav aria-label="Page navigation"><ul class="pagination pagination-sm">`;
+
+            // Tombol Previous
+            html += `
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage('${type}', ${currentPage - 1}, '${callbackName}')">
+                        <i class="fas fa-chevron-left"></i> Prev
+                    </a>
+                </li>
             `;
-            tbody.appendChild(tr);
-            counter++;
+
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+
+            if (endPage - startPage < 4) {
+                startPage = Math.max(1, endPage - 4);
+            }
+
+            // Tombol First
+            if (startPage > 1) {
+                html += `<li class="page-item"><a class="page-link" href="#" onclick="changePage('${type}', 1, '${callbackName}')">1</a></li>`;
+                if (startPage > 2) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                html += `
+                    <li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="changePage('${type}', ${i}, '${callbackName}')">${i}</a>
+                    </li>
+                `;
+            }
+
+            // Tombol Last
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                html += `<li class="page-item"><a class="page-link" href="#" onclick="changePage('${type}', ${totalPages}, '${callbackName}')">${totalPages}</a></li>`;
+            }
+
+            // Tombol Next
+            html += `
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage('${type}', ${currentPage + 1}, '${callbackName}')">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            `;
+
+            html += `</ul></nav>`;
+            container.innerHTML = html;
+        }
+
+        window.changePage = function(type, page, callbackName) {
+            if (type === 'main') {
+                currentPageMain = page;
+            } else {
+                currentPageNonSyahadah = page;
+            }
+            window[callbackName]();
+        };
+
+        document.getElementById('syahadahForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const editId = document.getElementById('editId').value;
+            const nama = document.getElementById('nama').value.trim();
+            const nilaiFashohah = parseFloat(document.getElementById('nilaiFashohah').value) || 0;
+            const nilaiTajwid = parseFloat(document.getElementById('nilaiTajwid').value) || 0;
+            const ghorib = parseFloat(document.getElementById('ghorib').value) || 0;
+            const suara = parseFloat(document.getElementById('suara').value) || 0;
+            const keterangan = document.getElementById('keterangan').value;
+
+            if (!nama) {
+                showToast('Nama wajib diisi!', 'warning');
+                return;
+            }
+
+            const payload = {
+                nama: nama.toUpperCase(),
+                fashohah: nilaiFashohah,
+                tajwid: nilaiTajwid,
+                ghorib: ghorib,
+                suara: suara,
+                keterangan: keterangan
+            };
+
+            try {
+                let error;
+                let message;
+
+                if (editId) {
+                    const { error: updateError } = await supabaseClient
+                        .from('syahadah')
+                        .update(payload)
+                        .eq('id', editId);
+                    error = updateError;
+                    message = 'Data berhasil diperbarui!';
+                } else {
+                    const isExist = syahadahData.some(d => d.nama.toUpperCase() === nama.toUpperCase());
+                    if (isExist) {
+                        if (!confirm(`Nama "${nama}" sudah ada di database. Lanjutkan simpan duplikat?`)) {
+                            return;
+                        }
+                    }
+                    const { error: insertError } = await supabaseClient
+                        .from('syahadah')
+                        .insert([payload]);
+                    error = insertError;
+                    message = 'Data berhasil disimpan!';
+                }
+
+                if (error) throw error;
+
+                showToast(message, 'success');
+                
+                if (!editId) {
+                    currentPageMain = 1;
+                }
+                
+                fetchSyahadahData();
+                resetForm();
+
+            } catch (err) {
+                console.error('Error submitting data:', err);
+                showToast('Gagal menyimpan: ' + err.message, 'danger');
+            }
         });
-    }
 
-    // 8. Handle Centang (Action)
-    function toggleCheck(nama, checkbox) {
-        if (checkbox.checked) {
-            checkedList.add(nama);
-        } else {
-            checkedList.delete(nama);
+        function editData(id) {
+            const dataToEdit = syahadahData.find(d => String(d.id) === String(id));
+            if (!dataToEdit) {
+                console.error("Data tidak ditemukan dengan ID:", id);
+                showToast('Data tidak ditemukan!', 'danger');
+                return;
+            }
+
+            document.getElementById('editId').value = dataToEdit.id;
+            document.getElementById('nama').value = dataToEdit.nama;
+            document.getElementById('nilaiFashohah').value = dataToEdit.fashohah;
+            document.getElementById('nilaiTajwid').value = dataToEdit.tajwid;
+            document.getElementById('ghorib').value = dataToEdit.ghorib;
+            document.getElementById('suara').value = dataToEdit.suara;
+            document.getElementById('keterangan').value = dataToEdit.keterangan;
+
+            document.getElementById('formTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Edit Data';
+            const btnSubmit = document.getElementById('btnSubmit');
+            btnSubmit.innerHTML = '<i class="fas fa-sync-alt me-2"></i>Update Data';
+            btnSubmit.classList.remove('btn-primary');
+            btnSubmit.classList.add('btn-warning');
+
+            document.getElementById('btnCancel').style.display = 'block';
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('nama').focus();
         }
-        saveData();
-        
-        // Update visual baris tanpa re-render ulang seluruh tabel (lebih efisien)
-        const row = checkbox.closest('tr');
-        if (checkbox.checked) {
-            row.classList.add('checked');
-        } else {
-            row.classList.remove('checked');
+
+        function cancelEdit() {
+            resetForm();
+            showToast('Mode edit dibatalkan.', 'info');
         }
-    }
 
-    // 9. Update Status Bar
-    function updateStatus() {
-        const total = santriPembimbing.length;
-        const checked = checkedList.size;
-        const statusBar = document.getElementById('statusBar');
-        statusBar.textContent = `tercentang: ${checked} dari ${total} santri`;
-    }
+        function resetForm() {
+            document.getElementById('syahadahForm').reset();
+            document.getElementById('editId').value = '';
+            document.getElementById('keterangan').value = 'Lulus';
 
-    // 10. Reset Data
-    function resetData() {
-        if(confirm('hapus semua data centang?')) {
-            checkedList.clear();
-            saveData();
-            // Reset input pencarian
-            document.getElementById('searchSantri').value = '';
-            // Re-render
-            const filterValue = document.getElementById('pembimbingFilter').value;
-            renderTable(filterValue, '');
+            document.getElementById('formTitle').innerHTML = '<i class="fas fa-user-plus me-2"></i>Input Data';
+            const btnSubmit = document.getElementById('btnSubmit');
+            btnSubmit.innerHTML = '<i class="fas fa-save me-2"></i>Simpan Data';
+            btnSubmit.classList.remove('btn-warning');
+            btnSubmit.classList.add('btn-primary');
+
+            document.getElementById('btnCancel').style.display = 'none';
         }
-    }
-</script>
 
+        async function deleteData(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus data ini secara permanen?')) {
+                try {
+                    const { error } = await supabaseClient
+                        .from('syahadah')
+                        .delete()
+                        .eq('id', id);
+
+                    if (error) throw error;
+
+                    showToast('Data berhasil dihapus.', 'info');
+
+                    if (document.getElementById('editId').value === String(id)) {
+                        resetForm();
+                    }
+
+                    const totalPages = Math.ceil((syahadahData.length - 1) / rowsPerPage);
+                    if (currentPageMain > totalPages && totalPages > 0) {
+                        currentPageMain = totalPages;
+                    }
+
+                    fetchSyahadahData();
+
+                } catch (err) {
+                    console.error('Error deleting data:', err);
+                    showToast('Gagal menghapus: ' + err.message, 'danger');
+                }
+            }
+        }
+
+        // --- EVENT LISTENER TOMBOL HAPUS SEMUA (BARU) ---
+        document.getElementById('btnDeleteAll').addEventListener('click', async function() {
+            // Cek apakah data kosong
+            if (syahadahData.length === 0) {
+                showToast('Database sudah kosong, tidak ada data untuk dihapus.', 'warning');
+                return;
+            }
+
+            // Konfirmasi keamanan
+            if (!confirm('PERINGATAN KRITIS!\n\nAnda akan menghapus SEMUA data di database.\nTindakan ini TIDAK DAPAT dibatalkan.\n\nApakah Anda benar-benar yakin?')) {
+                return;
+            }
+
+            try {
+                // Supabase v2 memerlukan filter untuk delete. 
+                // .gte('id', 0) akan memilih semua baris (asumsi ID >= 0).
+                const { error } = await supabaseClient
+                    .from('syahadah')
+                    .delete()
+                    .gte('id', 0); 
+
+                if (error) throw error;
+
+                showToast('Semua data berhasil dihapus permanen.', 'success');
+                currentPageMain = 1;
+                fetchSyahadahData();
+
+            } catch (err) {
+                console.error('Error deleting all data:', err);
+                showToast('Gagal menghapus seluruh data: ' + err.message, 'danger');
+            }
+        });
+
+        // --- QUICK INPUT ---
+        document.getElementById('tableNonSyahadah').addEventListener('click', function (e) {
+            const btn = e.target.closest('.btn-input-quick');
+            if (btn) {
+                const name = btn.getAttribute('data-name');
+                resetForm();
+                document.getElementById('nama').value = name;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                document.getElementById('nilaiFashohah').focus();
+                showToast(`Silakan input nilai untuk ${name}`, 'info');
+            }
+        });
+
+        // --- AUTOCOMPLETE ---
+        const namaInput = document.getElementById('nama');
+        const autocompleteDiv = document.getElementById('namaAutocomplete');
+
+        namaInput.addEventListener('input', function () {
+            const val = this.value.toUpperCase();
+            autocompleteDiv.innerHTML = '';
+
+            if (!val) {
+                autocompleteDiv.style.display = 'none';
+                return;
+            }
+
+            const existingNamesInDB = new Set(syahadahData.map(item => item.nama.toUpperCase()));
+
+            const matches = namaList.filter(name => {
+                const upperName = name.toUpperCase();
+                const isInDB = existingNamesInDB.has(upperName);
+                const countInList = nameFrequency[upperName] || 0;
+
+                return upperName.includes(val) && (!isInDB || countInList > 1);
+            });
+
+            if (matches.length === 0) {
+                autocompleteDiv.style.display = 'none';
+                return;
+            }
+
+            autocompleteDiv.style.display = 'block';
+
+            matches.forEach(name => {
+                const item = document.createElement('div');
+                const regex = new RegExp(`(${val})`, "gi");
+                item.innerHTML = name.replace(regex, "<strong>$1</strong>");
+
+                item.addEventListener('click', function () {
+                    namaInput.value = name;
+                    autocompleteDiv.style.display = 'none';
+                    document.getElementById('nilaiFashohah').focus();
+                });
+                autocompleteDiv.appendChild(item);
+            });
+        });
+
+        document.addEventListener('click', function (e) {
+            if (e.target !== namaInput) {
+                autocompleteDiv.style.display = 'none';
+            }
+        });
+
+        // --- EXCEL ---
+        document.getElementById('downloadExcel').addEventListener('click', function () {
+            if (syahadahData.length === 0) {
+                showToast('Tidak ada data untuk diunduh.', 'warning');
+                return;
+            }
+
+            const excelData = syahadahData.map((data, i) => ({
+                'No': syahadahData.length - i,
+                'Nama Lengkap': data.nama,
+                'Nilai Fashohah': data.fashohah,
+                'Nilai Tajwid': data.tajwid,
+                'Nilai Ghorib': data.ghorib,
+                'Nilai Suara': data.suara,
+                'Keterangan': data.keterangan
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(excelData);
+            const wscols = [
+                { wch: 5 }, { wch: 35 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }
+            ];
+            worksheet['!cols'] = wscols;
+
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Data Syahadah');
+
+            const date = new Date().toISOString().slice(0, 10);
+            XLSX.writeFile(workbook, `Data_Syahadah_${date}.xlsx`);
+
+            showToast('File Excel sedang diunduh...', 'success');
+        });
+
+        // --- TOP 10 ---
+        top10Modal = new bootstrap.Modal(document.getElementById('top10Modal'));
+
+        document.getElementById('btnTop10').addEventListener('click', function() {
+            if (syahadahData.length === 0) {
+                showToast('Data kosong, tidak bisa menampilkan 10 besar.', 'warning');
+                return;
+            }
+            renderTop10Table();
+            top10Modal.show();
+        });
+
+        function renderTop10Table() {
+            const tbody = document.getElementById('top10TableBody');
+            tbody.innerHTML = '';
+
+            let processedData = syahadahData.map(item => {
+                const f = parseFloat(item.fashohah) || 0;
+                const t = parseFloat(item.tajwid) || 0;
+                const g = parseFloat(item.ghorib) || 0;
+                const s = parseFloat(item.suara) || 0;
+                return {
+                    ...item,
+                    fashohah: f,
+                    tajwid: t,
+                    ghorib: g,
+                    suara: s,
+                    total: f + t + g + s
+                };
+            });
+
+            processedData.sort((a, b) => {
+                if (b.total !== a.total) return b.total - a.total;
+                if (b.tajwid !== a.tajwid) return b.tajwid - a.tajwid;
+                if (b.fashohah !== a.fashohah) return b.fashohah - a.fashohah;
+                if (b.ghorib !== a.ghorib) return b.ghorib - a.ghorib;
+                return b.suara - a.suara;
+            });
+
+            const top10Data = processedData.slice(0, 10);
+
+            top10Data.forEach((data, index) => {
+                const rank = index + 1;
+                let rankClass = '';
+                if (rank === 1) rankClass = 'rank-1';
+                else if (rank === 2) rankClass = 'rank-2';
+                else if (rank === 3) rankClass = 'rank-3';
+
+                const row = `
+                    <tr>
+                        <td class="text-center ${rankClass}">
+                            ${rank === 1 ? '<i class="fas fa-crown"></i>' : rank}
+                        </td>
+                        <td class="fw-bold">${data.nama}</td>
+                        <td class="text-center">${data.fashohah}</td>
+                        <td class="text-center">${data.tajwid}</td>
+                        <td class="text-center">${data.ghorib}</td>
+                        <td class="text-center">${data.suara}</td>
+                        <td class="text-center fw-bold text-primary">${data.total}</td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        document.getElementById('btnDownloadJPG').addEventListener('click', function() {
+            const element = document.getElementById('top10CaptureArea');
+            const btn = this;
+            
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Memproses...';
+            btn.disabled = true;
+
+            const width = element.scrollWidth;
+            const height = element.scrollHeight;
+
+            html2canvas(element, {
+                scale: 2,
+                backgroundColor: '#ffffff',
+                useCORS: true,
+                width: width,
+                height: height,
+                windowWidth: width,
+                windowHeight: height,
+                scrollX: 0,
+                scrollY: 0
+            }).then(canvas => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+
+                const link = document.createElement('a');
+                link.download = '10_Besar_Syahadah.jpg';
+                link.href = canvas.toDataURL('image/jpeg', 0.9);
+                link.click();
+                
+                showToast('Gambar berhasil diunduh.', 'success');
+            }).catch(err => {
+                console.error(err);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                showToast('Gagal membuat gambar.', 'danger');
+            });
+        });
+
+        function showToast(message, type = 'primary') {
+            const toastContainer = document.getElementById('toastContainer');
+            let bgClass = 'text-bg-primary';
+            let icon = 'fa-info-circle';
+
+            if (type === 'success') { bgClass = 'text-bg-success'; icon = 'fa-check-circle'; }
+            if (type === 'danger') { bgClass = 'text-bg-danger'; icon = 'fa-exclamation-circle'; }
+            if (type === 'warning') { bgClass = 'text-bg-warning'; icon = 'fa-exclamation-triangle'; }
+            if (type === 'info') { bgClass = 'text-bg-info'; icon = 'fa-info-circle'; }
+
+            const toastId = 'toast_' + Date.now();
+            const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center ${bgClass} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="fas ${icon} me-2"></i> ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            const toastElement = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+            toast.show();
+            toastElement.addEventListener('hidden.bs.toast', () => { toastElement.remove(); });
+        }
+
+        document.getElementById('dataTable').addEventListener('click', function (e) {
+            const editBtn = e.target.closest('.btn-action-edit');
+            if (editBtn) {
+                const id = editBtn.getAttribute('data-id');
+                editData(id);
+                return;
+            }
+
+            const deleteBtn = e.target.closest('.btn-action-delete');
+            if (deleteBtn) {
+                const id = deleteBtn.getAttribute('data-id');
+                deleteData(id);
+                return;
+            }
+        });
+
+        fetchSyahadahData();
+
+    </script>
 </body>
+
 </html>
