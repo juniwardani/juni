@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="id" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Koleksi Buku Juni Wardani</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <!-- Lucide Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet">
+
+    <style>
+        * {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .kitab-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .kitab-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Animasi Submenu */
+        .submenu-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        .submenu-content.open {
+            max-height: 2000px;
+            opacity: 1;
+        }
+
+        /* Rotasi Chevron */
+        .chevron-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .chevron-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        /* Header Animations */
+        .header-logo {
+            animation: slideInLeft 0.6s ease-out;
+        }
+
+        .header-text {
+            animation: slideInRight 0.6s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Footer Badges */
+        .footer-badge {
+            animation: fadeInUp 0.6s ease-out 0.2s backwards;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .footer-link {
+            transition: all 0.3s ease;
+        }
+
+        .footer-link:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Reset Box Sizing */
+        body {
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body class="h-full">
+    <div id="app-wrapper" class="w-full h-full overflow-auto flex flex-col"
+        style="background:#f8fafc; position:relative;">
+
+        <!-- Header -->
+        <!-- Warna diubah menjadi Gradien Biru -->
+        <header id="site-header" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);"
+            class="w-full shadow-lg sticky top-0 z-50">
+
+            <div class="px-4 py-4 flex items-center justify-center text-center">
+                <!-- Logo Dihapus -->
+                
+                <!-- Title Text Saja -->
+                <div class="flex flex-col leading-tight">
+                    <span class="text-white font-bold text-lg sm:text-xl md:text-2xl tracking-wide">
+                        Koleksi Buku Juni Wardani
+                    </span>
+                    <span class="text-blue-100 text-xs sm:text-sm mt-1">
+                        Pustaka Digital Terlengkap
+                    </span>
+                </div>
+            </div>
+
+            <!-- Accent Line diubah menjadi Kuning -->
+            <div class="h-1 w-full bg-yellow-400/60"></div>
+
+        </header>
+
+        <!-- Hero -->
+        <!-- Warna diubah menjadi Gradien Biru ke Kuning -->
+        <section id="hero-section"
+            class="w-full px-6 py-14 sm:py-20 md:py-28 lg:py-32 text-center relative z-10 flex flex-col items-center justify-center min-h-[220px] md:min-h-[320px]"
+            style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 60%, #fbbf24 100%); overflow:hidden;">
+            
+            <!-- Watermark Logo Dihapus -->
+            
+            <div class="relative z-10">
+                <h1 id="hero-title" class="text-white font-bold text-3xl sm:text-4xl md:text-5xl mb-3 tracking-tight drop-shadow-md">
+                    Koleksi Buku Juni Wardani
+                </h1>
+                <p id="hero-subtitle"
+                    class="text-blue-50 text-base sm:text-lg md:text-xl max-w-2xl mx-auto font-medium opacity-90 leading-relaxed drop-shadow-sm">
+                    Akses ribuan buku digital dengan mudah dan cepat
+                </p>
+            </div>
+        </section>
+
+        <!-- Content (Main) -->
+        <!-- Konten akan diisi otomatis oleh JavaScript berdasarkan kitabData -->
+        <main id="main-content" class="w-full flex-1 px-4 py-6 max-w-lg mx-auto flex flex-col gap-4 relative z-10">
+            <!-- Cards will be injected here -->
+        </main>
+
+        <!-- Footer -->
+        <!-- Warna diubah menjadi Gradien Biru -->
+        <footer id="site-footer" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);"
+            class="w-full px-4 py-6 text-center shadow-lg border-t-4 border-yellow-400 relative z-10">
+            <div class="max-w-lg mx-auto">
+                <div class="flex items-center justify-center gap-2 mb-3 footer-badge">
+                    <!-- Icon warna diubah menjadi Kuning -->
+                    <i data-lucide="book-open" style="color:#fbbf24; width:18px; height:18px;"></i>
+                    <span class="text-blue-100 font-semibold text-sm">Koleksi Buku Juni Wardani</span>
+                </div>
+                <p id="footer-text" class="text-blue-200 text-xs mb-4">© 2025 Juni Wardani. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Data Kitab dalam Array
+        const kitabData = [
+    {
+        id: 'ihya',
+        title: 'Ihya Ulumuddin',
+        author: 'Karya Imam Al-Ghazali',
+        description: '9 Jilid',
+        icon: 'book-open',
+        hasSubmenu: true,
+        jilid: [
+            { no: 1, label: "Jilid 1", url: "https://muskercab.vercel.app/aplikasi/jilid1.html" },
+            { no: 2, label: "Jilid 2", url: "https://muskercab.vercel.app/aplikasi/jilid2.html" },
+            { no: 3, label: "Jilid 3", url: "https://muskercab.vercel.app/aplikasi/jilid3.html" },
+            { no: 4, label: "Jilid 4", url: "https://muskercab.vercel.app/aplikasi/jilid4.html" },
+            { no: 5, label: "Jilid 5", url: "https://muskercab.vercel.app/aplikasi/jilid5.html" },
+            { no: 6, label: "Jilid 6", url: "https://muskercab.vercel.app/aplikasi/jilid6.html" },
+            { no: 7, label: "Jilid 7", url: "https://muskercab.vercel.app/aplikasi/jilid7.html" },
+            { no: 8, label: "Jilid 8", url: "https://muskercab.vercel.app/aplikasi/jilid8.html" },
+            { no: 9, label: "Jilid 9", url: "https://muskercab.vercel.app/aplikasi/jilid9.html" }
+        ]
+    },
+    {
+        id: 'Ayyuhal Walad',
+        title: 'Ayyuhal Walad',
+        author: 'Karya Imam Al-Ghazali',
+        description: '1 Jilid',
+        icon: 'book',
+        hasSubmenu: false,
+        url: "https://muskercab.vercel.app/aplikasi/ayyuhal.html"
+    },
+    {
+        id: 'ikhtisar',
+        title: 'Ikhtisar Sejarah NU',
+        author: 'Karya Nur Khalik Ridwan & Ali Usman',
+        description: 'Sejarah Berdirinya Nahdlatul Ulama',
+        icon: 'history',
+        hasSubmenu: false,
+        url: "https://muskercab.vercel.app/aplikasi/ikhtisar.html"
+    },
+    {
+        id: 'hikam',
+        title: 'Syarah Al-Hikam',
+        author: 'Syarah oleh Tok Faqir An-Nasirin',
+        description: 'Syarah oleh Tok Faqir An-Nasirin',
+        icon: 'brain',
+        hasSubmenu: false,
+        url: "https://muskercab.vercel.app/aplikasi/hikam.html"
+    },
+    {
+        id: 'abidin',
+        title: 'Terjemahan Minhajul Abidin',
+        author: 'Karya Imam Al-Ghazali',
+        description: 'Panduan menuju jalan para ahli ibadah',
+        icon: 'scroll',
+        hasSubmenu: false,
+        url: "https://muskercab.vercel.app/aplikasi/abidin.html"
+    },
+    {
+        id: 'asbab',
+        title: 'Asbabun Nuzul',
+        author: 'Imam Jalaluddin As-Suyuti',
+        description: 'Sebab-sebab turunnya ayat-ayat Al-Qur’an',
+        icon: 'file-text',
+        hasSubmenu: false,
+        url: "https://muskercab.vercel.app/aplikasi/asbabun.html"
+    },
+    {
+        id: 'banjar',
+        title: 'Ulama Banjar dari Masa ke Masa',
+        author: 'LP2M UIN Antasari & MUI Kalsel',
+        description: 'Biografi dan kontribusi ulama Banjar sepanjang sejarah',
+        icon: 'users',
+        hasSubmenu: false,
+        url: "https://muskercab.vercel.app/aplikasi/banjar.html"
+    },
+    {
+    id: 'berpikir',
+    title: 'Berpikir dan Berjiwa Besar',
+    author: 'Buku Pengembangan Diri',
+    description: 'Membangun pola pikir luas dan mental kuat',
+    icon: 'brain',
+    hasSubmenu: false,
+    url: "https://muskercab.vercel.app/aplikasi/berpikir.html"
+},
+    {
+    id: 'machiavelli',
+    title: 'The Prince',
+    author: 'Karya Niccolò Machiavelli',
+    description: 'Buku Politik dan Kekuasaan',
+    icon: 'file-text',
+    hasSubmenu: false,
+    url: "https://muskercab.vercel.app/aplikasi/penguasa.html"
+}
+];
+
+        // Fungsi Toggle Submenu (Accordion)
+        function toggleSubmenu() {
+            const sub = document.getElementById('submenu');
+            const chev = document.getElementById('chevron');
+            if (sub && chev) {
+                sub.classList.toggle('open');
+                chev.classList.toggle('rotated');
+            }
+        }
+
+        // Fungsi Render Data ke HTML
+        function renderKitabData() {
+            const mainContent = document.getElementById('main-content');
+            mainContent.innerHTML = ''; // Bersihkan konten sebelum render
+
+            kitabData.forEach((kitab) => {
+                if (kitab.hasSubmenu) {
+                    // Render Card dengan Submenu (Accordion)
+                    const card = document.createElement('div');
+                    card.className = 'kitab-card bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden';
+
+                    // Generate HTML untuk list jilid
+                    // Warna diubah: Background hover jadi biru muda (blue-50), badge angka jadi biru tua (#1e3a8a)
+                    let jilidHTML = kitab.jilid.map(j => `
+                    <a href="${j.url}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-50 transition-colors border border-gray-100">
+                        <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style="background:#1e3a8a;">${j.no}</span>
+                        <span class="text-sm font-medium text-gray-700">${j.label}</span>
+                        <i data-lucide="arrow-right" class="ml-auto" style="color:#9ca3af; width:16px; height:16px;"></i>
+                    </a>
+                `).join('');
+
+                    // Warna diubah: Icon container background biru muda (eff6ff), icon & chevron warna biru tua (#1e3a8a)
+                    card.innerHTML = `
+                    <button onclick="toggleSubmenu()" class="w-full text-left px-5 py-4 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#eff6ff;">
+                                <i data-lucide="${kitab.icon}" style="color:#1e3a8a; width:20px; height:20px;"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <h2 class="font-semibold text-gray-800 text-base">${kitab.title}</h2>
+                                <p class="text-xs text-gray-500 mt-0.5">${kitab.author} — ${kitab.description}</p>
+                            </div>
+                        </div>
+                        <i data-lucide="chevron-down" id="chevron" class="chevron-icon flex-shrink-0" style="color:#1e3a8a; width:20px; height:20px;"></i>
+                    </button>
+                    <div id="submenu" class="submenu-content">
+                        <div class="px-5 pb-4 flex flex-col gap-2">
+                            ${jilidHTML}
+                        </div>
+                    </div>
+                `;
+                    mainContent.appendChild(card);
+
+                } else {
+                    // Render Card biasa (Link Langsung)
+                    const card = document.createElement('a');
+                    card.href = kitab.url;
+                    card.target = '_blank';
+                    card.rel = 'noopener noreferrer';
+                    card.className = 'kitab-card bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-4 flex items-center gap-3 no-underline';
+
+                    // Warna diubah: Icon container background biru muda (eff6ff), icon & arrow warna biru tua (#1e3a8a)
+                    card.innerHTML = `
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#eff6ff;">
+                        <i data-lucide="${kitab.icon}" style="color:#1e3a8a; width:20px; height:20px;"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <h2 class="font-semibold text-gray-800 text-base">${kitab.title}</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">${kitab.author}</p>
+                    </div>
+                    <i data-lucide="arrow-right" class="flex-shrink-0" style="color:#1e3a8a; width:20px; height:20px;"></i>
+                `;
+                    mainContent.appendChild(card);
+                }
+            });
+
+            // Inisialisasi ulang icon Lucide setelah elemen baru ditambahkan
+            lucide.createIcons();
+        }
+
+        // Jalankan render saat halaman siap
+        window.addEventListener('DOMContentLoaded', () => {
+            renderKitabData();
+        });
+    </script>
+
+</body>
+
+</html>
