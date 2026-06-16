@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kamus Istilah Web Development</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0c0e16;--bg-card:#161923;--bg-card-hover:#1c2030;
+  --bg-code:#0d0f18;--bg-explain:#141824;
+  --border:rgba(255,255,255,.06);--border-hover:rgba(255,255,255,.13);
+  --text:#e2e8f0;--text-dim:#8892a8;--text-muted:#4e5870;
+  --accent:#ff7849;--accent-soft:rgba(255,120,73,.12);
+  /* Syntax Highlighting Colors */
+  --sk:#ff7849;--ss:#a5d6a7;--sc:#4e5870;--sn:#fbbf24;--sm:#67e8f9;--stag:#38bdf8;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Space Grotesk',system-ui,sans-serif;
+  background:var(--bg);color:var(--text);
+  min-height:100vh;padding:24px 16px 80px;overflow-x:hidden;
+}
+
+/* === Latar belakang animasi === */
+.blob{position:fixed;border-radius:50%;filter:blur(120px);opacity:.13;pointer-events:none;z-index:0}
+.blob-1{width:500px;height:500px;background:#ff7849;top:-120px;left:-100px;animation:bfloat 22s ease-in-out infinite}
+.blob-2{width:450px;height:450px;background:#2dd4bf;bottom:-80px;right:-80px;animation:bfloat 26s ease-in-out infinite reverse}
+.blob-3{width:350px;height:350px;background:#f472b6;bottom:20%;left:40%;animation:bfloat 30s ease-in-out infinite 3s}
+@keyframes bfloat{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(40px,-30px) scale(1.08)}66%{transform:translate(-30px,25px) scale(.94)}}
+
+.container{max-width:820px;margin:0 auto;position:relative;z-index:1}
+
+/* === Header === */
+.header{text-align:center;margin-bottom:28px}
+.header h1{font-size:30px;font-weight:700;letter-spacing:-.5px;margin-bottom:6px}
+.header h1 .icon{margin-right:6px}
+.badge{
+  display:inline-block;background:var(--accent-soft);color:var(--accent);
+  font-size:13px;font-weight:600;padding:3px 14px;border-radius:30px;
+}
+.subtitle{color:var(--text-dim);font-size:14px;margin-top:8px;font-weight:300}
+
+/* === Pencarian === */
+.search-wrap{position:relative;margin-bottom:18px}
+.search-wrap svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;transition:color .2s}
+.search-wrap:focus-within svg{color:var(--accent)}
+.search{
+  width:100%;padding:14px 16px 14px 48px;border:1px solid var(--border);
+  border-radius:14px;font-size:15px;background:var(--bg-card);
+  color:var(--text);font-family:inherit;transition:border .2s,box-shadow .2s;
+}
+.search::placeholder{color:var(--text-muted)}
+.search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+
+/* === Tab kategori === */
+.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  flex-shrink:0;padding:7px 16px;border-radius:30px;font-size:13px;font-weight:500;
+  background:var(--bg-card);color:var(--text-dim);border:1px solid var(--border);
+  cursor:pointer;transition:all .2s;user-select:none;white-space:nowrap;
+}
+.tab:hover{border-color:var(--border-hover);color:var(--text);transform:translateY(-1px)}
+.tab.active{color:#fff;border-color:transparent}
+
+/* === Info hasil === */
+.info{font-size:13px;color:var(--text-muted);margin-bottom:14px;padding-left:4px}
+
+/* === Kartu === */
+.cards{display:flex;flex-direction:column;gap:10px}
+.card{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:16px;
+  cursor:pointer;transition:all .25s;overflow:hidden;
+  animation:cardIn .35s ease both;
+}
+.card:hover{border-color:var(--border-hover);transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.card.expanded{cursor:default}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.card-top{padding:18px 20px 14px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.card-left{flex:1;min-width:0}
+.term{font-size:17px;font-weight:700;margin-bottom:3px}
+.def{font-size:13.5px;color:var(--text-dim);line-height:1.55}
+.tag{
+  flex-shrink:0;font-size:11px;font-weight:600;padding:4px 11px;
+  border-radius:20px;letter-spacing:.3px;white-space:nowrap;margin-top:2px;
+}
+.card-hint{
+  padding:0 20px 12px;font-size:12px;color:var(--text-muted);
+  display:flex;align-items:center;gap:4px;transition:opacity .2s;
+}
+.card-hint svg{width:14px;height:14px;transition:transform .3s}
+.card.expanded .card-hint{opacity:0;height:0;padding:0;overflow:hidden}
+.card.expanded .card-hint svg{transform:rotate(180deg)}
+
+/* === Expand/collapse dengan grid === */
+.card-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s ease}
+.card.expanded .card-body{grid-template-rows:1fr}
+.card-body-inner{overflow:hidden}
+.card-body-content{padding:0 20px 18px}
+
+.explain{
+  background:var(--bg-explain);padding:10px 14px;border-radius:10px;
+  font-size:13.5px;line-height:1.6;margin-bottom:12px;
+  border-left:3px solid var(--accent);
+}
+.explain-label{font-weight:600;color:var(--accent);margin-right:6px}
+
+.example-label{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text-dim);margin-bottom:6px}
+.code-block{
+  background:var(--bg-code);padding:14px 16px;border-radius:10px;
+  font-family:'JetBrains Mono','Fira Code',Consolas,monospace;
+  font-size:12.5px;line-height:1.7;overflow-x:auto;
+  border:1px solid var(--border);white-space:pre-wrap;word-break:break-word;
+}
+/* Syntax Colors */
+.code-block .kw{color:var(--sk);font-weight:500} /* Keyword JS */
+.code-block .st{color:var(--ss)} /* String */
+.code-block .cm{color:var(--sc);font-style:italic} /* Comment */
+.code-block .nm{color:var(--sn)} /* Number/Tag Name */
+.code-block .mt{color:var(--sm)} /* Method/Property */
+.code-block .tg{color:var(--stag)} /* HTML Tag */
+
+/* === State kosong === */
+.empty{text-align:center;padding:50px 20px;color:var(--text-muted)}
+.empty .big{font-size:40px;display:block;margin-bottom:12px;opacity:.6}
+.empty strong{color:var(--text-dim)}
+
+/* === Tombol ke atas === */
+.to-top{
+  position:fixed;bottom:28px;right:28px;width:44px;height:44px;
+  border-radius:50%;background:var(--accent);color:#fff;border:none;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 20px rgba(255,120,73,.35);
+  opacity:0;transform:translateY(12px);transition:all .3s;z-index:50;
+}
+.to-top.show{opacity:1;transform:translateY(0)}
+.to-top:hover{transform:translateY(-2px) scale(1.05);box-shadow:0 6px 28px rgba(255,120,73,.45)}
+
+/* === Footer === */
+.footer{text-align:center;margin-top:40px;font-size:12px;color:var(--text-muted);font-weight:300}
+
+/* === Responsif === */
+@media(max-width:600px){
+  .header h1{font-size:24px}
+  .card-top{padding:14px 16px 10px}
+  .card-body-content{padding:0 16px 14px}
+  .code-block{font-size:11.5px;padding:10px 12px}
+  .explain{font-size:13px;padding:8px 12px}
+  .term{font-size:15.5px}
+}
+@media(prefers-reduced-motion:reduce){
+  .blob,.card{animation:none!important}
+  .card-body{transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<div class="container">
+  <header class="header">
+    <h1><span class="icon">&#x1F4D6;</span>Kamus Web Dev</h1>
+    <span class="badge" id="totalBadge">0 istilah</span>
+    <p class="subtitle">Klik istilah untuk melihat penjelasan dan contoh kode</p>
+  </header>
+
+  <div class="search-wrap">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="search" class="search" placeholder="Cari istilah, arti, atau contoh kode..." autofocus>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+  <div class="info" id="info"></div>
+  <div class="cards" id="cards"></div>
+</div>
+
+<button class="to-top" id="toTop" aria-label="Kembali ke atas">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+</button>
+
+<div class="footer">Kamus Referensi Web Development &mdash; HTML, CSS & JS</div>
+
+<script>
+/* =============================================
+   DATA ISTILAH — 80+ entri
+   ============================================= */
+const istilah = [
+  // ── HTML ──
+  {nama:"Elemen (Element)",kat:"HTML",
+   arti:"Komponen dasar pembentuk halaman web.",
+   jelas:"Elemen adalah gabungan dari tag pembuka, konten, dan tag penutup. Di DOM, elemen direpresentasikan sebagai node. Contoh elemen: paragraf, div, tombol.",
+   contoh:"<!-- Elemen paragraf lengkap -->\n<p>Ini adalah konten elemen paragraf.</p>\n\n<!-- Elemen tanpa konten (self-closing) -->\n<img src=\"foto.jpg\" alt=\"Foto\">"},
+  {nama:"Tag Pembuka & Penutup",kat:"HTML",
+   arti:"Penanda awal dan akhir sebuah elemen HTML.",
+   jelas:"Tag pembuka ditulis dengan `<nama>`, tag penutup dengan `</nama>`. Beberapa elemen khusus (void elements) seperti `<img>` dan `<br>` tidak memerlukan tag penutup.",
+   contoh:"<!-- Tag Pembuka -->\n<div class=\"container\">\n  Konten ada di sini...\n<!-- Tag Penutup -->\n</div>"},
+  {nama:"Konten (Content)",kat:"HTML",
+   arti:"Teks atau elemen anak yang berada di antara tag pembuka dan penutup.",
+   jelas:"Konten adalah informasi yang ditampilkan ke pengguna. Bisa berupa teks biasa, atau elemen lain yang bersarang (nested) di dalamnya.",
+   contoh:"<h1>Judul Website</h1>\n\n<p>\n  Paragraf ini memiliki konten teks \n  <strong>dan elemen tebal</strong> di dalamnya.\n</p>"},
+  {nama:"&lt;div&gt;",kat:"HTML",
+   arti:"Elemen pembungkus (container) generik tanpa makna semantik.",
+   jelas:"Div singkatan dari 'Division'. Digunakan untuk mengelompokkan elemen agar mudah di-styling dengan CSS atau dimanipulasi JS. Bersifat block-level (memecah baris).",
+   contoh:"<div class=\"card\">\n  <h2>Judul Kartu</h2>\n  <p>Isi kartu...</p>\n</div>"},
+  {nama:"Attribute: class",kat:"HTML",
+   arti:"Atribut untuk memberikan nama kelas pada elemen.",
+   jelas:"Class digunakan untuk memilih elemen di CSS atau JavaScript. Satu elemen bisa memiliki banyak class (dipisah spasi) dan satu class bisa dipakai di banyak elemen.",
+   contoh:"<div class=\"box highlight besar\">\n  Class: box, highlight, besar\n</div>\n\n/* CSS */\n.box { border: 1px solid #fff; }"},
+  {nama:"Attribute: id",kat:"HTML",
+   arti:"Atribut untuk memberikan identitas unik pada elemen.",
+   jelas:"ID harus unik dalam satu halaman HTML. Sering digunakan sebagai target link anchor (menuju bagian halaman) atau manipulasi elemen spesifik via JS.",
+   contoh:"<!-- Header punya ID unik -->\n<header id=\"main-header\">\n  <h1>Halo Dunia</h1>\n</header>\n\n<a href=\"#main-header\">Ke Header</a>"},
+{nama:"DOCTYPE",kat:"HTML",
+ arti:"Deklarasi yang memberi tahu browser versi HTML yang digunakan.",
+ jelas:"DOCTYPE harus ditulis di baris paling atas dokumen HTML. Pada HTML5 cukup menggunakan <!DOCTYPE html>.",
+ contoh:"<!DOCTYPE html>\n<html>\n<head>\n</head>\n<body>\n</body>\n</html>"},
+
+{nama:"HTML",kat:"HTML",
+ arti:"Elemen akar (root) yang membungkus seluruh dokumen HTML.",
+ jelas:"Semua elemen HTML berada di dalam elemen html. Browser menggunakan elemen ini sebagai akar struktur DOM.",
+ contoh:"<html>\n<head></head>\n<body></body>\n</html>"},
+
+{nama:"Head",kat:"HTML",
+ arti:"Bagian dokumen yang berisi metadata dan informasi halaman.",
+ jelas:"Head tidak ditampilkan langsung ke pengguna. Isinya biasanya title, meta, link CSS, favicon, dan script.",
+ contoh:"<head>\n<title>Website Saya</title>\n<meta charset='UTF-8'>\n</head>"},
+
+{nama:"Body",kat:"HTML",
+ arti:"Bagian dokumen yang berisi konten yang terlihat oleh pengguna.",
+ jelas:"Semua teks, gambar, tombol, form, dan elemen visual lainnya ditempatkan di dalam body.",
+ contoh:"<body>\n<h1>Halo Dunia</h1>\n<p>Selamat datang</p>\n</body>"},
+
+{nama:"Heading",kat:"HTML",
+ arti:"Elemen judul dari level 1 sampai level 6.",
+ jelas:"Heading digunakan untuk membuat struktur dokumen yang jelas. h1 adalah yang paling penting dan h6 yang paling kecil.",
+ contoh:"<h1>Judul Utama</h1>\n<h2>Sub Judul</h2>\n<h3>Bagian</h3>"},
+
+{nama:"Paragraf",kat:"HTML",
+ arti:"Elemen untuk menampilkan blok teks.",
+ jelas:"Paragraf digunakan untuk menulis isi artikel, deskripsi, atau teks panjang lainnya.",
+ contoh:"<p>Ini adalah sebuah paragraf.</p>"},
+
+{nama:"Link",kat:"HTML",
+ arti:"Elemen yang digunakan untuk membuat tautan ke halaman lain.",
+ jelas:"Link dibuat menggunakan atribut href yang berisi alamat tujuan.",
+ contoh:"<a href='https://example.com'>Kunjungi Website</a>"},
+
+{nama:"Gambar",kat:"HTML",
+ arti:"Elemen untuk menampilkan gambar pada halaman web.",
+ jelas:"Gambar menggunakan atribut src untuk lokasi file dan alt sebagai teks alternatif.",
+ contoh:"<img src='foto.jpg' alt='Foto Profil'>"},
+
+{nama:"List",kat:"HTML",
+ arti:"Elemen untuk menampilkan daftar data.",
+ jelas:"HTML memiliki daftar berurutan (ol), tidak berurutan (ul), dan item daftar (li).",
+ contoh:"<ul>\n<li>Apel</li>\n<li>Mangga</li>\n</ul>"},
+
+{nama:"Tabel",kat:"HTML",
+ arti:"Elemen untuk menampilkan data dalam bentuk baris dan kolom.",
+ jelas:"Tabel terdiri dari table, tr, th, dan td.",
+ contoh:"<table>\n<tr>\n<th>Nama</th>\n<th>Umur</th>\n</tr>\n<tr>\n<td>Budi</td>\n<td>20</td>\n</tr>\n</table>"},
+
+{nama:"Form",kat:"HTML",
+ arti:"Elemen untuk menerima input dari pengguna.",
+ jelas:"Form biasanya berisi input, textarea, select, checkbox, radio, dan tombol submit.",
+ contoh:"<form>\n<input type='text'>\n<button>Kirim</button>\n</form>"},
+
+{nama:"Input",kat:"HTML",
+ arti:"Elemen untuk memasukkan data dari pengguna.",
+ jelas:"Input memiliki banyak tipe seperti text, password, email, number, checkbox, dan radio.",
+ contoh:"<input type='text' placeholder='Nama'>\n<input type='email'>\n<input type='password'>"},
+
+{nama:"Semantic HTML",kat:"HTML",
+ arti:"Elemen HTML yang memiliki makna khusus terhadap isi dokumen.",
+ jelas:"Semantic HTML membantu SEO, aksesibilitas, dan keterbacaan kode. Contohnya header, nav, main, article, section, aside, dan footer.",
+ contoh:"<header>Header</header>\n<nav>Menu</nav>\n<main>Konten</main>\n<footer>Footer</footer>"},
+
+{nama:"Attribute",kat:"HTML",
+ arti:"Informasi tambahan yang diberikan pada elemen HTML.",
+ jelas:"Attribute ditulis di dalam tag pembuka dan biasanya berbentuk nama='nilai'.",
+ contoh:"<input type='text' placeholder='Masukkan Nama'>\n<img src='foto.jpg' alt='Foto'>"},
+
+{nama:"Nested Element",kat:"HTML",
+ arti:"Elemen yang berada di dalam elemen lain.",
+ jelas:"HTML membentuk struktur pohon. Sebuah elemen dapat menjadi parent dan memiliki child element.",
+ contoh:"<div>\n<h2>Judul</h2>\n<p>Paragraf</p>\n</div>"},
+
+{nama:"DOM Tree",kat:"HTML",
+ arti:"Struktur pohon yang dibentuk browser dari dokumen HTML.",
+ jelas:"Setelah HTML dibaca, browser mengubahnya menjadi objek DOM yang bisa dimanipulasi JavaScript.",
+ contoh:"html\n └─ body\n     ├─ h1\n     └─ p"},
+  // ── CSS ──
+  {nama:"Selector",kat:"CSS",
+   arti:"Pola untuk memilih elemen HTML yang akan diberi gaya.",
+   jelas:"Selector menentukan 'ke mana' style diterapkan. Bisa berupa tag (`div`), class (`.btn`), id (`#header`), atau atribut.",
+   contoh:"/* Selector Tag */\ndiv { color: blue; }\n\n/* Selector Class */\n.btn { background: red; }\n\n/* Selector ID */\n#header { font-size: 20px; }"},
+  {nama:"Property & Value",kat:"CSS",
+   arti:"Properti adalah aspek gaya (warna, ukuran), Value adalah nilainya.",
+   jelas:"Dalam CSS aturan, kita mendefinisikan Property apa yang diubah dan Value barunya. Ditulis sebagai `property: value;`.",
+   contoh:"p {\n  color: white;       /* Property: color */\n  font-size: 16px;    /* Property: font-size */\n  background: black;  /* Property: background */\n}"},
+  {nama:"Box Model",kat:"CSS",
+   arti:"Konsep pembungkus setiap elemen HTML: Content, Padding, Border, Margin.",
+   jelas:"Box Model menghitung total ukuran elemen. Content adalah area teks, Padding jarak dalam content ke border, Border garis tepi, Margin jarak luar border ke elemen lain.",
+   contoh:".box {\n  width: 200px;\n  padding: 20px;  /* Dalam */\n  border: 5px solid black;\n  margin: 10px;   /* Luar */\n  /* Total lebar visual = 200 + 40 + 10 + 20 = 270px */\n}"},
+  {nama:"Flexbox",kat:"CSS",
+   arti:"Mode layout 1 dimensi untuk menyusun elemen dalam baris atau kolom.",
+   jelas:"Flexbox memudahkan penataan elemen (alignment, distribusi ruang, dan centering) secara responsif. Induk (parent) jadi `flex-container`, anak jadi `flex-item`.",
+   contoh:".container {\n  display: flex;\n  justify-content: center; /* Horizontal */\n  align-items: center;     /* Vertical */\n  gap: 10px;\n}"},
+  {nama:"Grid",kat:"CSS",
+   arti:"Mode layout 2 dimensi (baris & kolom) untuk struktur kompleks.",
+   jelas:"CSS Grid lebih kuat dari Flexbox untuk layout halaman penuh. Kita mendefinisikan kolom dan baris dengan `grid-template-columns` dan `grid-template-rows`.",
+   contoh:".layout {\n  display: grid;\n  grid-template-columns: 200px 1fr 200px;\n  grid-template-rows: 100px auto;\n  gap: 20px;\n}"},
+  {nama:"Specificity",kat:"CSS",
+   arti:"Nilai bobot yang menentukan style mana yang diterapkan jika ada konflik.",
+   jelas:"Jika dua selector memilih elemen yang sama, yang Specificity-nya lebih tinggi menang. Urutan: ID (100) > Class/Attribute/Pseudo (10) > Element (1). `!important` mengabaikan aturan ini.",
+   contoh:"/* Element: 1 poin */\ndiv { color: red; }\n\n/* Class: 10 poin (Menang) */\n.box { color: blue; }\n\n/* ID: 100 poin (Menang) */\n#unique { color: green; }"},
+  {nama:"Pseudo-class",kat:"CSS",
+   arti:"Keyword ditambahkan selector untuk mendefinisikan keadaan khusus elemen.",
+   jelas:"Contoh umum: `:hover` (saat kursor di atas), `:active` (saat diklik), `:focus` (saat input dipilih), `:nth-child()` (elemen ke-n).",
+   contoh:"a:hover {\n  color: red;\n  text-decoration: underline;\n}\n\ninput:focus {\n  border-color: blue;\n  outline: none;\n}"},
+  {nama:"Media Query",kat:"CSS",
+   arti:"Teknik untuk menerapkan CSS berdasarkan kondisi perangkat (layar).",
+   jelas:"Inti dari Responsive Design. Kita bisa ubah layout jika lebar layar kurang dari 768px (HP) atau lebih dari 1024px (Desktop).",
+   contoh:"/* Default Desktop */\n.box { width: 100%; }\n\n/* Mobile */\n@media (max-width: 600px) {\n  .box {\n    width: 100%;\n    background: gray;\n  }\n}"},
+{nama:"Display",kat:"CSS",
+ arti:"Properti yang menentukan bagaimana elemen ditampilkan di halaman.",
+ jelas:"Display mengontrol perilaku layout elemen. Nilai umum: block, inline, inline-block, flex, grid, dan none.",
+ contoh:".box {\n  display: block;\n}\n\n.menu {\n  display: flex;\n}"},
+
+{nama:"Position",kat:"CSS",
+ arti:"Properti untuk mengatur posisi elemen.",
+ jelas:"Position memiliki nilai static, relative, absolute, fixed, dan sticky. Digunakan untuk mengontrol letak elemen secara lebih spesifik.",
+ contoh:".badge {\n  position: absolute;\n  top: 10px;\n  right: 10px;\n}"},
+
+{nama:"Z-Index",kat:"CSS",
+ arti:"Menentukan urutan tumpukan elemen.",
+ jelas:"Elemen dengan z-index lebih besar akan tampil di atas elemen dengan z-index lebih kecil.",
+ contoh:".modal {\n  position: fixed;\n  z-index: 999;\n}"},
+
+{nama:"Overflow",kat:"CSS",
+ arti:"Mengatur perilaku konten yang melebihi ukuran elemen.",
+ jelas:"Nilai umum: visible, hidden, scroll, dan auto.",
+ contoh:".box {\n  width: 200px;\n  height: 100px;\n  overflow: auto;\n}"},
+
+{nama:"Width & Height",kat:"CSS",
+ arti:"Properti untuk mengatur lebar dan tinggi elemen.",
+ jelas:"Bisa menggunakan satuan px, %, rem, vw, vh, dan lainnya.",
+ contoh:".card {\n  width: 300px;\n  height: 200px;\n}"},
+
+{nama:"Margin",kat:"CSS",
+ arti:"Jarak luar sebuah elemen.",
+ jelas:"Margin memberi ruang di luar border sehingga elemen tidak menempel dengan elemen lain.",
+ contoh:".box {\n  margin: 20px;\n}"},
+
+{nama:"Padding",kat:"CSS",
+ arti:"Jarak antara konten dan border.",
+ jelas:"Padding menambah ruang di dalam elemen tanpa mengubah ukuran konten.",
+ contoh:".box {\n  padding: 16px;\n}"},
+
+{nama:"Border",kat:"CSS",
+ arti:"Garis tepi yang mengelilingi elemen.",
+ jelas:"Border terdiri dari ketebalan, jenis garis, dan warna.",
+ contoh:".box {\n  border: 2px solid black;\n}"},
+
+{nama:"Border Radius",kat:"CSS",
+ arti:"Membuat sudut elemen menjadi melengkung.",
+ jelas:"Semakin besar nilainya, semakin bulat sudut elemen.",
+ contoh:".btn {\n  border-radius: 12px;\n}"},
+
+{nama:"Color",kat:"CSS",
+ arti:"Properti untuk mengatur warna teks.",
+ jelas:"Warna dapat ditulis dengan nama warna, HEX, RGB, RGBA, HSL, atau HSLA.",
+ contoh:"p {\n  color: #2563eb;\n}"},
+
+{nama:"Background",kat:"CSS",
+ arti:"Properti untuk mengatur latar belakang elemen.",
+ jelas:"Background dapat berupa warna, gambar, gradien, dan kombinasi lainnya.",
+ contoh:".hero {\n  background: linear-gradient(to right, blue, purple);\n}"},
+
+{nama:"Font Family",kat:"CSS",
+ arti:"Menentukan jenis huruf yang digunakan.",
+ jelas:"Browser akan menggunakan font pertama yang tersedia dalam daftar.",
+ contoh:"body {\n  font-family: Arial, sans-serif;\n}"},
+
+{nama:"Font Size",kat:"CSS",
+ arti:"Menentukan ukuran teks.",
+ jelas:"Ukuran dapat menggunakan px, rem, em, atau persen.",
+ contoh:"h1 {\n  font-size: 32px;\n}"},
+
+{nama:"Font Weight",kat:"CSS",
+ arti:"Menentukan ketebalan teks.",
+ jelas:"Nilai umum adalah normal, bold, atau angka 100–900.",
+ contoh:"h1 {\n  font-weight: 700;\n}"},
+
+{nama:"Text Align",kat:"CSS",
+ arti:"Mengatur perataan teks.",
+ jelas:"Teks dapat diratakan ke kiri, kanan, tengah, atau justify.",
+ contoh:"p {\n  text-align: center;\n}"},
+
+{nama:"Transition",kat:"CSS",
+ arti:"Efek perubahan properti secara halus dalam durasi tertentu.",
+ jelas:"Transition membuat perubahan CSS terasa lebih lembut dan profesional.",
+ contoh:".btn {\n  transition: 0.3s;\n}\n\n.btn:hover {\n  transform: scale(1.1);\n}"},
+
+{nama:"Transform",kat:"CSS",
+ arti:"Mengubah bentuk, posisi, ukuran, atau rotasi elemen.",
+ jelas:"Transform mendukung translate, scale, rotate, dan skew.",
+ contoh:".box:hover {\n  transform: rotate(10deg);\n}"},
+
+{nama:"Animation",kat:"CSS",
+ arti:"Membuat elemen bergerak atau berubah secara otomatis.",
+ jelas:"Animation menggunakan @keyframes untuk mendefinisikan tahapan perubahan.",
+ contoh:"@keyframes fade {\n  from { opacity: 0; }\n  to { opacity: 1; }\n}\n\n.box {\n  animation: fade 1s;\n}"},
+
+{nama:"CSS Variable",kat:"CSS",
+ arti:"Variabel yang menyimpan nilai CSS untuk digunakan kembali.",
+ jelas:"CSS Variable ditulis menggunakan --nama dan diakses dengan var().",
+ contoh:":root {\n  --primary: #2563eb;\n}\n\n.btn {\n  background: var(--primary);\n}"},
+
+{nama:"Responsive Design",kat:"CSS",
+ arti:"Teknik membuat tampilan menyesuaikan ukuran layar perangkat.",
+ jelas:"Responsive Design biasanya menggunakan Flexbox, Grid, Media Query, dan satuan fleksibel.",
+ contoh:".container {\n  width: 90%;\n  max-width: 1200px;\n}"},
+  // ── KONSEP ──
+  {nama:"Interpreter",kat:"Konsep",
+   arti:"Program yang membaca dan mengeksekusi kode baris demi baris.",
+   jelas:"Berbeda dengan compiler yang mengubah semua kode jadi bahasa mesin dulu, interpreter menerjemahkan dan menjalankan kode saat dibaca. JavaScript di browser adalah interpreter (JIT Compiler).",
+   contoh:"// Contoh alur Interpreter\nconsole.log('Satu'); // Jalankan baris 1\nconsole.log('Dua'); // Jalankan baris 2\n// Jika error di baris 2, baris 3 tidak akan jalan"},
+  {nama:"Compiler",kat:"Konsep",
+   arti:"Program yang menerjemahkan seluruh kode sumber menjadi bahasa mesin sebelum dijalankan.",
+   jelas:"Compiler menganalisis seluruh kode, mengoptimalkan, dan menghasilkan file executable. Bahasa seperti C++ dan Rust menggunakan compiler.",
+   contoh:"// Proses Compiler (Kode C++)\n// Source Code -> [Compiler] -> Program.exe\n// Baru kemudian Program.exe dijalankan user"},
+  {nama:"Deklarasi",kat:"Konsep",
+   arti:"Menciptakan referensi variabel atau fungsi dalam memori.",
+   jelas:"Deklarasi memberitahu browser/JS bahwa sebuah nama variabel ada. Variabel yang dideklarasikan tapi tidak diisi nilainya akan bernilai `undefined`.",
+   contoh:"// Deklarasi Variabel\nlet umur;\nvar nama;\nconst PI; // ERROR! const wajib langsung diisi\n\nconsole.log(umur); // undefined"},
+  {nama:"Inisiasi (Inisialisasi)",kat:"Konsep",
+   arti:"Memberikan nilai awal pada variabel saat pertama kali dibuat.",
+   jelas:"Inisiasi bisa terjadi bersamaan dengan deklarasi atau terpisah. Memberi nilai awal penting agar variabel tidak berisi `undefined`.",
+   contoh:"// Deklarasi + Inisiasi langsung\nlet skor = 0;\n\n// Deklarasi dulu, inisiasi kemudian\nlet pemain;\npemain = 'Budi'; // Inisiasi"},
+  {nama:"Parser",kat:"Konsep",
+   arti:"Bagian dari engine yang menganalisis struktur kode (Syntax).",
+   jelas:"Parser memeriksa apakah kode mengikuti aturan tata bahasa (grammar). Jika ada salah ketik (syntax error), parser akan berhenti dan melempar error sebelum kode dijalankan.",
+   contoh:"// Jika kita tulis:\nfunction tes() {\n  console.log('Halo'\n}\n// Parser melihat kurung kurawal tidak tutup, \n// lalu melempar SyntaxError."},
+   {nama:"Runtime",kat:"Konsep",
+ arti:"Lingkungan tempat JavaScript dijalankan.",
+ jelas:"Runtime menyediakan fitur tambahan yang tidak ada di bahasa JavaScript itu sendiri, seperti DOM, Fetch API, localStorage, dan setTimeout. Browser dan Node.js adalah runtime yang berbeda.",
+ contoh:"// Browser Runtime\nconsole.log(document.title);\n\n// Node.js Runtime\n// fs.readFile('data.txt')"},
+
+
+{nama:"Execution Context",kat:"Konsep",
+ arti:"Lingkungan tempat kode JavaScript dieksekusi.",
+ jelas:"Saat kode berjalan, JavaScript membuat Execution Context yang berisi variabel, fungsi, dan nilai this. Ada Global Execution Context dan Function Execution Context.",
+ contoh:"let nama = 'Budi';\n\nfunction salam() {\n  let pesan = 'Halo';\n}\n\n// Global Context\n// Function Context untuk salam()"},
+
+
+{nama:"Call Stack",kat:"Konsep",
+ arti:"Tumpukan yang menyimpan urutan pemanggilan fungsi.",
+ jelas:"Setiap fungsi yang dipanggil masuk ke Call Stack. Setelah selesai dieksekusi, fungsi keluar dari stack. JavaScript menjalankan kode satu per satu dari atas stack.",
+ contoh:"function satu() {\n  dua();\n}\n\nfunction dua() {\n  tiga();\n}\n\nfunction tiga() {\n  console.log('Jalan');\n}\n\nsatu();"},
+
+
+{nama:"Event Loop",kat:"Konsep",
+ arti:"Mekanisme yang mengatur kode sinkron dan asinkron.",
+ jelas:"Event Loop terus memeriksa Call Stack dan Callback Queue. Jika stack kosong, callback dari queue akan dipindahkan ke stack untuk dijalankan.",
+ contoh:"console.log('A');\n\nsetTimeout(() => {\n  console.log('B');\n}, 0);\n\nconsole.log('C');\n\n// Output: A C B"},
+
+
+{nama:"Callback Queue",kat:"Konsep",
+ arti:"Antrian yang menyimpan callback yang menunggu dijalankan.",
+ jelas:"Ketika operasi asinkron selesai, callback tidak langsung dijalankan. Callback masuk ke Queue dan menunggu Call Stack kosong.",
+ contoh:"setTimeout(() => {\n  console.log('Selesai');\n}, 1000);\n\n// Setelah 1 detik callback masuk ke Queue"},
+
+
+{nama:"Memory Heap",kat:"Konsep",
+ arti:"Area memori tempat objek dan data disimpan.",
+ jelas:"Saat membuat object, array, atau function, JavaScript menyimpannya di Memory Heap. Variabel biasanya hanya menyimpan referensi menuju lokasi tersebut.",
+ contoh:"let user = {\n  nama: 'Budi'\n};\n\n// Object disimpan di Heap\n// Variabel user menyimpan referensinya"},
+
+
+{nama:"Garbage Collection",kat:"Konsep",
+ arti:"Proses otomatis membersihkan memori yang tidak dipakai.",
+ jelas:"JavaScript secara otomatis menghapus data yang sudah tidak memiliki referensi agar memori tidak penuh.",
+ contoh:"let data = {\n  nama: 'Budi'\n};\n\ndata = null;\n\n// Object lama bisa dibersihkan Garbage Collector"},
+
+
+{nama:"JIT Compiler",kat:"Konsep",
+ arti:"Compiler yang bekerja saat program sedang berjalan.",
+ jelas:"Mesin JavaScript modern seperti V8 menggunakan Just-In-Time Compiler untuk mengubah kode JavaScript menjadi kode mesin yang lebih cepat saat runtime.",
+ contoh:"for(let i = 0; i < 1000; i++) {\n  console.log(i);\n}\n\n// Engine dapat mengoptimalkan kode yang sering dijalankan"},
+
+
+{nama:"Single Thread",kat:"Konsep",
+ arti:"JavaScript menjalankan satu tugas utama pada satu waktu.",
+ jelas:"JavaScript hanya memiliki satu Call Stack utama. Karena itu Event Loop dan Web APIs digunakan agar operasi asinkron tetap memungkinkan.",
+ contoh:"console.log('1');\nconsole.log('2');\nconsole.log('3');\n\n// Selalu berjalan berurutan"},
+
+
+{nama:"Synchronous",kat:"Konsep",
+ arti:"Eksekusi kode secara berurutan, menunggu baris sebelumnya selesai.",
+ jelas:"Pada kode sinkron, setiap perintah harus selesai sebelum perintah berikutnya dijalankan.",
+ contoh:"console.log('A');\nconsole.log('B');\nconsole.log('C');\n\n// Output: A B C"},
+
+
+{nama:"Asynchronous",kat:"Konsep",
+ arti:"Eksekusi yang memungkinkan tugas berjalan tanpa memblokir program utama.",
+ jelas:"Operasi seperti fetch, setTimeout, dan membaca file dapat berjalan di luar Call Stack lalu kembali melalui callback atau promise.",
+ contoh:"console.log('Mulai');\n\nsetTimeout(() => {\n  console.log('Selesai');\n}, 1000);\n\nconsole.log('Jalan Terus');"},
+
+
+{nama:"Reference",kat:"Konsep",
+ arti:"Alamat yang menunjuk ke lokasi data di memori.",
+ jelas:"Object dan Array tidak disalin langsung. Variabel menyimpan referensi ke lokasi data yang sama di memori.",
+ contoh:"let a = {nama:'Budi'};\nlet b = a;\n\nb.nama = 'Andi';\n\nconsole.log(a.nama);\n// 'Andi' karena menunjuk object yang sama"},
+
+  // ── DASAR ──
+  {nama:"Variabel",kat:"Dasar",
+   arti:"Tempat menyimpan data menggunakan let, const, atau var.",
+   jelas:"Variabel seperti kotak penyimpanan di memori. let untuk nilai yang berubah, const untuk nilai tetap, dan var adalah cara lama yang tidak direkomendasikan lagi.",
+   contoh:"let nama = 'Budi';\nconst PI = 3.14;\n// var umur = 25; // hindari var"},
+  {nama:"Operand",kat:"Dasar",
+   arti:"Nilai atau variabel yang menjadi input bagi operator.",
+   jelas:"Dalam operasi `5 + 3`, angka `5` dan `3` adalah operand. Operator adalah tanda `+`. Operand bisa berupa literal angka, string, atau variabel.",
+   contoh:"let a = 10;  // a dan 10 adalah operand\nlet b = 5;   // b dan 5 adalah operand\nlet c = a + b; // a, b, dan + adalah operand/operator"},
+  {nama:"Statement",kat:"Dasar",
+   arti:"Satu baris perintah yang dijalankan oleh JavaScript.",
+   jelas:"Setiap instruksi yang memberi perintah ke komputer adalah statement. Bisa berupa deklarasi, pemanggilan fungsi, atau pengulangan.",
+   contoh:"let x = 5;           // statement deklarasi\nconsole.log(x);      // statement ekspresi\nif (x > 0) { ... }  // statement kontrol"},
+  {nama:"Expression",kat:"Dasar",
+   arti:"Kombinasi nilai, variabel, dan operator yang menghasilkan suatu nilai.",
+   jelas:"Expression selalu menghasilkan nilai. Contoh: 2 + 3 menghasilkan 5. Setiap expression bisa digunakan di tempat yang membutuhkan nilai.",
+   contoh:"let x = 5 + 3;            // 5+3 adalah expression\nlet y = x > 8 ? 'Ya' : 'Tidak';\nconsole.log(y);  // 'Tidak'"},
+  {nama:"Operator",kat:"Dasar",
+   arti:"Simbol yang melakukan operasi pada nilai atau variabel.",
+   jelas:"Operator memproses operand (nilai input). Ada operator aritmatika (+, -, *, /), perbandingan (>, <, ===), logika (&&, ||, !), dan penugasan (=, +=).",
+   contoh:"let a = 10, b = 3;\nconsole.log(a + b);  // 13\nconsole.log(a % b);  // 1 (sisa bagi)\nconsole.log(a > b);  // true"},
+  {nama:"Boolean",kat:"Dasar",
+   arti:"Tipe data yang hanya memiliki dua nilai: true atau false.",
+   jelas:"Boolean digunakan untuk logika dan pengambilan keputusan. Hasil dari operasi perbandingan selalu berupa boolean.",
+   contoh:"let aktif = true;\nconsole.log(5 > 3);    // true\nconsole.log(5 === 3);  // false\nconsole.log(!aktif);   // false"},
+  {nama:"String",kat:"Dasar",
+   arti:"Tipe data yang merepresentasikan teks.",
+   jelas:"String adalah rangkaian karakter yang dibungkus dengan kutip tunggal ('), ganda (\"), atau backtick (`). Bisa berisi huruf, angka, atau simbol.",
+   contoh:"let s1 = 'Halo';\nlet s2 = \"Dunia\";\nconsole.log(s1 + ' ' + s2); // 'Halo Dunia'\nconsole.log(s1.length);    // 4"},
+  {nama:"Number",kat:"Dasar",
+   arti:"Tipe data untuk angka, baik bulat maupun desimal.",
+   jelas:"JavaScript hanya memiliki satu tipe Number untuk bilangan bulat dan desimal. Juga mencakup nilai khusus seperti Infinity dan -Infinity.",
+   contoh:"let umur = 25;\nlet pi = 3.14;\nlet negatif = -10;\nconsole.log(umur + pi); // 28.14"},
+  {nama:"NaN",kat:"Dasar",
+   arti:"Not-a-Number — nilai khusus yang berarti 'bukan angka valid'.",
+   jelas:"NaN muncul saat operasi matematika gagal, misalnya mengalikan string dengan angka. Uniknya, NaN tidak sama dengan dirinya sendiri.",
+   contoh:"let hasil = 'abc' / 2;\nconsole.log(hasil);         // NaN\nconsole.log(NaN === NaN);  // false\nconsole.log(isNaN(hasil)); // true"},
+  {nama:"Undefined",kat:"Dasar",
+   arti:"Nilai otomatis untuk variabel yang dideklarasikan tapi belum diberi nilai.",
+   jelas:"Undefined berarti 'belum didefinisikan'. Juga menjadi nilai balik default dari fungsi yang tidak memiliki return.",
+   contoh:"let x;\nconsole.log(x);  // undefined\nconsole.log(typeof x); // 'undefined'\n\nfunction kosong() {}\nconsole.log(kosong()); // undefined"},
+  {nama:"Null",kat:"Dasar",
+   arti:"Nilai yang sengaja diberikan untuk menandakan 'tidak ada data'.",
+   jelas:"Berbeda dengan undefined yang otomatis, null diberikan secara sadar oleh programmer untuk menunjukkan ketiadaan nilai. Mengejutkannya, typeof null adalah 'object'.",
+   contoh:"let data = null;\nconsole.log(data);        // null\nconsole.log(typeof null); // 'object' (bug klasik JS)"},
+  {nama:"typeof",kat:"Dasar",
+   arti:"Operator untuk mengecek tipe data suatu nilai.",
+   jelas:"typeof mengembalikan string yang menyebutkan tipe data. Berguna untuk debugging dan validasi, meskipun ada beberapa hasil yang mengejutkan.",
+   contoh:"console.log(typeof 42);       // 'number'\nconsole.log(typeof 'halo');    // 'string'\nconsole.log(typeof true);     // 'boolean'\nconsole.log(typeof null);     // 'object' (hati-hati!)"},
+  {nama:"Type Coercion",kat:"Dasar",
+   arti:"Konversi otomatis tipe data oleh JavaScript saat operasi.",
+   jelas:"JS secara diam-diam mengubah tipe data agar operasi bisa berjalan. Ini sering menimbulkan bug yang sulit ditemukan, terutama saat mencampur string dan angka.",
+   contoh:"console.log('5' + 3);   // '53' (angka jadi string)\nconsole.log('5' - 3);   // 2    (string jadi angka)\nconsole.log('5' * '2'); // 10   (keduanya jadi angka)\nconsole.log(true + 1);  // 2    (true jadi 1)"},
+  {nama:"Strict Equality",kat:"Dasar",
+   arti:"Perbandingan dengan === yang memeriksa nilai DAN tipe data.",
+   jelas:"Selalu gunakan === daripada ==. Operator == melakukan type coercion yang bisa menghasilkan perbandingan menyesatkan, sedangkan === lebih prediktabel.",
+   contoh:"console.log(5 === '5');   // false (beda tipe)\nconsole.log(5 == '5');    // true  (coercion! bahaya)\nconsole.log(0 === false); // false\nconsole.log(0 == false);  // true  (bahaya)"},
+  {nama:"Truthy & Falsy",kat:"Dasar",
+   arti:"Nilai yang dianggap true atau false dalam kondisi boolean.",
+   jelas:"Hanya 7 nilai falsy: false, 0, -0, 0n, '', null, undefined, NaN. Semua nilai lainnya truthy, termasuk [], {}, dan 'false' (string).",
+   contoh:"if ('hello') console.log('truthy'); // tercetak\nif (0) console.log('falsy');     // tidak tercetak\nif ([]) console.log('truthy');   // tercetak! array kosong truthy"},
+
+  // ── PERCABANGAN & LOOP ──
+  {nama:"Condition",kat:"Percabangan & Loop",
+   arti:"Percabangan logika menggunakan if, else if, else, atau switch.",
+   jelas:"Condition memungkinkan program menjalankan kode berbeda berdasarkan kondisi. if/else untuk percabangan sederhana, switch untuk banyak kasus tetap.",
+   contoh:"let nilai = 85;\nif (nilai >= 80) {\n  console.log('A');\n} else if (nilai >= 70) {\n  console.log('B');\n} else {\n  console.log('C');\n}"},
+  {nama:"Loop",kat:"Percabangan & Loop",
+   arti:"Struktur untuk mengulang eksekusi blok kode.",
+   jelas:"for untuk pengulangan terhitung, while untuk pengulangan bersyarat. Gunakan break untuk keluar lebih awal atau continue untuk skip iterasi.",
+   contoh:"for (let i = 0; i < 5; i++) {\n  if (i === 2) continue; // skip 2\n  console.log(i); // 0,1,3,4\n}\n\nlet j = 0;\nwhile (j < 3) {\n  console.log(j);\n  j++;\n}"},
+  {nama:"for...of",kat:"Percabangan & Loop",
+   arti:"Loop khusus untuk mengiterasi nilai di iterable (array, string, dll).",
+   jelas:"for...of lebih bersih dari for biasa untuk array karena langsung memberikan nilainya, bukan indeksnya. Tidak bisa digunakan untuk object biasa.",
+   contoh:"let buah = ['Apel', 'Mangga', 'Jeruk'];\nfor (const item of buah) {\n  console.log(item);\n}\n// 'Apel', 'Mangga', 'Jeruk'\n\nfor (const ch of 'Hi!') {\n  console.log(ch); // 'H', 'i', '!'\n}"},
+  {nama:"Ternary Operator",kat:"Percabangan & Loop",
+   arti:"Shortcut if/else dalam satu baris menggunakan ? dan :.",
+   jelas:"Ternary berguna untuk menetapkan nilai berdasarkan kondisi singkat. Jangan nested terlalu dalam karena jadi sulit dibaca.",
+   contoh:"let umur = 20;\nlet status = umur >= 17 ? 'Dewasa' : 'Anak-anak';\nconsole.log(status); // 'Dewasa'\n\n// Sama seperti:\n// let status;\n// if (umur >= 17) status = 'Dewasa';\n// else status = 'Anak-anak';"},
+
+  // ── FUNGSI ──
+  {nama:"Function",kat:"Fungsi",
+   arti:"Blok kode yang diberi nama dan bisa dipanggil berulang kali.",
+   jelas:"Fungsi membantu mengorganisir kode menjadi unit yang bisa dipanggil kapan saja. Mencegah pengulangan kode dan mempermudah pemeliharaan.",
+   contoh:"function sapa(nama) {\n  return 'Halo, ' + nama + '!';\n}\nconsole.log(sapa('Ana')); // 'Halo, Ana!'\nconsole.log(sapa('Budi')); // 'Halo, Budi!'"},
+  {nama:"Arrow Function",kat:"Fungsi",
+   arti:"Cara menulis fungsi yang lebih ringkas menggunakan tanda =>.",
+   jelas:"Arrow function tidak memiliki this sendiri (mewarisi dari lingkungan), tidak bisa digunakan sebagai constructor, dan tidak memiliki objek arguments.",
+   contoh:"// Tanpa parameter\nconst hi = () => 'Halo!';\n\n// Satu parameter (boleh tanpa kurung)\nconst kuadrat = x => x * x;\n\n// Banyak parameter\nconst tambah = (a, b) => a + b;\n\nconsole.log(kuadrat(4));   // 16\nconsole.log(tambah(3, 7)); // 10"},
+  {nama:"Parameter",kat:"Fungsi",
+   arti:"Variabel yang dideklarasikan di dalam tanda kurung fungsi.",
+   jelas:"Parameter adalah 'slot' yang menunggu diisi saat fungsi dipanggil. Bertindak sebagai variabel lokal di dalam fungsi.",
+   contoh:"function hitung(a, b, c) {\n  // a, b, c adalah parameter\n  return (a + b) * c;\n}"},
+  {nama:"Argumen",kat:"Fungsi",
+   arti:"Nilai nyata yang dikirimkan saat memanggil sebuah fungsi.",
+   jelas:"Argumen adalah nilai aktual yang mengisi parameter. Jumlah argumen bisa lebih atau kurang dari parameter — kelebihan diabaikan, kekurangan menjadi undefined.",
+   contoh:"function tambah(a, b) { return a + b; }\n\n// 3 dan 5 adalah argumen\nconsole.log(tambah(3, 5)); // 8\n\n// Argumen kurang\nconsole.log(tambah(3)); // NaN (b = undefined)"},
+  {nama:"Return",kat:"Fungsi",
+   arti:"Keyword untuk mengembalikan nilai dari fungsi ke pemanggil.",
+   jelas:"return menghentikan eksekusi fungsi dan mengirimkan nilai. Fungsi tanpa return mengembalikan undefined. Bisa mengembalikan nilai apa pun termasuk fungsi lain.",
+   contoh:"function kali(a, b) {\n  return a * b; // nilai dikembalikan\n  console.log('tidak pernah jalan');\n}\nlet hasil = kali(4, 5);\nconsole.log(hasil); // 20"},
+  {nama:"Callback",kat:"Fungsi",
+   arti:"Fungsi yang dikirim sebagai argumen dan dipanggil kemudian.",
+   jelas:"Callback umum di JavaScript, terutama untuk operasi asinkron. Fungsi 'memanggil kembali' callback saat tugas tertentu selesai.",
+   contoh:"function proses(data, selesai) {\n  let hasil = data.toUpperCase();\n  selesai(hasil); // memanggil callback\n}\n\nproses('halo', function(hasil) {\n  console.log(hasil); // 'HALO'\n});"},
+  {nama:"Default Parameter",kat:"Fungsi",
+   arti:"Nilai bawaan untuk parameter jika argumen tidak diberikan.",
+   jelas:"Default parameter menghindari error saat argumen tidak diberikan. Nilai default hanya digunakan jika argumen bernilai undefined (bukan null atau falsy lainnya).",
+   contoh:"function greet(nama = 'Tamu') {\n  console.log('Halo, ' + nama);\n}\ngreet();          // 'Halo, Tamu'\ngreet('Rina');    // 'Halo, Rina'\ngreet(undefined); // 'Halo, Tamu'"},
+  {nama:"Closure",kat:"Fungsi",
+   arti:"Fungsi yang mengingat variabel dari scope di mana ia dibuat.",
+   jelas:"Closure terjadi saat fungsi dalam fungsi mengakses variabel fungsi luarnya, bahkan setelah fungsi luar selesai. Berguna untuk data privat dan factory function.",
+   contoh:"function buatCounter() {\n  let count = 0;\n  return function() {\n    count++;\n    return count;\n  };\n}\nconst c = buatCounter();\nconsole.log(c()); // 1\nconsole.log(c()); // 2\n// count tersembunyi, hanya bisa diakses via c()"},
+  {nama:"Scope",kat:"Fungsi",
+   arti:"Wilayah di mana variabel dapat diakses dalam kode.",
+   jelas:"Scope menentukan visibilitas variabel. JavaScript memiliki global scope, function scope, dan block scope (dengan let/const). Variabel hanya bisa diakses di dalam scope-nya.",
+   contoh:"let globalVar = 'aku global';\n\nfunction test() {\n  let localVar = 'aku lokal';\n  console.log(globalVar); // bisa\n  console.log(localVar);  // bisa\n}\ntest();\nconsole.log(globalVar); // bisa\n// console.log(localVar); // ERROR!"},
+  {nama:"Hoisting",kat:"Fungsi",
+   arti:"Perilaku JS memindahkan deklarasi ke atas sebelum kode dijalankan.",
+   jelas:"Hanya deklarasi yang dihoist, bukan inisialisasi. var dihoist sebagai undefined, let/const dihoist tapi tidak bisa diakses sebelum deklarasi (Temporal Dead Zone). Function declaration dihoist lengkap.",
+   contoh:"console.log(a); // undefined (var dihoist)\nvar a = 10;\n\n// console.log(b); // ReferenceError (TDZ)\nlet b = 20;\n\njalan(); // 'OK!' (function dihoist lengkap)\nfunction jalan() { console.log('OK!'); }"},
+
+  // ── ARRAY ──
+  {nama:"Array",kat:"Array",
+   arti:"Struktur data yang menyimpan banyak nilai berurutan dalam satu variabel.",
+   jelas:"Array adalah objek khusus dengan indeks numerik mulai dari 0. Bisa menyimpan campuran tipe data. Memiliki banyak method bawaan untuk manipulasi data.",
+   contoh:"let arr = ['Apel', 42, true, null];\nconsole.log(arr[0]);    // 'Apel'\nconsole.log(arr.length); // 4\narr[4] = 'Baru';        // tambah di indeks 4"},
+  {nama:"Push, Pop, Shift, Unshift",kat:"Array",
+   arti:"Empat method untuk menambah dan menghapus elemen di ujung array.",
+   jelas:"push/unshift menambah di akhir/awal dan mengembalikan panjang baru. pop/shift menghapus dari akhir/awal dan mengembalikan elemen yang dihapus.",
+   contoh:"let arr = [2, 3];\narr.push(4);    // [2,3,4]\narr.unshift(1); // [1,2,3,4]\narr.pop();      // menghapus 4, [1,2,3]\narr.shift();    // menghapus 1, [2,3]"},
+  {nama:"Map",kat:"Array",
+   arti:"Method yang membuat array baru dengan menerapkan fungsi ke setiap elemen.",
+   jelas:"Map tidak mengubah array asli, selalu mengembalikan array baru dengan panjang yang sama. Ideal untuk transformasi data.",
+   contoh:"let angka = [1, 2, 3, 4];\nlet doubled = angka.map(n => n * 2);\nconsole.log(doubled); // [2, 4, 6, 8]\nconsole.log(angka);   // [1, 2, 3, 4] (tidak berubah)"},
+  {nama:"Filter",kat:"Array",
+   arti:"Method yang membuat array baru berisi elemen yang lolos kondisi.",
+   jelas:"Filter menerima fungsi yang mengembalikan boolean. Hanya elemen yang menghasilkan true yang masuk ke array baru. Panjang array bisa berbeda.",
+   contoh:"let angka = [1, 2, 3, 4, 5, 6];\nlet genap = angka.filter(n => n % 2 === 0);\nconsole.log(genap); // [2, 4, 6]"},
+  {nama:"Reduce",kat:"Array",
+   arti:"Method yang mereduksi array menjadi satu nilai akumulasi.",
+   jelas:"Reduce menjalankan fungsi reducer pada setiap elemen, menghasilkan satu nilai output. Bisa untuk menjumlahkan, mengelompokkan, atau membangun objek dari array.",
+   contoh:"let angka = [1, 2, 3, 4];\nlet total = angka.reduce((acc, cur) => acc + cur, 0);\nconsole.log(total); // 10\n\n// Tanpa nilai awal, elemen pertama jadi acc\nlet max = angka.reduce((a, b) => a > b ? a : b);\nconsole.log(max); // 4"},
+  {nama:"Find",kat:"Array",
+   arti:"Method yang mengembalikan elemen pertama yang cocok dengan kondisi.",
+   jelas:"Find berhenti di elemen pertama yang mengembalikan true. Jika tidak ditemukan, mengembalikan undefined. findIndex mirip tapi mengembalikan indeks, bukan elemen.",
+   contoh:"let users = [\n  { id: 1, nama: 'Ana' },\n  { id: 2, nama: 'Budi' },\n  { id: 3, nama: 'Citra' }\n];\nlet found = users.find(u => u.nama === 'Budi');\nconsole.log(found); // { id: 2, nama: 'Budi' }"},
+  {nama:"ForEach",kat:"Array",
+   arti:"Method yang menjalankan fungsi untuk setiap elemen array.",
+   jelas:"ForEach mirip for loop tapi tidak bisa di-break atau di-continue. Tidak mengembalikan array baru (selalu undefined). Gunakan map/filter jika butuh array baru.",
+   contoh:"let buah = ['Apel', 'Mangga', 'Jeruk'];\nbuah.forEach((item, i) => {\n  console.log(i + ': ' + item);\n});\n// 0: Apel\n// 1: Mangga\n// 2: Jeruk"},
+  {nama:"Sort",kat:"Array",
+   arti:"Method untuk mengurutkan elemen array.",
+   jelas:"Secara default, sort mengubah elemen menjadi string lalu mengurutkan — ini bikin angka salah! Selalu berikan fungsi perbandingan untuk angka.",
+   contoh:"let arr = [10, 1, 21, 2];\narr.sort();              // [1, 10, 2, 21] SALAH!\narr.sort((a, b) => a - b); // [1, 2, 10, 21] BENAR\n\n// Urutkan objek berdasarkan properti\nlet data = [{n:'C'},{n:'A'},{n:'B'}];\ndata.sort((a,b) => a.n.localeCompare(b.n));"},
+
+  // ── OBJECT ──
+  {nama:"Object",kat:"Object",
+   arti:"Kumpulan data dalam pasangan key (nama) dan value (nilai).",
+   jelas:"Object adalah struktur data inti JavaScript. Semua hal di JS (array, fungsi, dll) secara teknis adalah object. Cocok untuk data dengan banyak atribut.",
+   contoh:"let orang = {\n  nama: 'Rina',\n  umur: 22,\n  kota: 'Jakarta'\n};\nconsole.log(orang.nama);  // 'Rina'\nconsole.log(orang['umur']); // 22"},
+  {nama:"this",kat:"Object",
+   arti:"Keyword yang merujuk pada objek yang sedang menjalankan kode.",
+   jelas:"Nilai this bergantung pada bagaimana fungsi dipanggil: di method object, this = objek tersebut; di arrow function, this = lingkungan sekitarnya; sendiri, this = global/undefined.",
+   contoh:"let obj = {\n  nama: 'Budi',\n  sapa: function() {\n    console.log('Halo, ' + this.nama);\n  },\n  sapaArrow: () => {\n    console.log(this.nama); // undefined!\n  }\n};\nobj.sapa(); // 'Halo, Budi'"},
+  {nama:"Destructuring",kat:"Object",
+   arti:"Cara membongkar nilai array atau properti object ke variabel terpisah.",
+   jelas:"Destructuring membuat kode lebih ringkas saat mengambil nilai dari array/object. Bisa juga memberi nama baru dan nilai default.",
+   contoh:"// Object destructuring\nlet { nama, umur = 0 } = { nama: 'Doni', umur: 25 };\nconsole.log(nama, umur); // 'Doni' 25\n\n// Array destructuring\nlet [a, , c] = [10, 20, 30];\nconsole.log(a, c); // 10 30 (20 dilewati)"},
+  {nama:"Spread & Rest",kat:"Object",
+   arti:"Spread (...) menyebarkan elemen, Rest (...) mengumpulkannya jadi array.",
+   jelas:"Spread menyalin/menggabungkan array dan object. Rest parameter mengumpulkan sisa argumen fungsi menjadi array. Keduanya pakai simbol yang sama tapi konteks berbeda.",
+   contoh:"// Spread: gabung array\nlet a = [1, 2], b = [...a, 3, 4]; // [1,2,3,4]\n\n// Spread: salin object\nlet obj1 = { x: 1 };\nlet obj2 = { ...obj1, y: 2 }; // {x:1, y:2}\n\n// Rest: kumpulkan argumen\nfunction jumlahkan(...angka) {\n  return angka.reduce((a,b) => a+b, 0);\n}\nconsole.log(jumlahkan(1,2,3)); // 6"},
+  {nama:"Object.keys, values, entries",kat:"Object",
+   arti:"Tiga method statis untuk mengambil key, value, atau pasangan dari object.",
+   jelas:"keys() mengembalikan array berisi semua key. values() mengembalikan array berisi semua value. entries() mengembalikan array berisi pasangan [key, value].",
+   contoh:"let user = { nama: 'Ana', umur: 20 };\n\nconsole.log(Object.keys(user));\n  // ['nama', 'umur']\nconsole.log(Object.values(user));\n  // ['Ana', 20]\nconsole.log(Object.entries(user));\n  // [['nama','Ana'], ['umur',20]]"},
+
+  // ── STRING ──
+  {nama:"Split & Join",kat:"String",
+   arti:"Split memecah string jadi array, Join menggabungkan array jadi string.",
+   jelas:"Split menggunakan pemisah (delimiter) untuk memotong string. Join menyatukan elemen array dengan separator yang ditentukan.",
+   contoh:"let csv = 'Apel,Mangga,Jeruk';\nlet arr = csv.split(',');\nconsole.log(arr); // ['Apel','Mangga','Jeruk']\n\nlet kalimat = arr.join(' - ');\nconsole.log(kalimat);\n  // 'Apel - Mangga - Jeruk'"},
+  {nama:"Replace",kat:"String",
+   arti:"Method untuk mengganti bagian string dengan string lain.",
+   jelas:"Replace hanya mengganti kejadian pertama. Gunakan replaceAll() untuk mengganti semua. Bisa menerima regex untuk pencarian yang lebih fleksibel.",
+   contoh:"let teks = 'kucing kucing kucing';\nconsole.log(teks.replace('kucing', 'anjing'));\n  // 'anjing kucing kucing' (hanya pertama)\nconsole.log(teks.replaceAll('kucing', 'anjing'));\n  // 'anjing anjing anjing'"},
+  {nama:"toUpperCase, toLowerCase & Trim",kat:"String",
+   arti:"Method untuk mengubah huruf besar/kecil dan menghapus spasi berlebih.",
+   jelas:"toUpperCase/toLowerCase mengubah semua huruf. Trim menghapus spasi di awal dan akhir string. trimStart/trimEnd untuk satu sisi saja.",
+   contoh:"let nama = '  John Doe  ';\nconsole.log(nama.trim());         // 'John Doe'\nconsole.log(nama.trim().toUpperCase()); // 'JOHN DOE'\nconsole.log('HaLo'.toLowerCase()); // 'halo'"},
+  {nama:"Slice & Substring",kat:"String",
+   arti:"Method untuk mengambil bagian dari string berdasarkan indeks.",
+   jelas:"Slice dan Substring mirip: parameter pertama = indeks mulai, kedua = indeks akhir (tidak termasuk). Slice mendukung indeks negatif, Substring tidak.",
+   contoh:"let s = 'JavaScript';\nconsole.log(s.slice(0, 4));    // 'Java'\nconsole.log(s.slice(-6));      // 'Script'\nconsole.log(s.substring(4, 10)); // 'Script'"},
+  {nama:"Includes",kat:"String",
+   arti:"Method untuk mengecek apakah string mengandung substring tertentu.",
+   jelas:"Includes mengembalikan true/false. Bersifat case-sensitive. Juga tersedia di Array untuk mengecek keberadaan elemen.",
+   contoh:"let email = 'user@example.com';\nconsole.log(email.includes('@'));  // true\nconsole.log(email.includes('USER')); // false (case-sensitive)\n\nlet arr = [1, 2, 3];\nconsole.log(arr.includes(2)); // true"},
+
+  // ── OOP ──
+  {nama:"Class",kat:"OOP",
+   arti:"Template (blueprint) untuk membuat objek dengan struktur yang sama.",
+   jelas:"Class diperkenalkan di ES6 sebagai syntactic sugar di atas prototype. Mendukung constructor, method, getter/setter, dan pewarisan. Mempermudah OOP di JavaScript.",
+   contoh:"class Hewan {\n  constructor(nama) {\n    this.nama = nama;\n  }\n  suara() {\n    return '...';\n  }\n}\nconst kucing = new Hewan('Kitty');\nconsole.log(kucing.nama); // 'Kitty'"},
+  {nama:"Constructor & Prototype",kat:"OOP",
+   arti:"Constructor menginisialisasi objek, Prototype mewarisi sifat ke instance.",
+   jelas:"Constructor adalah method khusus yang otomatis jalan saat new dipanggil. Setiap object memiliki __proto__ yang merujuk ke prototype class-nya, memungkinkan sharing method.",
+   contoh:"class Mobil {\n  constructor(merek) {\n    this.merek = merek;\n  }\n  // Method ini ada di Mobil.prototype\n  jalan() {\n    return this.merek + ' melaju!';\n  }\n}\nconst m = new Mobil('Toyota');\nconsole.log(m.jalan()); // 'Toyota melaju!'"},
+  {nama:"Inheritance",kat:"OOP",
+   arti:"Pewarisan properti dan method dari class induk ke class anak.",
+   jelas:"Menggunakan extends untuk mewarisi class. super() memanggil constructor induk. Class anak bisa override method induk atau menambah method baru.",
+   contoh:"class Hewan {\n  constructor(nama) { this.nama = nama; }\n  suara() { return '...'; }\n}\nclass Anjing extends Hewan {\n  suara() { return 'Guk guk!'; }\n}\nconst a = new Anjing('Buddy');\nconsole.log(a.nama);  // 'Buddy' (dari Hewan)\nconsole.log(a.suara()); // 'Guk guk!' (override)"},
+
+  // ── DOM & EVENT ──
+  {nama:"DOM",kat:"DOM & Event",
+   arti:"Representasi halaman HTML sebagai objek yang bisa dimanipulasi JavaScript.",
+   jelas:"Document Object Model mengubah setiap tag HTML menjadi node/objek. Dengan DOM, JS bisa membaca, mengubah, menambah, atau menghapus elemen HTML secara dinamis.",
+   contoh:"// Ambil elemen\nconst el = document.getElementById('judul');\nconst box = document.querySelector('.box');\n\n// Manipulasi\nel.textContent = 'Halo DOM!';\nel.style.color = 'red';\nbox.classList.add('active');"},
+  {nama:"Event",kat:"DOM & Event",
+   arti:"Aksi yang terjadi di halaman, seperti klik, ketik, atau scroll.",
+   jelas:"Event bisa dipicu pengguna (klik, ketik) atau browser (load, resize). addEventListener menangkap event dan menjalankan fungsi sebagai respons. Event object (e) berisi info detail.",
+   contoh:"const btn = document.querySelector('#btn');\nbtn.addEventListener('click', function(e) {\n  console.log('Diklik!', e.target);\n});\n\nconst input = document.querySelector('#search');\ninput.addEventListener('input', function(e) {\n  console.log('Mengetik:', e.target.value);\n});"},
+
+  // ── ASINKRON ──
+  {nama:"Promise",kat:"Asinkron",
+   arti:"Objek yang mewakili hasil operasi yang akan selesai di masa depan.",
+   jelas:"Promise punya 3状态: pending (menunggu), fulfilled (berhasil), rejected (gagal). Dirantai dengan .then() untuk sukses dan .catch() untuk gagal.",
+   contoh:"const janji = new Promise((resolve, reject) => {\n  let berhasil = true;\n  if (berhasil) resolve('Data diterima!');\n  else reject('Gagal mengambil data');\n});\n\njanji\n  .then(res => console.log(res))  // 'Data diterima!'\n  .catch(err => console.error(err));"},
+  {nama:"Async / Await",kat:"Asinkron",
+   arti:"Sintaks yang membuat kode asinkron terbaca seperti kode sinkron.",
+   jelas:"async mendeklarasikan fungsi asinkron (otomatis return Promise). await menunggu Promise selesai sebelum lanjut ke baris berikutnya. Lebih bersih dari .then() chain.",
+   contoh:"async function ambilData() {\n  try {\n    let res = await fetch('https://api.example.com/data');\n    let data = await res.json();\n    console.log(data);\n  } catch (err) {\n    console.error('Error:', err);\n  }\n}\nambilData();"},
+  {nama:"setTimeout & setInterval",kat:"Asinkron",
+   arti:"Fungsi untuk menjalankan kode setelah jeda waktu tertentu.",
+   jelas:"setTimeout menjalankan sekali setelah delay (ms). setInterval menjalankan berulang setiap interval. Gunakan clearTimeout/clearInterval untuk membatalkan.",
+   contoh:"// Jalankan sekali setelah 2 detik\nsetTimeout(() => {\n  console.log('2 detik berlalu');\n}, 2000);\n\n// Jalankan setiap 1 detik\nlet id = setInterval(() => {\n  console.log('tick');\n}, 1000);\n\n// Hentikan setelah 5 detik\nsetTimeout(() => clearInterval(id), 5000);"},
+
+  // ── MODERN JS & LAINNYA ──
+  {nama:"Template Literal",kat:"Modern JS",
+   arti:"String yang dibuat dengan backtick (`) dan bisa menyisipkan ekspresi.",
+   jelas:"Template literal mendukung interpolasi ${} untuk menyisipkan variabel/ekspresi, dan string multi-baris tanpa karakter escape. Lebih bersih dari penggabungan string biasa.",
+   contoh:"let nama = 'Dewi';\nlet umur = 28;\nlet pesan = `Halo ${nama}, umurmu ${umur} tahun.`;\nconsole.log(pesan);\n// 'Halo Dewi, umurmu 28 tahun.'\n\nlet html = `\n  <div>\n    <p>${pesan}</p>\n  </div>\n`;"},
+  {nama:"Optional Chaining",kat:"Modern JS",
+   arti:"Operator ?. untuk mengakses properti nested tanpa error jika nullish.",
+   jelas:"Jika objek atau properti bernilai null/undefined, ?. langsung mengembalikan undefined tanpa melempar error. Sangat berguna untuk data API yang dalam strukturnya.",
+   contoh:"let user = {\n  alamat: { kota: 'Jakarta' }\n};\n\nconsole.log(user.alamat?.kota);  // 'Jakarta'\nconsole.log(user.telepon?.nomor); // undefined (aman!)\n// Tanpa ?.: user.telepon.nomor → ERROR!"},
+  {nama:"Nullish Coalescing",kat:"Modern JS",
+   arti:"Operator ?? yang mengembalikan nilai kanan hanya jika nilai kiri null atau undefined.",
+   jelas:"Berbeda dari || yang juga menangkap falsy (0, '', false), ?? hanya menangkap null dan undefined. Lebih aman untuk nilai default yang bisa jadi 0 atau string kosong.",
+   contoh:"let jumlah = 0;\nconsole.log(jumlah || 'tidak ada'); // 'tidak ada' (SALAH!)\nconsole.log(jumlah ?? 'tidak ada'); // 0 (BENAR!)\n\nlet nama = '';\nconsole.log(nama || 'Anonim'); // 'Anonim'\nconsole.log(nama ?? 'Anonim'); // '' (string kosong bukan nullish)"},
+  {nama:"Module",kat:"Modern JS",
+   arti:"Sistem untuk memecah kode menjadi file terpisah yang bisa saling mengimpor.",
+   jelas:"Setiap file module punya scope sendiri. export mengekspor fungsi/variabel, import mengimpor dari file lain. Membantu organisasi kode proyek besar.",
+   contoh:"// file: matematika.js\nexport const pi = 3.14;\nexport function luasLingkaran(r) {\n  return pi * r * r;\n}\n\n// file: utama.js\nimport { pi, luasLingkaran } from './matematika.js';\nconsole.log(luasLingkaran(5)); // 78.5"},
+  {nama:"Try / Catch",kat:"Modern JS",
+   arti:"Mekanisme menangani error agar program tidak berhenti tiba-tiba.",
+   jelas:"Kode yang berpotensi error dibungkus try. Jika error terjadi, eksekusi lompat ke catch. finally selalu jalan di akhir, baik error atau tidak.",
+   contoh:"try {\n  let data = JSON.parse('tidak valid');\n} catch (error) {\n  console.log('Error:', error.message);\n} finally {\n  console.log('Selesai');\n}\n// Output:\n// Error: Unexpected token\n// Selesai"},
+  {nama:"JSON",kat:"Modern JS",
+   arti:"Format teks untuk menyimpan dan menukar data, mirip object JavaScript.",
+   jelas:"JSON (JavaScript Object Notation) adalah standar industri untuk komunikasi data. Key harus pakai tanda kutip ganda. JSON.stringify() mengubah objek jadi string, JSON.parse() sebaliknya.",
+   contoh:"let obj = { nama: 'Rudi', umur: 30 };\n\n// Objek → JSON string\nlet str = JSON.stringify(obj);\nconsole.log(str);\n// '{\"nama\":\"Rudi\",\"umur\":30}'\n\n// JSON string → Objek\nlet parsed = JSON.parse(str);\nconsole.log(parsed.nama); // 'Rudi'"},
+  {nama:"LocalStorage",kat:"Modern JS",
+   arti:"Penyimpanan data di browser yang tetap ada meski tab ditutup.",
+   jelas:"LocalStorage menyimpan data sebagai key-value string di browser. Kapasitas sekitar 5MB. Data tidak hilang walau browser ditutup. Gunakan untuk preferensi pengguna atau data sederhana.",
+   contoh:"// Simpan data\nlocalStorage.setItem('nama', 'Budi');\nlocalStorage.setItem('tema', 'gelap');\n\n// Baca data\nconsole.log(localStorage.getItem('nama')); // 'Budi'\n\n// Hapus satu\nlocalStorage.removeItem('tema');\n\n// Hapus semua\nlocalStorage.clear();"},
+];
+
+/* =============================================
+   KONFIGURASI KATEGORI
+   ============================================= */
+const katConfig = {
+  'HTML':              {warna:'#fb923c', bg:'rgba(251,146,60,.12)'}, // Orange
+  'CSS':               {warna:'#38bdf8', bg:'rgba(56,189,248,.12)'}, // Light Blue
+  'Konsep':            {warna:'#94a3b8', bg:'rgba(148,163,184,.12)'}, // Gray
+  'Dasar':             {warna:'#ff7849', bg:'rgba(255,120,73,.12)'},
+  'Percabangan & Loop':{warna:'#fbbf24', bg:'rgba(251,191,36,.12)'},
+  'Fungsi':            {warna:'#34d399', bg:'rgba(52,211,153,.12)'},
+  'Array':             {warna:'#22d3ee', bg:'rgba(34,211,238,.12)'},
+  'Object':            {warna:'#f472b6', bg:'rgba(244,114,182,.12)'},
+  'String':            {warna:'#2dd4bf', bg:'rgba(45,212,191,.12)'},
+  'OOP':               {warna:'#c084fc', bg:'rgba(192,132,252,.12)'},
+  'DOM & Event':       {warna:'#fb7185', bg:'rgba(251,113,133,.12)'},
+  'Asinkron':          {warna:'#fcd34d', bg:'rgba(252,211,77,.12)'},
+  'Modern JS':         {warna:'#e879f9', bg:'rgba(232,121,249,.12)'},
+};
+const daftarKat = ['Semua', ...Object.keys(katConfig)];
+
+/* =============================================
+   SYNTAX HIGHLIGHTER SEDERHANA (FIXED)
+   ============================================= */
+function highlight(code) {
+  // 1. Escape HTML characters
+  code = code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  // 2. Highlight HTML Tags safely using placeholders
+  // Kita ganti tag HTML menjadi placeholder dulu agar tidak ikut diproses regex berikutnya
+  code = code.replace(/(&lt;\/?)([\w-]+)/g, '$1__TAG_START__$2__TAG_END__');
+
+  // 3. Tokenisasi komentar dan string (JS & CSS strings)
+  const tokens = [];
+  let tid = 0;
+  
+  // Simpan string dan komentar agar tidak diwarnai sebagai keyword
+  code = code.replace(/(\/\/[^\n]*|'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*`)/g, m => {
+    const id = `__T${tid++}__`;
+    const cls = m.startsWith('//') ? 'cm' : 'st';
+    tokens.push({id, html:`<span class="${cls}">${m}</span>`});
+    return id;
+  });
+
+  // 4. Keyword & Properties (JS & CSS Common)
+  const jsKws = 'let|const|var|function|return|if|else|for|while|do|class|new|this|try|catch|throw|finally|async|await|import|export|from|typeof|instanceof|null|undefined|true|false|switch|case|break|continue|default|of|in|extends|super|static|yield|console';
+  const cssProps = 'color|background|margin|padding|border|width|height|display|flex|grid|position|top|left|right|bottom|font-size|font-weight|text-align|justify-content|align-items';
+  
+  const kws = `${jsKws}|${cssProps}`;
+  code = code.replace(new RegExp(`\\b(${kws})\\b`,'g'), '<span class="kw">$1</span>');
+
+  // 5. Angka
+  code = code.replace(/\b(\d+\.?\d*)\b/g, '<span class="nm">$1</span>');
+
+  // 6. Restore token (String & Comments)
+  tokens.forEach(t => { code = code.replace(t.id, t.html); });
+  
+  // 7. Restore HTML Tag Placeholders
+  // Mengganti placeholder kembali menjadi tag HTML berwarna
+  code = code.replace(/__TAG_START__/g, '<span class="nm">');
+  code = code.replace(/__TAG_END__/g, '</span>');
+  
+  return code;
+}
+
+/* =============================================
+   ELEMEN DOM
+   ============================================= */
+const $cards = document.getElementById('cards');
+const $tabs = document.getElementById('tabs');
+const $info = document.getElementById('info');
+const $search = document.getElementById('search');
+const $totalBadge = document.getElementById('totalBadge');
+const $toTop = document.getElementById('toTop');
+
+let activeKat = 'Semua';
+
+/* =============================================
+   RENDER TAB KATEGORI
+   ============================================= */
+function renderTabs() {
+  $tabs.innerHTML = daftarKat.map(k => {
+    const isActive = k === activeKat;
+    const config = katConfig[k];
+    let style = '';
+    
+    if (isActive && k !== 'Semua' && config) {
+      style = `background:${config.warna};color:#fff;border-color:transparent;box-shadow:0 4px 12px ${config.bg}`;
+    } else if (isActive) {
+      style = `background:var(--accent);color:#fff;border-color:transparent`;
+    }
+
+    return `<button class="tab${isActive?' active':''}" data-kat="${k}" style="${style}">${k}</button>`;
+  }).join('');
+}
+
+ $tabs.addEventListener('click', e => {
+  const btn = e.target.closest('.tab');
+  if (!btn) return;
+  activeKat = btn.dataset.kat;
+  renderTabs();
+  render();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+});
+
+/* =============================================
+   RENDER KARTU (DENGAN PENCARIAN LENGKAP)
+   ============================================= */
+function render() {
+  const q = $search.value.toLowerCase().trim();
+
+  // Filter berdasarkan kategori
+  let data = activeKat === 'Semua' ? [...istilah] : istilah.filter(i => i.kat === activeKat);
+
+  // Filter berdasarkan pencarian (Nama, Arti, Penjelasan, Contoh)
+  if (q) {
+  data = data.filter(i =>
+    i.nama.toLowerCase().includes(q)
+  );
+}
+
+  // Info jumlah
+  $info.textContent = `Menampilkan ${data.length} istilah`;
+
+  // State kosong
+  if (data.length === 0) {
+    $cards.innerHTML = `<div class="empty"><span class="big">&#x1F50D;</span>Tidak ada istilah yang cocok dengan "<strong>${$search.value}</strong>"</div>`;
+    return;
+  }
+
+  // Render kartu
+  $cards.innerHTML = data.map((item, i) => {
+    const c = katConfig[item.kat] || {warna:'#94a3b8', bg:'rgba(148,163,184,.12)'};
+    const delay = Math.min(i * 30, 400);
+    return `
+    <div class="card" style="animation-delay:${delay}ms;border-left:3px solid ${c.warna}30" data-i="${istilah.indexOf(item)}">
+      <div class="card-top" onclick="toggle(this)">
+        <div class="card-left">
+          <div class="term" style="color:${c.warna}">${item.nama}</div>
+          <div class="def">${item.arti}</div>
+        </div>
+        <span class="tag" style="background:${c.bg};color:${c.warna}">${item.kat}</span>
+      </div>
+      <div class="card-hint" onclick="toggle(this.parentElement)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        Klik untuk detail
+      </div>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <div class="card-body-content">
+            <div class="explain">
+              <span class="explain-label">Penjelasan:</span>${item.jelas}
+            </div>
+            <div class="example-label">Contoh Kode</div>
+            <div class="code-block">${highlight(item.contoh)}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* Toggle expand/collapse */
+function toggle(el) {
+  const card = el.closest('.card');
+  if (!card) return;
+  card.classList.toggle('expanded');
+}
+
+/* =============================================
+   PENCARIAN
+   ============================================= */
+ $search.addEventListener('input', render);
+ $search.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    $search.value = '';
+    render();
+    $search.blur();
+  }
+});
+
+/* =============================================
+   TOMBOL KEMBALI KE ATAS
+   ============================================= */
+window.addEventListener('scroll', () => {
+  $toTop.classList.toggle('show', window.scrollY > 400);
+}, {passive: true});
+ $toTop.addEventListener('click', () => {
+  window.scrollTo({top: 0, behavior: 'smooth'});
+});
+
+/* =============================================
+   INISIALISASI
+   ============================================= */
+ $totalBadge.textContent = istilah.length + ' istilah';
+renderTabs();
+render();
+</script>
+</body>
+</html>
