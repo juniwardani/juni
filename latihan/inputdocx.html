@@ -215,9 +215,9 @@ inputNama.addEventListener("input", function () {
         const [tahun, bulan, hari] = tanggalInput.split('-');
         const tanggalFormat = `${hari} ${bulanIndonesia[parseInt(bulan) - 1]} ${tahun}`;
         doc.render({
-           NAMA: document.getElementById('inputNama').value,
-           TANGGAL: tanggalFormat,
-           KETERANGAN: document.getElementById('inputKeterangan').value
+           NAMA: document.getElementById('inputNama').value, //NAMA adalah nama placeholder di dalam template docx, harus ditulis dengan format {NAMA} agar bisa terbaca dan terisi dengan data dari form.
+           TANGGAL: tanggalFormat, //TANGGAL adalah nama placeholder di dalam template docx, harus ditulis dengan format {TANGGAL} agar bisa terbaca dan terisi dengan data dari form.
+           KETERANGAN: document.getElementById('inputKeterangan').value //KETERANGAN adalah nama placeholder di dalam template docx, harus ditulis dengan format {KETERANGAN} agar bisa terbaca dan terisi dengan data dari form.
         });
 
         const blob = doc.getZip().generate({ type: 'blob',
