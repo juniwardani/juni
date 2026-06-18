@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Supabase</title>
+</head>
+<style>
+/* Tanda bintang (*) adalah selector universal.
+Artinya:
+Terapkan aturan ini ke semua elemen HTML. */
+* {
+    margin: 0;  /* Menghapus margin default dari semua elemen. */
+    padding: 0; /* Menghapus padding default dari semua elemen. */
+    box-sizing: border-box; /* Mengubah model kotak CSS sehingga padding dan border dihitung dalam lebar dan tinggi elemen. */
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif; /* Mengatur jenis huruf untuk seluruh halaman. */
+    background: #9cf885; /* Memberikan warna latar belakang yang lembut. */
+    min-height: 100vh; /* Menetapkan tinggi minimum body agar selalu setinggi viewport. */
+    display: flex; /* Menggunakan Flexbox untuk tata letak. */
+    justify-content: center; /* Memusatkan konten secara horizontal. */
+    align-items: center; /* Memusatkan konten secara vertikal. */
+    padding: 20px; /* Memberikan ruang di sekitar konten. */
+}
+
+.container {
+    width: 100%; /* Mengatur lebar container agar memenuhi lebar layar. */
+    max-width: 500px; /* Membatasi lebar maksimum container. */
+    background: #fff; /* Memberikan warna latar belakang putih pada container. */
+    padding: 30px; /* Memberikan ruang di dalam container. */
+    border-radius: 16px; /* Membuat sudut container menjadi melengkung. */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08); /* Menambahkan bayangan untuk memberikan efek kedalaman. */
+}
+
+.container h1 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #4b0505;
+    font-size: 25px;
+}
+
+.inputSupabase {
+    margin-bottom: 18px;
+    position: relative;
+}
+
+.inputSupabase label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #0d0c11;
+}
+
+input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #dcdfe6;
+    border-radius: 10px;
+    font-size: 15px;
+    transition: 0.3s;
+}
+
+input:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.15);
+}
+
+#tombol {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #4a90e2, #357abd);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#tombol:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(74, 144, 226, 0.3);
+}
+
+#tombol:active {
+    transform: translateY(0);
+}
+
+</style>
+<body>
+<div class="container">
+    <h1>Latihan CRUD Supabase</h1>
+    <div class="inputSupabase">
+        <label for="dataNama">Data Yang di Simpan</label>
+        <input type="text" id="dataNama" placeholder="Masukkan data">
+    </div>
+    <div class="inputSupabase">
+        <label for="tempatLahir">Tempat Lahir</label>
+        <input type="text" id="tempatLahir" placeholder="Masukk Tempat Lahir">
+    </div>
+    <button id="tombol">SIMPAN DATA</button>
+</div>
+
+</body>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
+<script>
+    const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co'
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw'
+    const supabaseClient = window.supabase.createClient(
+    supabaseUrl,
+    supabaseKey
+    );
+    
+
+
+
+    // Menyimpan data ke Supabase
+    document.getElementById('tombol').addEventListener('click', simpanData); // Menambahkan event click pada tombol
+
+    // Fungsi untuk menyimpan data ke Supabase  
+    async function simpanData() { 
+        const nama = document.getElementById('dataNama').value;
+	    const tempat = document.getElementById('tempatLahir').value;
+
+        if (nama === '') {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Nama wajib diisi',
+            text: 'Silakan masukkan nama terlebih dahulu.'
+            });
+            return;
+            }; // Memeriksa apakah nama sudah diisi atau tidak
+
+
+
+            const { data, error } = await supabaseClient
+            .from('latihan')
+            .insert([
+                { 
+                nama : nama,
+                tempatLahir : tempat 
+                }
+            ]);
+
+        if (error) {
+                Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Gagal menyimpan data'
+            });
+    console.error(error);
+        } else {
+            Swal.fire({
+            position: 'center',
+            icon: 'success',
+            title: 'Data berhasil disimpan',
+            showConfirmButton: false,
+            timer: 1500
+            });
+
+            document.getElementById('dataNama').value = '';
+	        document.getElementById('tempatLahir').value = '';
+            console.log(data);
+        }
+    };
+
+</script>
+</html>
