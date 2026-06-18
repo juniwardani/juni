@@ -141,17 +141,7 @@ input:focus {
 }
 
 /* Data Hasil */
-#namaTersimpan,
-#tempatTersimpan {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    padding: 12px 15px;
-    border-radius: 12px;
-    min-height: 48px;
-    display: flex;
-    align-items: center;
-    color: #334155;
-}
+
 
 /* Mobile */
 @media (max-width: 576px) {
@@ -168,6 +158,79 @@ input:focus {
     .tab-btn {
         font-size: 14px;
         padding: 12px;
+    }
+}
+
+/* Data Hasil */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    overflow: hidden;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 4px 15px rgba(0,0,0,.05);
+}
+
+thead {
+    background: linear-gradient(135deg,#4a90e2,#357abd);
+    color: white;
+}
+
+thead th {
+    padding: 14px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+tbody td {
+    padding: 14px;
+    border-bottom: 1px solid #edf2f7;
+    color: #334155;
+    font-size: 14px;
+}
+
+tbody tr {
+    transition: .2s;
+}
+
+tbody tr:hover {
+    background: #f8fafc;
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Kolom nomor */
+tbody td:first-child,
+thead th:first-child {
+    width: 60px;
+    text-align: center;
+}
+
+/* Pesan kosong */
+tbody td[colspan] {
+    text-align: center;
+    padding: 25px;
+    color: #64748b;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+
+    table {
+        font-size: 13px;
+    }
+
+    thead th,
+    tbody td {
+        padding: 10px;
+    }
+
+    tbody td:first-child,
+    thead th:first-child {
+        width: 45px;
     }
 }
 
@@ -206,21 +269,26 @@ input:focus {
     </div>
 
     <!-- Tab Hasil -->
-    <div id="hasilTab" class="tab-content">
-        <div class="container2">
-            <h1>Data Tersimpan</h1>
+<div id="hasilTab" class="tab-content">
+    <div class="container2">
+        <h1>Data Tersimpan</h1>
 
-            <div class="bacaSupabase">
-                <label>Nama</label>
-                <div id="namaTersimpan"></div>
-            </div>
-
-            <div class="bacaSupabase">
-                <label>Tempat Lahir</label>
-                <div id="tempatTersimpan"></div>
-            </div>
-        </div>
+        <table border="1" width="100%">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nama</th>
+                    <th>Tempat Lahir</th>
+                </tr>
+            </thead>
+            <tbody id="dataTabel">
+                <tr>
+                    <td colspan="3">Memuat data...</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
+</div>
 
 </div>
 
@@ -244,6 +312,40 @@ function bukaTab(idTab) {
     document.getElementById(idTab).classList.add('active');
 
     event.target.classList.add('active');
+};
+
+async function tampilkanData() {
+
+    const { data, error } = await supabaseClient
+        .from('latihan')
+        .select('nama, tempatLahir');
+
+    if (error) {
+        console.error(error);
+
+        document.getElementById('dataTabel').innerHTML = `
+            <tr>
+                <td colspan="3">Gagal mengambil data</td>
+            </tr>
+        `;
+        return;
+    }
+
+    let html = '';
+
+    data.forEach((item, index) => {
+        html += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${item.nama}</td>
+                <td>${item.tempatLahir}</td>
+            </tr>
+        `;
+    });
+
+    document.getElementById('dataTabel').innerHTML = html;
 }
+
+tampilkanData();
 </script>
 </html>
