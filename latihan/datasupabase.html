@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generato Document</title>
+</head>
+<style>
+    * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f7fb;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 500px;
+    background: #fff;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+.container h1 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #2c3e50;
+    font-size: 28px;
+}
+
+.form-group {
+    margin-bottom: 18px;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+}
+
+input,
+textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #dcdfe6;
+    border-radius: 10px;
+    font-size: 15px;
+    transition: 0.3s;
+}
+
+input:focus,
+textarea:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.15);
+}
+
+textarea {
+    min-height: 120px;
+    resize: none;      /* nonaktifkan resize manual */
+    overflow-y: hidden; /* hilangkan scrollbar */
+}
+
+#generateBtn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #4a90e2, #357abd);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#generateBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(74, 144, 226, 0.3);
+}
+
+#generateBtn:active {
+    transform: translateY(0);
+}
+
+#autocompleteList {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin-top: 5px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.1);
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    z-index: 999;
+}
+
+#autocompleteList div {
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+#autocompleteList div:hover {
+    background: #f3f6ff;
+}
+</style>
+<body>
+<div class="container">
+    <h1>Generator Document</h1>
+
+    <div class="form-group">
+        <label for="inputNama">Nama</label>
+        <input type="text" id="inputNama" placeholder="Masukkan nama">
+        <div id="autocompleteList"></div>
+    </div>
+
+    <div class="form-group">
+        <label for="tempatLahir">Tempat Lahir</label>
+        <input type="text" id="tempatLahir" placeholder="Masukkan tempat lahir">
+    </div>
+
+    <div class="form-group">
+        <label for="inputDate">Tanggal</label>
+        <input type="date" id="inputDate">
+    </div>
+
+    <div class="form-group">
+        <label for="inputKeterangan">Keterangan</label>
+        <textarea id="inputKeterangan" placeholder="Masukkan keterangan"></textarea>
+    </div>
+
+    <button id="generateBtn">Generate Document</button>
+</div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.7/dist/pizzip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.46.0/docxtemplater.min.js"></script>
+<script>
+
+// Membuat textarea otomatis menyesuaikan tinggi dengan isi, sehingga tidak ada scrollbar pada textarea.
+
+const textarea = document.getElementById("inputKeterangan");
+
+function autoResizeTextarea() {
+    textarea.style.height = "auto";
+    textarea.style.height = textarea.scrollHeight + "px";
+}
+
+textarea.addEventListener("input", autoResizeTextarea);
+
+// Jalankan saat halaman pertama kali dimuat
+autoResizeTextarea();
+
+
+
+
+
+
+
+// Mengambil data dari Supabase dan mengisi input nama, tempat lahir, dan tanggal lahir secara otomatis saat nama dipilih dari daftar autocomplete, serta membuat dokumen Word berdasarkan template dengan data yang diisi dari form, termasuk memformat tanggal ke format Indonesia.
+    const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co'
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw'
+    const supabaseClient = window.supabase.createClient(
+    supabaseUrl,
+    supabaseKey
+);
+        
+
+// Fitur autocomplete pada input nama yang memfilter data dari array berdasarkan teks yang diketik, menampilkan hasil pencarian secara dinamis, dan saat nama dipilih maka otomatis mengisi input nama serta tanggal lahir sesuai data.
+const inputNama = document.getElementById("inputNama");
+const autocompleteList = document.getElementById("autocompleteList");
+
+let namaList = [];
+
+// Ambil data dari Supabase
+async function loadSiswa() {
+    const { data, error } = await supabaseClient
+        .from('siswa')
+        .select('nama, tanggal_lahir, tempat_lahir');
+
+    if (error) {
+        console.error(error);
+        return;
+    }
+
+    // Ubah nama kolom agar sesuai dengan kode autocomplete Anda
+    namaList = data.map(item => ({
+        nama: item.nama,
+        tglLahir: item.tanggal_lahir,
+        tempatLahir: item.tempat_lahir
+    }));
+
+    console.log(namaList);
+}
+
+// Jalankan saat halaman dibuka
+loadSiswa();
+
+inputNama.addEventListener("input", function () {
+    const keyword = this.value.toLowerCase();
+
+    autocompleteList.innerHTML = "";
+
+    if (keyword === "") {
+        autocompleteList.style.display = "none";
+        return;
+    }
+
+    const filtered = namaList.filter(item =>
+        item.nama.toLowerCase().includes(keyword)
+    );
+
+    if (filtered.length === 0) {
+        autocompleteList.style.display = "none";
+        return;
+    }
+
+    filtered.forEach(item => {
+        const div = document.createElement("div");
+        div.textContent = item.nama;
+
+        div.addEventListener("click", function () {
+            inputNama.value = item.nama;
+
+            // Isi otomatis tempat lahir
+            document.getElementById("tempatLahir").value = item.tempatLahir;
+            // Isi otomatis tanggal lahir
+            document.getElementById("inputDate").value = item.tglLahir;
+
+            autocompleteList.style.display = "none";
+        });
+
+        autocompleteList.appendChild(div);
+    });
+
+    autocompleteList.style.display = "block";
+});
+
+    // Membuat dokumen Word dari template DOCX dengan mengisi data dari form, memformat tanggal ke format Indonesia, lalu menghasilkan dan mengunduh file DOCX yang sudah terisi.
+    async function generateDocument() {
+        const response = await fetch('doc/data.docx');
+        const arrayBuffer = await response.arrayBuffer();
+        const zip = new PizZip(arrayBuffer);
+        const doc = new window.docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+
+
+        const tanggalInput = document.getElementById('inputDate').value;
+        const bulanIndonesia = [
+            "Januari", "Februari", "Maret", "April",
+            "Mei", "Juni", "Juli", "Agustus",
+            "September", "Oktober", "November", "Desember"
+            ];
+        const [tahun, bulan, hari] = tanggalInput.split('-');
+        const tanggalFormat = `${hari} ${bulanIndonesia[parseInt(bulan) - 1]} ${tahun}`;
+        doc.render({
+           NAMA: document.getElementById('inputNama').value,
+           TEMPAT: document.getElementById('tempatLahir').value, //TEMPAT adalah nama placeholder di dalam template docx, harus ditulis dengan format {TEMPAT} agar bisa terbaca dan terisi dengan data dari form.
+           TANGGAL: tanggalFormat, //TANGGAL adalah nama placeholder di dalam template docx, harus ditulis dengan format {TANGGAL} agar bisa terbaca dan terisi dengan data dari form.
+           KETERANGAN: document.getElementById('inputKeterangan').value //KETERANGAN adalah nama placeholder di dalam template docx, harus ditulis dengan format {KETERANGAN} agar bisa terbaca dan terisi dengan data dari form.
+        });
+
+        const blob = doc.getZip().generate({ type: 'blob',
+            mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+         });
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'databaru.docx';
+        link.click();
+
+    } 
+
+    document.getElementById('generateBtn').addEventListener('click', generateDocument);
+</script>
+</html>
