@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Realisasi Program Pengajaran Harian — Rumah Tahfidz Saijaan</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --maroon: #800000;
+            --maroon-dark: #5c0000;
+            --maroon-light: #a02020;
+            --gold: #c9a84c;
+            --gold-light: #e8d48b;
+            --gold-dark: #a08030;
+            --cream: #fdf8f0;
+            --cream-dark: #f5ead6;
+            --text-primary: #1a1a1a;
+            --text-secondary: #5a5a5a;
+            --text-muted: #8a8a8a;
+            --border: #e0d5c5;
+            --border-light: #ede6da;
+            --white: #ffffff;
+            --shadow-sm: 0 1px 3px rgba(128,0,0,0.08);
+            --shadow-md: 0 4px 16px rgba(128,0,0,0.10);
+            --shadow-lg: 0 10px 40px rgba(128,0,0,0.12);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--cream);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 0;
+            color: var(--text-primary);
+        }
+
+        .page-wrapper {
+            width: 100%;
+            max-width: 860px;
+            min-height: 100vh;
+        }
+
+        /* === HEADER === */
+        .brand-header {
+            background: linear-gradient(135deg, var(--maroon-dark) 0%, var(--maroon) 40%, var(--maroon-light) 100%);
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(128,0,0,0.3);
+        }
+
+        .header-inner {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(8px);
+            border: 1.5px solid rgba(201,168,76,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .header-logo svg {
+            width: 32px;
+            height: 32px;
+            fill: var(--gold-light);
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header-text h1 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--white);
+            letter-spacing: 0.5px;
+            line-height: 1.2;
+        }
+
+        .header-text h1 .gold {
+            color: var(--gold-light);
+        }
+
+        .header-text p {
+            font-size: 12px;
+            color: rgba(255,255,255,0.65);
+            margin-top: 2px;
+            font-weight: 400;
+            letter-spacing: 0.3px;
+        }
+
+        .header-accent-line {
+            height: 3px;
+            background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold), transparent);
+        }
+
+        /* === CONTAINER === */
+        .container {
+            background: var(--white);
+            border-radius: 0 0 20px 20px;
+            box-shadow: var(--shadow-lg);
+            padding: 32px 36px 36px;
+            margin: 0 auto;
+            max-width: 860px;
+            width: 100%;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .page-title h2 {
+            font-family: 'Amiri', serif;
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--maroon);
+            line-height: 1.3;
+        }
+
+        .page-title .subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-weight: 400;
+        }
+
+        .page-title .divider {
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--gold), var(--gold-light));
+            border-radius: 4px;
+            margin: 12px auto 0;
+        }
+
+        /* === FORM GROUPS === */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            letter-spacing: 0.2px;
+        }
+
+        label .required {
+            color: var(--maroon-light);
+            margin-left: 3px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: all 0.2s ease;
+            background: var(--cream);
+            color: var(--text-primary);
+        }
+
+        input::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--maroon);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(128,0,0,0.10);
+            background: var(--white);
+        }
+
+        .row {
+            display: flex;
+            gap: 16px;
+        }
+
+        .row .form-group {
+            flex: 1;
+        }
+
+        /* === FORM SECTION === */
+        .form-section {
+            background: linear-gradient(135deg, var(--cream) 0%, var(--white) 100%);
+            border-radius: 14px;
+            padding: 24px;
+            margin-top: 8px;
+            border: 1.5px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .form-section h3 {
+            font-size: 15px;
+            color: var(--maroon);
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+        }
+
+        .form-section h3 .icon {
+            font-size: 18px;
+        }
+
+        .pertemuan-badge {
+            display: inline-block;
+            background: var(--maroon);
+            color: var(--white);
+            border-radius: 50px;
+            padding: 3px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-left: auto;
+            letter-spacing: 0.3px;
+        }
+
+        /* === BUTTONS === */
+        .btn {
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            width: 100%;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            letter-spacing: 0.3px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--maroon) 0%, var(--maroon-light) 100%);
+            box-shadow: 0 4px 14px rgba(128,0,0,0.25);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(128,0,0,0.35);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #4a4a4a;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .btn-secondary:hover {
+            background: #333;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #047857 0%, #059669 100%);
+            box-shadow: 0 4px 14px rgba(5,150,105,0.25);
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 6px 20px rgba(5,150,105,0.35);
+            transform: translateY(-1px);
+        }
+
+        /* === INFO BADGES === */
+        .badge {
+            background: var(--cream-dark);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            padding: 4px 14px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .preview-info {
+            background: var(--cream);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: var(--text-primary);
+            margin-top: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preview-info span {
+            font-weight: 600;
+        }
+
+        .input-hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* === DATA SUMMARY === */
+        .data-summary {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1.5px solid #d4a017;
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin-top: 14px;
+            font-size: 13px;
+            color: #78350f;
+            display: none;
+        }
+
+        .data-summary.show {
+            display: block;
+        }
+
+        .data-summary strong {
+            color: #92400e;
+        }
+
+        /* === FOOTER === */
+        .footer-note {
+            margin-top: 20px;
+            font-size: 12px;
+            color: var(--text-muted);
+            text-align: center;
+            border-top: 1px dashed var(--border);
+            padding-top: 16px;
+            line-height: 1.6;
+        }
+
+        .footer-note strong {
+            color: var(--maroon);
+        }
+
+        /* === STATUS BADGE OVERRIDES === */
+        #statusBadge {
+            transition: all 0.2s ease;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 640px) {
+            .brand-header .header-inner {
+                padding: 16px 20px;
+            }
+
+            .header-logo {
+                width: 44px;
+                height: 44px;
+                border-radius: 10px;
+            }
+
+            .header-logo svg {
+                width: 26px;
+                height: 26px;
+            }
+
+            .header-text h1 {
+                font-size: 15px;
+            }
+
+            .container {
+                padding: 24px 20px 28px;
+            }
+
+            .page-title h2 {
+                font-size: 22px;
+            }
+
+            .row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .form-section {
+                padding: 18px;
+            }
+        }
+
+        /* Subtle background pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(128,0,0,0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(201,168,76,0.04) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Header Branding -->
+        <header class="brand-header">
+            <div class="header-inner">
+                <div class="header-logo">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 2C4.9 2 4 2.9 4 4v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6H6zm7 1.5L18.5 9H13V3.5zM8 12h8v1.5H8V12zm0 3h8v1.5H8V15zm0 3h5v1.5H8V18z"/>
+                        <path d="M12 2v6h6" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+                    </svg>
+                </div>
+                <div class="header-text">
+                    <h1>Rumah Tahfidz <span class="gold">Saijaan</span></h1>
+                    <p>Realisasi Program Pengajaran Harian · Metode Tilawati</p>
+                </div>
+            </div>
+            <div class="header-accent-line"></div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="container">
+            <div class="page-title">
+                <h2>Realisasi Harian Tilawati</h2>
+                <p class="subtitle">Isi data pertemuan, lalu generate dokumen PDF</p>
+                <div class="divider"></div>
+            </div>
+
+            <!-- Input Data Utama -->
+            <div class="row">
+                <div class="form-group">
+                    <label for="kelas">Jilid / Kelas <span class="required">*</span></label>
+                    <select id="kelas">
+                        <option value="Jilid 1">Jilid 1</option>
+                        <option value="Jilid 2">Jilid 2</option>
+                        <option value="Jilid 3">Jilid 3</option>
+                        <option value="Jilid 4">Jilid 4</option>
+                        <option value="Jilid 5">Jilid 5</option>
+                        <option value="Jilid 6">Jilid 6</option>
+                        <option value="Pra-Tilawati">Pra-Tilawati</option>
+                        <option value="Tahfidz">Tahfidz</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="ustadz">Nama Ustadz/ah <span class="required">*</span></label>
+                    <input type="text" id="ustadz" placeholder="Contoh: Ustadz Ahmad" value="Ustadz Ahmad" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label for="paperSize">Ukuran Kertas</label>
+                    <select id="paperSize">
+                        <option value="a4">A4</option>
+                        <option value="f4">F4 / Folio</option>
+                    </select>
+                </div>
+                <div class="form-group" style="display:flex; align-items:flex-end;">
+                    <div style="width:100%;">
+                        <label style="visibility:hidden;">.</label>
+                        <div class="preview-info">
+                            <span>📄 Format</span>
+                            <span class="badge" id="sizeLabel">A4 Landscape</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Input Detail Pertemuan -->
+            <div class="form-section">
+                <h3>
+                    <span class="icon">📝</span> 
+                    Data Pertemuan
+                    <span class="pertemuan-badge" id="pertemuanBadge">Pertemuan ke-1</span>
+                </h3>
+                
+                <div class="row">
+                    <div class="form-group">
+                        <label for="pertemuanKe">Pertemuan ke- <span class="required">*</span></label>
+                        <input type="number" id="pertemuanKe" min="1" max="60" value="1" />
+                        <div class="input-hint">Masukkan angka 1 - 60</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="tanggal">Tanggal</label>
+                        <input type="date" id="tanggal" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label for="klasikalHal">Klasikal peraga/hal <span class="required">*</span></label>
+                        <input type="text" id="klasikalHal" placeholder="Contoh: Hal 10 - 15" />
+                        <div class="input-hint">Isi dengan halaman peraga yang digunakan</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="bacaSimakHal">Baca simak buku tilawati/hal <span class="required">*</span></label>
+                        <input type="text" id="bacaSimakHal" placeholder="Contoh: Hal 12 - 18" />
+                        <div class="input-hint">Isi dengan halaman buku yang dibaca</div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label for="persentase">Prosentase Kelancaran <span class="required">*</span></label>
+                        <input type="number" id="persentase" min="0" max="100" placeholder="70" />
+                        <div class="input-hint">Masukkan angka 0 - 100 (contoh: 70 = 70%)</div>
+                    </div>
+                    <div class="form-group" style="display:flex; align-items:flex-end;">
+                        <div style="width:100%;">
+                            <label style="visibility:hidden;">.</label>
+                            <div class="preview-info" style="background:#fef3c7; border-color:#f0d68a;">
+                                <span>📊 Status</span>
+                                <span class="badge" id="statusBadge" style="background:#dc2626; color:white;">Belum diisi</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tombol Tambah / Update Data -->
+                <button class="btn btn-success" id="addDataBtn" style="margin-top:12px;">
+                    ✅ Tambahkan Data Pertemuan
+                </button>
+            </div>
+
+            <!-- Summary Data -->
+            <div class="data-summary" id="dataSummary">
+                <strong>📋 Data Pertemuan yang akan dicetak:</strong><br />
+                <span id="summaryText">Belum ada data</span>
+            </div>
+
+            <!-- Tombol Generate PDF -->
+            <button class="btn btn-primary" id="generateBtn" style="margin-top:16px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                Generate PDF
+            </button>
+
+            <!-- Tombol Preview / Download (opsional) -->
+            <button class="btn btn-secondary" id="downloadBtn" style="display:none;">
+                ⬇️ Download PDF (jika tidak otomatis)
+            </button>
+
+            <div class="footer-note">
+                <strong>Rumah Tahfidz Saijaan</strong> · Realisasi Harian Metode Tilawati · 60 Pertemuan
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        //  DATA PERTEMUAN
+        // ============================================================
+        let pertemuanData = {
+            pertemuanKe: 1,
+            tanggal: '',
+            klasikalHal: '',
+            bacaSimakHal: '',
+            persentase: ''
+        };
+
+        // ============================================================
+        //  FUNGSI REALISASI (sesuai permintaan, dengan penyesuaian)
+        // ============================================================
+
+        function getRealisasiPageSize(paperSize) {
+            if (paperSize === 'f4') {
+                return { width: 210 * 72 / 25.4, height: 330 * 72 / 25.4 };
+            }
+            return 'A4';
+        }
+
+        function createRealisasiTableSection(startCol, endCol, isLast = false, paperSize = 'a4', data = null) {
+            const isF4 = paperSize === 'f4';
+            const remainingCols = endCol - startCol + 1;
+            const widths = isF4 ? [24, 150, 50, 60] : [20, 130, 45, 55];
+            for (let i = 0; i < remainingCols; i++) widths.push('*');
+
+            const headerRow1 = [
+                { text: 'No', style: 'tableHeader' },
+                { text: 'MATERI', style: 'tableHeader' },
+                { text: 'WAKTU', style: 'tableHeader' },
+                { text: 'TEKNIK', style: 'tableHeader' },
+                { text: 'PERTEMUAN KE', style: 'tableHeader', colSpan: remainingCols }
+            ];
+            for (let i = 0; i < remainingCols - 1; i++) headerRow1.push({});
+
+            const headerRow2 = [];
+            for (let i = 0; i < 4; i++) headerRow2.push({ text: '', style: 'tableHeader' });
+            for (let i = startCol; i <= endCol; i++) {
+                let displayText = i.toString();
+                // Tandai pertemuan yang sedang diisi
+                if (data && data.pertemuanKe === i) {
+                    displayText = '★' + i;
+                }
+                headerRow2.push({ text: displayText, style: 'tableHeader', alignment: 'center' });
+            }
+
+            const tableBody = [headerRow1, headerRow2];
+
+            // Baris 1: Klasikal peraga/hal
+            const row1 = [
+                { text: '1', alignment: 'center', style: 'tableContent' },
+                { text: 'Klasikal peraga/hal', style: 'tableContent' },
+                { text: '15 menit', alignment: 'center', style: 'tableContent' },
+                { text: 'klasikal', alignment: 'center', style: 'tableContent' }
+            ];
+            for (let i = startCol; i <= endCol; i++) {
+                let content = '';
+                if (data && data.pertemuanKe === i && data.klasikalHal) {
+                    content = data.klasikalHal;
+                }
+                row1.push({ text: content, alignment: 'center', style: 'tableContent' });
+            }
+            tableBody.push(row1);
+
+            // Baris 2: Baca simak buku tilawati/hal
+            const row2 = [
+                { text: '2', alignment: 'center', style: 'tableContent' },
+                { text: 'Baca simak buku tilawati/hal', style: 'tableContent' },
+                { text: '30 menit', alignment: 'center', style: 'tableContent' },
+                { text: 'baca simak', alignment: 'center', style: 'tableContent' }
+            ];
+            for (let i = startCol; i <= endCol; i++) {
+                let content = '';
+                if (data && data.pertemuanKe === i && data.bacaSimakHal) {
+                    content = data.bacaSimakHal;
+                }
+                row2.push({ text: content, alignment: 'center', style: 'tableContent' });
+            }
+            tableBody.push(row2);
+
+            // Baris 3: Prosentase Kelancaran
+            const row3 = [
+                { text: '3', alignment: 'center', style: 'tableContent' },
+                { text: 'Prosentase Kelancaran dalam kelas', style: 'tableContent', colSpan: 3 },
+                {}, {}
+            ];
+            for (let i = startCol; i <= endCol; i++) {
+                let content = '';
+                if (data && data.pertemuanKe === i && data.persentase) {
+                    content = data.persentase + '%';
+                }
+                row3.push({ text: content, alignment: 'center', style: 'tableContent' });
+            }
+            tableBody.push(row3);
+
+            if (isLast) {
+                const row4 = [
+                    { text: '4.', alignment: 'center', style: 'tableContent' },
+                    { text: 'Munaqosyah', style: 'tableContent', colSpan: 3 },
+                    {}, {}
+                ];
+                for (let i = 0; i < remainingCols; i++) row4.push({ text: '' });
+                tableBody.push(row4);
+            }
+
+            return {
+                table: { headerRows: 2, widths, body: tableBody },
+                layout: {
+                    hLineWidth: () => 0.5,
+                    vLineWidth: () => 0.5,
+                    hLineColor: () => '#333',
+                    vLineColor: () => '#333'
+                }
+            };
+        }
+
+        function buildRealisasiDocDefinition(kelas, ustadzName, paperSize = 'a4', data = null) {
+            const isF4 = paperSize === 'f4';
+            return {
+                pageSize: getRealisasiPageSize(paperSize),
+                pageOrientation: 'landscape',
+                pageMargins: isF4 ? [35, 35, 35, 35] : [40, 40, 40, 40],
+                content: [
+                    { 
+                        text: 'REALISASI PROGRAM PENGAJARAN HARIAN MEMBACA AL-QUR\'AN\nMETODE TILAWATI', 
+                        style: 'header', 
+                        alignment: 'center', 
+                        margin: isF4 ? [0, -18, 0, 0] : undefined 
+                    },
+                    { text: '\n' },
+                    {
+                        table: {
+                            widths: ['auto', 'auto', '*'],
+                            body: [
+                                [
+                                    { text: 'Jilid', alignment: 'left', margin: [0, 0, 5, 0] },
+                                    { text: ':', alignment: 'right', margin: [0, 0, 5, 0] },
+                                    { text: kelas, alignment: 'left' }
+                                ],
+                                [
+                                    { text: 'Nama Ustadz/ah', alignment: 'left', margin: [0, 0, 5, 0] },
+                                    { text: ':', alignment: 'right', margin: [0, 0, 5, 0] },
+                                    { text: ustadzName, alignment: 'left' }
+                                ],
+                                [
+                                    { text: 'Tanggal', alignment: 'left', margin: [0, 0, 5, 0] },
+                                    { text: ':', alignment: 'right', margin: [0, 0, 5, 0] },
+                                    { text: data && data.tanggal ? data.tanggal : '-', alignment: 'left' }
+                                ]
+                            ]
+                        },
+                        layout: {
+                            hLineWidth: () => 0,
+                            vLineWidth: () => 0,
+                            paddingLeft: () => 0,
+                            paddingRight: () => 0,
+                            paddingTop: () => 0,
+                            paddingBottom: () => 0
+                        }
+                    },
+                    { text: '\n' },
+                    createRealisasiTableSection(1, 15, false, paperSize, data),
+                    { text: '\n' },
+                    createRealisasiTableSection(16, 30, false, paperSize, data),
+                    { text: '\n' },
+                    createRealisasiTableSection(31, 45, false, paperSize, data),
+                    { text: '\n' },
+                    createRealisasiTableSection(46, 60, true, paperSize, data),
+                    { text: '\n' },
+                    { text: 'Keterangan:', style: 'keteranganTitle' },
+                    {
+                        ol: [
+                            'Pertemuan ke 1 s/d 15 Klasikal menggunakan teknik 1 & 2',
+                            'Pertemuan ke 16 dan seterusnya klasikal menggunakan teknik 3 (dengan catatan santri sudah lancar) jika tidak ulangi teknik 1 & 2 sampai lancar',
+                            'Halaman dinaikkan apabila santri yang lancar minimal 70% dari jumlah santri yang aktif.'
+                        ],
+                        style: 'keteranganText'
+                    }
+                ],
+                styles: {
+                    header: { fontSize: isF4 ? 14 : 13, bold: true, lineHeight: isF4 ? 1.05 : undefined },
+                    tableHeader: { fontSize: isF4 ? 10 : 9, bold: true, alignment: 'center', fillColor: '#eeeeee' },
+                    tableContent: { fontSize: isF4 ? 9 : 8 },
+                    keteranganTitle: { fontSize: isF4 ? 11 : 10, bold: true, margin: [0, 5, 0, 2] },
+                    keteranganText: { fontSize: isF4 ? 10 : 9, margin: [0, 0, 0, 2] }
+                }
+            };
+        }
+
+        // Fungsi generate PDF -> buffer (sesuai permintaan)
+        function generateRealisasiPdfBuffer(kelas, ustadzName, paperSize = 'a4', data = null) {
+            return new Promise((resolve, reject) => {
+                try {
+                    const doc = pdfMake.createPdf(buildRealisasiDocDefinition(kelas, ustadzName, paperSize, data));
+                    doc.getBuffer((buffer) => resolve(buffer));
+                } catch (err) {
+                    reject(err);
+                }
+            });
+        }
+
+        // Fungsi untuk langsung download (mudah)
+        function downloadRealisasiPdf(kelas, ustadzName, paperSize = 'a4', data = null) {
+            const doc = pdfMake.createPdf(buildRealisasiDocDefinition(kelas, ustadzName, paperSize, data));
+            const fileName = `Realisasi_${kelas.replace(/\s/g,'_')}_Pertemuan${data ? data.pertemuanKe : '1'}.pdf`;
+            doc.download(fileName);
+        }
+
+        // ============================================================
+        //  UI LOGIC
+        // ============================================================
+
+        const kelasInput = document.getElementById('kelas');
+        const ustadzInput = document.getElementById('ustadz');
+        const paperSizeSelect = document.getElementById('paperSize');
+        const sizeLabel = document.getElementById('sizeLabel');
+        const generateBtn = document.getElementById('generateBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const addDataBtn = document.getElementById('addDataBtn');
+        const pertemuanKeInput = document.getElementById('pertemuanKe');
+        const tanggalInput = document.getElementById('tanggal');
+        const klasikalHalInput = document.getElementById('klasikalHal');
+        const bacaSimakHalInput = document.getElementById('bacaSimakHal');
+        const persentaseInput = document.getElementById('persentase');
+        const pertemuanBadge = document.getElementById('pertemuanBadge');
+        const statusBadge = document.getElementById('statusBadge');
+        const dataSummary = document.getElementById('dataSummary');
+        const summaryText = document.getElementById('summaryText');
+
+        // Set tanggal default hari ini
+        const today = new Date().toISOString().split('T')[0];
+        tanggalInput.value = today;
+
+        // Update label ukuran kertas
+        paperSizeSelect.addEventListener('change', function() {
+            const val = this.value.toUpperCase();
+            sizeLabel.textContent = val === 'F4' ? 'F4 / Folio Landscape' : 'A4 Landscape';
+        });
+        sizeLabel.textContent = paperSizeSelect.value.toUpperCase() === 'F4' ? 'F4 / Folio Landscape' : 'A4 Landscape';
+
+        // Update badge pertemuan
+        pertemuanKeInput.addEventListener('input', function() {
+            const val = parseInt(this.value) || 1;
+            pertemuanBadge.textContent = `Pertemuan ke-${Math.min(Math.max(val, 1), 60)}`;
+        });
+
+        // Update status badge berdasarkan input
+        function updateStatusBadge() {
+            const klasikal = klasikalHalInput.value.trim();
+            const bacaSimak = bacaSimakHalInput.value.trim();
+            const persentase = persentaseInput.value.trim();
+            
+            if (klasikal && bacaSimak && persentase) {
+                statusBadge.textContent = '✅ Lengkap';
+                statusBadge.style.background = '#059669';
+            } else if (klasikal || bacaSimak || persentase) {
+                statusBadge.textContent = '⚠️ Sebagian';
+                statusBadge.style.background = '#d97706';
+            } else {
+                statusBadge.textContent = '❌ Kosong';
+                statusBadge.style.background = '#dc2626';
+            }
+        }
+
+        [klasikalHalInput, bacaSimakHalInput, persentaseInput].forEach(input => {
+            input.addEventListener('input', updateStatusBadge);
+        });
+
+        // Fungsi tambah data
+        addDataBtn.addEventListener('click', function() {
+            const pertemuanKe = parseInt(pertemuanKeInput.value) || 1;
+            if (pertemuanKe < 1 || pertemuanKe > 60) {
+                alert('Pertemuan harus antara 1 - 60');
+                return;
+            }
+
+            const klasikalHal = klasikalHalInput.value.trim();
+            const bacaSimakHal = bacaSimakHalInput.value.trim();
+            const persentase = persentaseInput.value.trim();
+
+            if (!klasikalHal || !bacaSimakHal || !persentase) {
+                alert('Mohon isi semua field yang wajib diisi (klasikal peraga, baca simak, dan persentase)');
+                return;
+            }
+
+            const persentaseNum = parseInt(persentase);
+            if (isNaN(persentaseNum) || persentaseNum < 0 || persentaseNum > 100) {
+                alert('Persentase harus antara 0 - 100');
+                return;
+            }
+
+            // Simpan data
+            pertemuanData = {
+                pertemuanKe: pertemuanKe,
+                tanggal: tanggalInput.value || '',
+                klasikalHal: klasikalHal,
+                bacaSimakHal: bacaSimakHal,
+                persentase: persentaseNum
+            };
+
+            // Update summary
+            dataSummary.classList.add('show');
+            summaryText.innerHTML = `
+                <strong>Pertemuan ke-${pertemuanKe}</strong> | 
+                Tanggal: ${pertemuanData.tanggal || '-'} | 
+                Klasikal: ${klasikalHal} | 
+                Baca Simak: ${bacaSimakHal} | 
+                Persentase: ${persentaseNum}%
+            `;
+
+            statusBadge.textContent = '✅ Data Tersimpan';
+            statusBadge.style.background = '#059669';
+
+            // Animasi tombol
+            const originalText = addDataBtn.innerHTML;
+            addDataBtn.innerHTML = '✅ Data Tersimpan!';
+            addDataBtn.style.background = '#059669';
+            setTimeout(() => {
+                addDataBtn.innerHTML = originalText;
+                addDataBtn.style.background = '';
+            }, 2000);
+
+            console.log('📊 Data pertemuan tersimpan:', pertemuanData);
+        });
+
+        // Tombol Generate -> langsung download
+        generateBtn.addEventListener('click', function() {
+            const kelas = kelasInput.value || 'Jilid 1';
+            const ustadz = ustadzInput.value.trim() || 'Ustadz';
+            const paper = paperSizeSelect.value;
+
+            // Cek apakah data sudah diisi
+            if (!pertemuanData.klasikalHal || !pertemuanData.bacaSimakHal || !pertemuanData.persentase) {
+                const confirm = window.confirm(
+                    'Data pertemuan belum lengkap. Lanjutkan dengan data yang tersedia?'
+                );
+                if (!confirm) return;
+            }
+
+            // Tampilkan feedback tombol
+            const originalText = generateBtn.innerHTML;
+            generateBtn.innerHTML = '⏳ Membuat PDF...';
+            generateBtn.disabled = true;
+
+            try {
+                // Gunakan fungsi download langsung
+                downloadRealisasiPdf(kelas, ustadz, paper, pertemuanData);
+                downloadBtn.style.display = 'inline-block';
+                downloadBtn.textContent = '⬇️ Download ulang PDF';
+                
+                setTimeout(() => {
+                    generateBtn.innerHTML = originalText;
+                    generateBtn.disabled = false;
+                }, 1500);
+            } catch (err) {
+                alert('Gagal generate PDF: ' + err.message);
+                generateBtn.innerHTML = originalText;
+                generateBtn.disabled = false;
+            }
+        });
+
+        // Tombol download ulang (jika diperlukan)
+        downloadBtn.addEventListener('click', function() {
+            const kelas = kelasInput.value || 'Jilid 1';
+            const ustadz = ustadzInput.value.trim() || 'Ustadz';
+            const paper = paperSizeSelect.value;
+            downloadRealisasiPdf(kelas, ustadz, paper, pertemuanData);
+        });
+
+        // Shortcut Enter pada input
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    if (this.id === 'ustadz') {
+                        document.getElementById('pertemuanKe').focus();
+                    } else if (this.id === 'persentase') {
+                        addDataBtn.click();
+                    }
+                }
+            });
+        });
+
+        // Inisialisasi status badge
+        updateStatusBadge();
+
+        console.log('✅ Aplikasi Realisasi Harian Tilawati siap.');
+        console.log('📌 Isi data pertemuan, lalu klik "Tambah Data Pertemuan" untuk menyimpan.');
+        console.log('📌 Gunakan tombol Generate PDF untuk mendownload.');
+    </script>
+</body>
+</html>
